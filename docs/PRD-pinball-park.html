@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>弹珠乐园 · 产品需求文档（PRD）</title>
+<style>
+  :root {
+    --blue: #185FA5; --blue-l: #E6F1FB; --blue-d: #0C447C;
+    --teal: #0F6E56; --teal-l: #E1F5EE;
+    --amber: #854F0B; --amber-l: #FAEEDA;
+    --red: #A32D2D; --red-l: #FCEBEB;
+    --purple: #534AB7; --purple-l: #EEEDFE;
+    --text: #2C2C2A; --muted: #5F5E5A; --border: #E3E1D9; --bg: #FAFAF7;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; color: var(--text); background: var(--bg); line-height: 1.75; }
+  .layout { display: flex; max-width: 1240px; margin: 0 auto; }
+  nav { width: 240px; flex-shrink: 0; position: sticky; top: 0; height: 100vh; overflow-y: auto; padding: 32px 14px; border-right: 1px solid var(--border); background: #fff; }
+  nav h2 { font-size: 13px; color: var(--muted); font-weight: 500; margin-bottom: 12px; letter-spacing: 1px; }
+  nav a { display: block; padding: 6px 10px; font-size: 12.5px; color: var(--text); text-decoration: none; border-radius: 6px; margin-bottom: 2px; }
+  nav a:hover { background: var(--blue-l); color: var(--blue); }
+  nav .grp { font-size: 11px; color: var(--muted); margin: 14px 0 4px; letter-spacing: .5px; }
+  main { flex: 1; padding: 40px 52px 100px; min-width: 0; }
+  h1 { font-size: 26px; font-weight: 600; margin-bottom: 6px; }
+  .subtitle { color: var(--muted); font-size: 14px; margin-bottom: 20px; }
+  .meta { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 28px; }
+  .tag { font-size: 12px; padding: 3px 10px; border-radius: 999px; background: var(--blue-l); color: var(--blue-d); }
+  section { margin-bottom: 44px; scroll-margin-top: 20px; }
+  h2.sec { font-size: 20px; font-weight: 600; padding-bottom: 8px; border-bottom: 2px solid var(--blue); margin-bottom: 14px; }
+  h2.sec .num { color: var(--blue); margin-right: 8px; }
+  h3 { font-size: 16px; font-weight: 600; margin: 22px 0 8px; }
+  h4 { font-size: 14px; font-weight: 600; margin: 14px 0 6px; color: var(--blue-d); }
+  p { margin-bottom: 10px; font-size: 14px; }
+  ul, ol { margin: 0 0 12px 22px; font-size: 14px; }
+  li { margin-bottom: 4px; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0 16px; font-size: 13px; background: #fff; }
+  th { background: var(--blue-l); color: var(--blue-d); font-weight: 600; text-align: left; padding: 8px 12px; border: 1px solid var(--border); }
+  td { padding: 8px 12px; border: 1px solid var(--border); vertical-align: top; }
+  .card { background: #fff; border: 1px solid var(--border); border-left: 4px solid var(--blue); border-radius: 8px; padding: 14px 18px; margin: 12px 0; font-size: 14px; }
+  .card.warn { border-left-color: var(--red); background: var(--red-l); }
+  .card.ok { border-left-color: var(--teal); background: var(--teal-l); }
+  .card.amber { border-left-color: #BA7517; background: var(--amber-l); }
+  .card b { font-weight: 600; }
+  .flow { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 12px 0; }
+  .step { background: var(--blue-l); color: var(--blue-d); border: 1px solid #B5D4F4; border-radius: 8px; padding: 8px 12px; font-size: 13px; text-align: center; }
+  .step.hl { background: var(--purple-l); color: var(--purple); border-color: #CECBF6; }
+  .arrow { color: var(--muted); font-size: 14px; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 980px) { nav { display: none; } .grid2 { grid-template-columns: 1fr; } main { padding: 24px; } }
+  .badge { display: inline-block; font-size: 11px; padding: 1px 8px; border-radius: 999px; margin-left: 6px; vertical-align: middle; }
+  .badge.done { background: var(--teal-l); color: var(--teal); }
+  .badge.todo { background: var(--amber-l); color: var(--amber); }
+  .badge.p0 { background: var(--red-l); color: var(--red); }
+  .badge.p1 { background: var(--amber-l); color: var(--amber); }
+  .badge.p2 { background: var(--blue-l); color: var(--blue-d); }
+  code { background: #F1EFE8; padding: 1px 6px; border-radius: 4px; font-size: 12.5px; font-family: "SF Mono", Menlo, monospace; }
+  footer { color: var(--muted); font-size: 12px; border-top: 1px solid var(--border); padding-top: 16px; }
+  .docinfo { font-size: 13px; color: var(--muted); }
+  .docinfo td { font-size: 13px; }
+</style>
+</head>
+<body>
+<div class="layout">
+<nav>
+  <h2>目录</h2>
+  <a href="#s0">文档信息</a>
+  <div class="grp">一 · 产品定义</div>
+  <a href="#s1">1. 产品概述与目标</a>
+  <a href="#s2">2. 用户画像与场景</a>
+  <a href="#s3">3. 功能清单</a>
+  <div class="grp">二 · 玩法与体验</div>
+  <a href="#s4">4. 核心玩法规则</a>
+  <a href="#s5">5. 页面与用户流程</a>
+  <div class="grp">三 · 商业与运营</div>
+  <a href="#s6">6. 广告变现需求</a>
+  <a href="#s7">7. 积分商城与兑换</a>
+  <a href="#s8">8. 数据与埋点</a>
+  <div class="grp">四 · 保障与交付</div>
+  <a href="#s9">9. 合规与风控需求</a>
+  <a href="#s10">10. 非功能需求</a>
+  <a href="#s11">11. 验收标准</a>
+  <a href="#s12">12. 里程碑与依赖</a>
+</nav>
+<main>
+  <h1>弹珠乐园 · 产品需求文档（PRD）</h1>
+  <p class="subtitle">对标实体"弹珠乐园"游戏机的线上多端休闲游戏 —— 第一份阶段文档</p>
+  <div class="meta">
+    <span class="tag">微信小游戏优先</span><span class="tag">Cocos Creator 3.x</span><span class="tag">自建后端 NestJS</span><span class="tag">纯免费 + 激励视频</span><span class="tag">积分兑实物</span>
+  </div>
+
+  <section id="s0">
+    <table class="docinfo">
+      <tr><td style="width:90px;border:none;background:none;font-weight:600">文档版本</td><td style="border:none;background:none">v1.0（草稿，待评审）</td></tr>
+      <tr><td style="border:none;background:none;font-weight:600">日期</td><td style="border:none;background:none">2026-07-28</td></tr>
+      <tr><td style="border:none;background:none;font-weight:600">上游文档</td><td style="border:none;background:none">《弹珠乐园 · 功能框架文档大纲 v0.1》</td></tr>
+      <tr><td style="border:none;background:none;font-weight:600">下游文档</td><td style="border:none;background:none">玩法数值设计 / 技术架构 / 服务端 API / UI-UX / 测试验收 / 上线运营</td></tr>
+      <tr><td style="border:none;background:none;font-weight:600">目标读者</td><td style="border:none;background:none">产品、策划、客户端、服务端、测试、运营</td></tr>
+    </table>
+    <div class="card"><b>本版范围说明：</b>本文档定义"做什么"与"做到什么程度"，不含"怎么做"的实现细节（落在架构/API/数值文档）。所有数值为初始设计值，待《玩法数值设计文档》用仿真回填并最终确认。</div>
+  </section>
+
+  <section id="s1">
+    <h2 class="sec"><span class="num">1</span>产品概述与目标</h2>
+    <h3>1.1 产品定位</h3>
+    <p>将线下"弹珠乐园"实体游艺机的核心爽点（投珠 → 拉杆弹射 → 钉板碰撞 → 落入亮灯出口 → 倍率奖励）搬到线上，做成一款<strong>轻量、即玩即走、靠广告变现</strong>的多端休闲游戏。线上化后用<strong>激励视频广告</strong>替代实体机的投币收入，用<strong>积分兑换实物</strong>替代实体机的"退币/彩票"奖励，保留随机倍率带来的兴奋感，同时规避付费博彩合规风险。</p>
+    <h3>1.2 一句话描述</h3>
+    <p class="card ok">"拉杆弹珠、落口中奖、看广告攒珠、积分兑好礼——一款零门槛、靠手气与运气解压的弹珠休闲游戏。"</p>
+    <h3>1.3 商业目标（北极星与约束）</h3>
+    <ul>
+      <li><b>北极星指标</b>：人均广告有效观看次数（兼顾留存与变现）。</li>
+      <li><b>生命线约束</b>：人均广告收益 ≥ 人均积分产出成本 × <b>安全系数（≥1.2）</b>，否则触发经济模型闸门（见 6.5）。这是能否长线盈利的核心判据。</li>
+      <li><b>合规底线</b>：弹珠不可现金购买、积分/奖品不可反向兑换现金（详见第 9 节）。</li>
+    </ul>
+    <h3>1.4 已确认的关键决策（来自框架大纲）</h3>
+    <table>
+      <tr><th style="width:150px">维度</th><th>决策</th></tr>
+      <tr><td>目标平台</td><td>多端：微信小游戏首发，iOS/Android App 二期，H5 可选传播</td></tr>
+      <tr><td>商业模式</td><td>纯免费，激励视频广告驱动，<b>不可付费买珠</b></td></tr>
+      <tr><td>核心机制</td><td>物理为表、结果可控：服务端按 RTP 判定，客户端物理演出</td></tr>
+      <tr><td>实物履约</td><td>对接第三方兑奖平台（话费券 / 电商卡 / 实物代发）</td></tr>
+      <tr><td>技术路线</td><td>Cocos Creator 3.x 客户端 + NestJS/MySQL/Redis 自建后端</td></tr>
+    </table>
+  </section>
+
+  <section id="s2">
+    <h2 class="sec"><span class="num">2</span>用户画像与场景</h2>
+    <div class="grid2">
+      <div>
+        <h4>核心用户：休闲解压型（占比预估 60%）</h4>
+        <ul>
+          <li>18–40 岁，通勤 / 午休 / 睡前碎片时间</li>
+          <li>诉求：轻操作、强反馈、有惊喜感，不重度</li>
+          <li>动机：攒珠兑实物、看视频白嫖奖励</li>
+        </ul>
+      </div>
+      <div>
+        <h4>次级用户：收集成就型（占比预估 30%）</h4>
+        <ul>
+          <li>喜欢积分进度、兑换清单、每日签到闭环</li>
+          <li>诉求：确定性成长感、商城可达成</li>
+        </ul>
+      </div>
+    </div>
+    <h4>边缘用户：羊毛/尝鲜型（占比预估 10%）</h4>
+    <ul>
+      <li>冲着高价值实物来，易被风控识别（见 9.2）</li>
+      <li>诉求：用最少时间薅到实物；是风控与成本闸门的重点对象</li>
+    </ul>
+    <h3>2.1 典型用户故事</h3>
+    <table>
+      <tr><th style="width:40%">场景</th><th>期望体验</th></tr>
+      <tr><td>通勤 3 分钟</td><td>开局→拉杆→中奖→看视频翻倍，一气呵成，不用等加载</td></tr>
+      <tr><td>弹珠快用完</td><td>弹窗引导"看视频领 88 颗"，爽快续命不卡关</td></tr>
+      <tr><td>攒够积分</td><td>商城一眼看到可兑换实物，下单后能在"我的订单"看到物流</td></tr>
+      <tr><td>新手第一次</td><td>前几局容易中、有庆祝特效，建立正反馈</td></tr>
+    </table>
+  </section>
+
+  <section id="s3">
+    <h2 class="sec"><span class="num">3</span>功能清单</h2>
+    <p>优先级：<span class="badge p0">P0</span> 首发必备 <span class="badge p1">P1</span> 首发增强 <span class="badge p2">P2</span> 二期</p>
+    <table>
+      <tr><th style="width:34px">#</th><th>功能模块</th><th>功能点</th><th>优先级</th></tr>
+      <tr><td>1</td><td>账号与登录</td><td>微信授权登录（小游戏）、手机号登录（App）、跨端统一用户标识、游客兜底</td><td><span class="badge p0">P0</span></td></tr>
+      <tr><td>2</td><td>大厅</td><td>弹珠/积分余额展示、每日任务、签到入口、商城入口、广告领珠入口</td><td><span class="badge p0">P0</span></td></tr>
+      <tr><td>3</td><td>核心玩法</td><td>投珠开局（5–99）、倍数+亮灯出口刷新、再投珠加注、拉杆弹射、物理钉板演出、落口结算</td><td><span class="badge p0">P0</span></td></tr>
+      <tr><td>4</td><td>弹珠经济</td><td>每日登录赠珠、激励视频领珠、命中奖励、签到/任务奖励</td><td><span class="badge p0">P0</span></td></tr>
+      <tr><td>5</td><td>积分系统</td><td>积分卡产出规则、积分账本、积分商城兑换、订单履约</td><td><span class="badge p0">P0</span></td></tr>
+      <tr><td>6</td><td>广告变现</td><td>激励视频（续命/翻倍/签到/高倍入场）、服务端回调发奖、频控</td><td><span class="badge p0">P0</span></td></tr>
+      <tr><td>7</td><td>商城与兑换</td><td>商品分层、兑换下单、风控校验、第三方履约、订单状态机、我的订单</td><td><span class="badge p0">P0</span></td></tr>
+      <tr><td>8</td><td>概率公示</td><td>倍数档位与出现概率游戏内可查（合规要求）</td><td><span class="badge p0">P0</span></td></tr>
+      <tr><td>9</td><td>防沉迷/未成年</td><td>实名提示、未成年人消费/时长提示</td><td><span class="badge p1">P1</span></td></tr>
+      <tr><td>10</td><td>高倍挑战场</td><td>×15/×20 专场解锁、入场激励视频</td><td><span class="badge p1">P1</span></td></tr>
+      <tr><td>11</td><td>好友/排行榜</td><td>好友积分榜、周榜（拉动留存与社交）</td><td><span class="badge p2">P2</span></td></tr>
+      <tr><td>12</td><td>App 二期</td><td>原生打包、聚合广告、跨端账号打通、H5 传播页</td><td><span class="badge p2">P2</span></td></tr>
+    </table>
+  </section>
+
+  <section id="s4">
+    <h2 class="sec"><span class="num">4</span>核心玩法规则</h2>
+    <h3>4.1 单局流程</h3>
+    <div class="flow">
+      <div class="step">投入 5–99 颗弹珠<br>开始一局</div><span class="arrow">→</span>
+      <div class="step">服务端随机刷新<br>倍数 + 亮灯出口</div><span class="arrow">→</span>
+      <div class="step hl">可选：再投珠加注<br>（发射前追加投入）</div><span class="arrow">→</span>
+      <div class="step">拉动弹簧杆<br>弹射游戏钢珠</div><span class="arrow">→</span>
+      <div class="step">钉板碰撞区<br>物理演出</div><span class="arrow">→</span>
+      <div class="step">落入出口结算<br>奖励珠 = 投入 × 倍数</div>
+    </div>
+    <h3>4.2 开局与投珠</h3>
+    <ul>
+      <li>玩家设定<strong>本局投入弹珠数</strong>（默认建议值 5，范围 5–99，受余额约束）。</li>
+      <li>点击"开始"后，<strong>客户端向服务端请求开局</strong>，服务端在事务内锁定投入弹珠（先扣后结算，防并发），并下发：当局倍数档 ×N、亮灯出口集合（见 4.3）。</li>
+      <li>客户端展示亮灯出口与倍数，进入"拉杆"阶段。</li>
+    </ul>
+    <h3>4.3 倍数与出口（12 出口方案）</h3>
+    <table>
+      <tr><th>倍数档</th><th>亮灯出口数 / 12</th><th>难度</th><th>处理</th></tr>
+      <tr><td>×2</td><td>5–6 个</td><td>低</td><td>保底档，高频出现</td></tr>
+      <tr><td>×3 / ×5</td><td>3–4 个</td><td>中</td><td>常规档</td></tr>
+      <tr><td>×8 / ×10</td><td>2 个</td><td>较高</td><td>兴奋点</td></tr>
+      <tr><td>×15 / ×20</td><td>1 个</td><td>高</td><td>稀有档，命中触发全屏庆祝</td></tr>
+    </table>
+    <div class="card"><b>判定逻辑（结果可控）：</b>服务端<strong>先决定本局是否命中及命中哪个亮灯出口</strong>，再据此引导客户端物理落点。具体 RTP/权重由数值文档定义；客户端只负责"看起来自然地"把珠子送到目标出口。未命中任何亮灯出口 → 本局投入弹珠沉没（不返还）。</div>
+    <h3>4.4 再投珠加注（核心特色）</h3>
+    <ul>
+      <li>在"拉杆"前，玩家可<strong>追加投入弹珠</strong>，提高本局命中后的奖励珠基数。</li>
+      <li>加注后，本局有效投入 = 初始投入 + 加注；<strong>奖励珠 = 有效投入 × 倍数</strong>。</li>
+      <li>加注上限与单局投入上限一致（≤99 颗），且受余额约束；加注不额外改变倍数或出口。</li>
+      <li>加注入口需有醒目反馈，是提升单次投入与兴奋感的关键设计位。</li>
+    </ul>
+    <h3>4.5 结算与积分卡</h3>
+    <ul>
+      <li>命中亮灯出口：奖励珠 = 有效投入 × 倍数，入弹珠账本。</li>
+      <li>积分卡产出（参考实体机）：单局命中奖励珠 <strong>≥30 → 1 张；≥60 → 2 张</strong>；以此类推，<strong>每局上限 5 张</strong>。1 张积分卡 = <strong>10 积分</strong>。</li>
+      <li>弹珠（游戏内循环资源）与积分（兑换资产）<strong>单向转换、不可逆流</strong>：只能 珠→命中→积分，积分不能变回珠。</li>
+    </ul>
+    <div class="card amber"><b>数值待定提示：</b>激励视频领珠为 <b>88 颗/次</b>，每日 6 次；每日登录 30 颗。每日免费投入池约 558 颗。RTP 与积分卡门槛需《玩法数值设计文档》仿真校验，确保广告收益覆盖积分成本。</div>
+  </section>
+
+  <section id="s5">
+    <h2 class="sec"><span class="num">5</span>页面与用户流程</h2>
+    <h3>5.1 主要页面</h3>
+    <table>
+      <tr><th style="width:22%">页面</th><th>核心元素</th><th>关键动作</th></tr>
+      <tr><td>启动 / 登录</td><td>授权按钮、隐私协议勾选</td><td>微信/手机号登录</td></tr>
+      <tr><td>大厅</td><td>余额条、开始游戏、每日任务、签到、商城、领珠</td><td>进入游戏/领珠/兑换</td></tr>
+      <tr><td>游戏局内</td><td>钉板、弹簧杆、倍数/亮灯出口、投入/加注输入、拉杆</td><td>投珠→加注→拉杆→结算</td></tr>
+      <tr><td>结算弹窗</td><td>命中结果、奖励珠、积分卡、看视频翻倍按钮</td><td>翻倍/继续/去商城</td></tr>
+      <tr><td>商城</td><td>商品分层、积分价、兑换按钮、订单入口</td><td>浏览/兑换</td></tr>
+      <tr><td>我的 / 订单</td><td>积分明细、订单状态、概率公示入口、设置</td><td>查订单/查概率</td></tr>
+    </table>
+    <h3>5.2 关键流程</h3>
+    <h4>流程 A：一局完整对局</h4>
+    <p class="flow"><span class="step">大厅点开始</span><span class="arrow">→</span><span class="step">设投入/服务端开局</span><span class="arrow">→</span><span class="step">（可选）加注</span><span class="arrow">→</span><span class="step">拉杆</span><span class="arrow">→</span><span class="step">落口结算</span><span class="arrow">→</span><span class="step">（可选）看视频翻倍</span><span class="arrow">→</span><span class="step">回大厅/再来一局</span></p>
+    <h4>流程 B：看视频领珠</h4>
+    <p class="flow"><span class="step">触发（余额低/主动）</span><span class="arrow">→</span><span class="step">播放激励视频</span><span class="arrow">→</span><span class="step">服务端回调验证</span><span class="arrow">→</span><span class="step">发 +88 颗</span><span class="arrow">→</span><span class="step">更新余额</span></p>
+    <h4>流程 C：积分兑换实物</h4>
+    <p class="flow"><span class="step">选商品</span><span class="arrow">→</span><span class="step">风控校验</span><span class="arrow">→</span><span class="step">扣积分(事务)</span><span class="arrow">→</span><span class="step">第三方下单</span><span class="arrow">→</span><span class="step">履约回调</span><span class="arrow">→</span><span class="step">发货/失败退积分</span></p>
+  </section>
+
+  <section id="s6">
+    <h2 class="sec"><span class="num">6</span>广告变现需求</h2>
+    <h3>6.1 广告场景（激励视频为核心）</h3>
+    <table>
+      <tr><th>场景</th><th>触发时机</th><th>奖励</th><th>频控（初始）</th></tr>
+      <tr><td>弹珠续命（领珠）</td><td>余额不足 5 颗或主动领取</td><td>+88 颗</td><td>每日 6 次</td></tr>
+      <tr><td>中奖翻倍</td><td>命中亮灯出口结算时</td><td>本局奖励 ×2</td><td>每局 1 次 / 每日 10 次</td></tr>
+      <tr><td>签到翻倍</td><td>每日签到后</td><td>签到奖励 ×2</td><td>每日 1 次</td></tr>
+      <tr><td>高倍挑战入场</td><td>解锁 ×15/×20 专场</td><td>进入高倍模式 3 局</td><td>每日 3 次</td></tr>
+    </table>
+    <h3>6.2 广告体验原则</h3>
+    <ul>
+      <li>所有广告均为<strong>玩家主动选择换收益</strong>，无强制插屏打断拉杆/结算核心操作。</li>
+      <li>发奖<strong>统一走服务端 server verify 回调</strong>，客户端不信任本地"已看完"状态。</li>
+      <li>单用户单日激励视频总次数封顶（初始 <strong>20 次</strong>）。</li>
+      <li>小游戏端用微信流量主激励视频；App 端用穿山甲/聚合广告；游戏逻辑层不感知具体平台（SDK 隔离封装）。</li>
+    </ul>
+    <h3>6.3 展现与频控</h3>
+    <ul>
+      <li>续命/翻倍入口按钮带"视频"图标与倒计时/次数提示。</li>
+      <li>达到当日次数上限时按钮置灰并提示"明日再来"。</li>
+    </ul>
+    <h3>6.4 埋点（广告漏斗）</h3>
+    <ul>
+      <li>曝光 → 点击播放 → 完播 → 服务端回调成功 → 发奖成功，逐环节埋点（见第 8 节）。</li>
+    </ul>
+    <h3>6.5 经济模型闸门 <span class="badge p0">P0</span></h3>
+    <div class="card warn"><b>不亏损护栏：</b>运营后台实时监控 <code>人均广告观看次数 × eCPM ÷ 人均积分产出成本</code>。比率低于安全阈值（≥1.2）时，自动/人工收紧积分产出（下调 RTP、上调积分卡门槛），保证广告收益覆盖奖品成本。该闸门是产品能否长线盈利的硬约束。</div>
+  </section>
+
+  <section id="s7">
+    <h2 class="sec"><span class="num">7</span>积分商城与实物兑换</h2>
+    <h3>7.1 商品结构</h3>
+    <ul>
+      <li><b>低门槛虚拟类</b>：话费券、视频会员券（拉留存，兑换快）。</li>
+      <li><b>中高门槛实物类</b>：文具、玩具、盲盒、数码周边（第三方代发）。</li>
+    </ul>
+    <h3>7.2 兑换订单状态机</h3>
+    <p class="flow"><span class="step">created</span><span class="arrow">→</span><span class="step">risk_checked</span><span class="arrow">→</span><span class="step">deducted</span><span class="arrow">→</span><span class="step">fulfilling</span><span class="arrow">→</span><span class="step">done / failed→退积分</span></p>
+    <ul>
+      <li>扣积分必须在事务内完成，履约失败需回退积分（幂等 + 补偿）。</li>
+      <li>实物需收货信息；虚拟券直充手机号/账号。</li>
+    </ul>
+    <h3>7.3 关键规则</h3>
+    <ul>
+      <li>兑换限额：单用户每日/每月兑换上限；高价值商品需累计活跃天数门槛。</li>
+      <li>全流程流水可审计，订单与积分变动一一对应。</li>
+      <li>第三方兑奖平台对接：话费券 / 电商卡 / 实物代发，无自有库存压力。</li>
+    </ul>
+    <h3>7.4 商城体验需求</h3>
+    <ul>
+      <li>商品列表按门槛分层、缺货/下架状态清晰；兑换按钮实时显示"积分是否足够"。</li>
+      <li>"我的订单"展示状态与（实物）物流进度。</li>
+    </ul>
+  </section>
+
+  <section id="s8">
+    <h2 class="sec"><span class="num">8</span>数据与埋点需求</h2>
+    <h3>8.1 核心指标</h3>
+    <ul>
+      <li>规模/留存：DAU、次留、7 留。</li>
+      <li>活跃/参与：人均局数、人均拉杆次数。</li>
+      <li>变现：人均激励视频次数、eCPM、广告 ARPU。</li>
+      <li>经济：积分产出成本、兑换率、LTV / CAC。</li>
+    </ul>
+    <h3>8.2 埋点漏斗</h3>
+    <table>
+      <tr><th>漏斗</th><th>环节</th></tr>
+      <tr><td>局内漏斗</td><td>开局 → 加注 → 拉杆 → 结算命中</td></tr>
+      <tr><td>广告漏斗</td><td>曝光 → 点击播放 → 完播 → 回调成功 → 发奖成功</td></tr>
+      <tr><td>兑换漏斗</td><td>浏览商品 → 点击兑换 → 风控通过 → 扣积分 → 履约完成</td></tr>
+    </table>
+    <h3>8.3 运营后台需求（P0）</h3>
+    <ul>
+      <li>RTP 与倍数池配置、弹珠发放配置、商城上下架、订单管理、风控名单、数据看板。</li>
+      <li>经济闸门阈值配置与告警。</li>
+    </ul>
+  </section>
+
+  <section id="s9">
+    <h2 class="sec"><span class="num">9</span>合规与风控需求</h2>
+    <h3>9.1 合规红线（必须满足）</h3>
+    <div class="card warn">
+      <ol>
+        <li><b>弹珠不可现金购买</b>，切断"花钱 → 随机 → 实物"的博彩链路。</li>
+        <li><b>积分与奖品不可逆向兑换成现金</b>。</li>
+        <li><b>概率公示</b>：倍数档位与出现概率在游戏内可查。</li>
+        <li><b>未成年人防沉迷与消费提示</b>。</li>
+        <li>遵守微信小游戏平台关于抽奖类玩法与实物发放的审核规范。</li>
+      </ol>
+    </div>
+    <h3>9.2 风控需求</h3>
+    <ul>
+      <li><b>防刷</b>：设备指纹 + 账号行为画像；广告回调去重；同 IP/同设备多账号限制。</li>
+      <li><b>防外挂</b>：结果服务端判定使物理外挂无效；接口签名 + 时间戳防重放。</li>
+      <li><b>羊毛党</b>：兑换前实名/手机号校验，异常账号进入人工审核队列。</li>
+      <li><b>并发安全</b>：开局锁定投入、结算幂等（同一局多次回调只结算一次）。</li>
+    </ul>
+  </section>
+
+  <section id="s10">
+    <h2 class="sec"><span class="num">10</span>非功能需求</h2>
+    <table>
+      <tr><th style="width:22%">维度</th><th>要求（初始）</th></tr>
+      <tr><td>性能</td><td>小游戏首屏 &lt; 3s；单局结算 &lt; 500ms；服务端 P99 &lt; 200ms</td></tr>
+      <tr><td>并发</td><td>首发支撑 1k 在线、峰值 5k QPS（数值待压测回填）</td></tr>
+      <tr><td>安全</td><td>接口签名/鉴权、敏感操作服务端校验、账本强一致</td></tr>
+      <tr><td>兼容</td><td>微信小游戏基础库最新两代；App iOS 14+ / Android 8+</td></tr>
+      <tr><td>可观测</td><td>接口日志、广告/兑换流水、异常告警</td></tr>
+    </table>
+  </section>
+
+  <section id="s11">
+    <h2 class="sec"><span class="num">11</span>验收标准（P0 首发）</h2>
+    <ul>
+      <li>✅ 微信小游戏可登录、可正常进行完整一局（开局→加注→拉杆→结算）。</li>
+      <li>✅ 倍数与落口由服务端决定，客户端无法伪造中奖结果。</li>
+      <li>✅ 激励视频发奖必须经服务端回调验证，伪造"看完"不发奖。</li>
+      <li>✅ 每日登录赠珠 30 颗、激励视频领珠 88 颗/次（每日 6 次）正常发放与限频。</li>
+      <li>✅ 积分卡规则（30→1 / 60→2，上限 5）、积分账本正确。</li>
+      <li>✅ 商城兑换全流程（风控→扣积分→第三方履约→订单状态）跑通，失败可退积分。</li>
+      <li>✅ 游戏内可查倍数概率公示；未成年提示存在。</li>
+      <li>✅ 经济闸门可配置并触发收紧逻辑。</li>
+      <li>✅ 广告/局内/兑换三大漏斗埋点完整，后台看板可见。</li>
+    </ul>
+  </section>
+
+  <section id="s12">
+    <h2 class="sec"><span class="num">12</span>里程碑与依赖</h2>
+    <table>
+      <tr><th>阶段</th><th>内容</th><th>产出</th></tr>
+      <tr><td>M0 文档期</td><td>七份阶段文档评审定稿</td><td>全套文档</td></tr>
+      <tr><td>M1 核心玩法原型</td><td>拉杆 + 物理钉板 + 落点引导</td><td>可玩 Demo</td></tr>
+      <tr><td>M2 服务端联调</td><td>账号/开局结算/账本/RTP</td><td>联网内测</td></tr>
+      <tr><td>M3 广告与商城</td><td>激励视频 + server verify + 商城 + 兑奖</td><td>功能完整版</td></tr>
+      <tr><td>M4 小游戏首发</td><td>合规审核、灰度、调优 RTP</td><td>微信上线</td></tr>
+      <tr><td>M5 App 二期</td><td>原生打包、聚合广告、跨端账号</td><td>iOS/Android 上架</td></tr>
+    </table>
+    <div class="card"><b>本文档的下游依赖：</b>《玩法数值设计文档》（把第 4.5 节"待定数值"用仿真填满）、《技术架构设计文档》、《服务端 API 设计文档》、《UI-UX 设计文档》、《测试与验收文档》、《上线与运营文档》。</div>
+  </section>
+
+  <footer>弹珠乐园 · 产品需求文档（PRD）v1.0 草稿 · 2026-07-28 · 状态：待产品/技术评审</footer>
+</main>
+</div>
+</body>
+</html>
