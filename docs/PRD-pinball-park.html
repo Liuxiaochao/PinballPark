@@ -262,6 +262,26 @@
     <p class="flow"><span class="step">触发（余额低/主动）</span><span class="arrow">→</span><span class="step">播放激励视频</span><span class="arrow">→</span><span class="step">服务端回调验证</span><span class="arrow">→</span><span class="step">发 +88 颗</span><span class="arrow">→</span><span class="step">更新余额</span></p>
     <h4>流程 C：积分兑换实物</h4>
     <p class="flow"><span class="step">选商品</span><span class="arrow">→</span><span class="step">风控校验</span><span class="arrow">→</span><span class="step">扣积分(事务)</span><span class="arrow">→</span><span class="step">第三方下单</span><span class="arrow">→</span><span class="step">履约回调</span><span class="arrow">→</span><span class="step">发货/失败退积分</span></p>
+    <h3>5.3 核心交互细节（已确认）</h3>
+    <div class="card ok">本节为已确认的核心交互决策，作为客户端交互实现基线；视觉风格（配色 / 动效 / 美术）留待《UI-UX 设计文档》。</div>
+    <h4>拉杆操作（触屏优化）</h4>
+    <ul>
+      <li>交互：<b>按压蓄力、松手发射、支持取消</b>。玩家按住屏上"弹簧杆"按钮，蓄力环 / 条实时填充；松手即发射。</li>
+      <li>取消：蓄力过程中<b>将手指移出按钮命中区（或拖入取消区）后松手</b>，视为取消——不发射、不扣弹珠、回到待发射状态。</li>
+      <li>手感边界：蓄力仅影响发射演出（力度在区间内抖动），<b>不改变后端已定落点</b>；取消不消耗任何资源。</li>
+    </ul>
+    <h4>再投珠加注入口</h4>
+    <ul>
+      <li><b>常驻醒目按钮</b>：拉杆前始终显示"再投珠加注"（弹珠图标 + 实时"预计奖励"），强化核心特色与转化。</li>
+      <li>点开输入追加量，受余额与单局上限（≤99）约束；有效投入与"预计奖励 = 有效投入 × 倍数"实时刷新。</li>
+    </ul>
+    <h4>各界面交互基线（对应 5.1 / 5.2）</h4>
+    <ul>
+      <li><b>大厅</b>：顶部常驻"弹珠 / 积分"余额条；主按钮"开始游戏"进投珠面板；面板默认 5 颗，滑块 / ± 设 5–99，"最大"快捷，实时显示"命中预计得珠"。</li>
+      <li><b>结算弹窗</b>：命中→全屏庆祝 + 得珠 / 积分卡，主按钮"再来一局"、次按钮"看视频 ×2"（限频）、"去商城"；未命中→温和"差一点"，余额低时给"看视频续命"。</li>
+      <li><b>广告触发</b>：续命（余额 &lt;5 或主动领珠）"看视频领 88 颗"；翻倍（命中结算时）"看视频 ×2"；均走服务端回调发奖。</li>
+      <li><b>商城 / 兑换</b>：分层标签（虚拟 / 实物），商品卡显示积分价与"是否够兑"；兑换 → 风控 → 扣积分 → 下单 → 订单状态。</li>
+    </ul>
   </section>
 
   <section id="s6">
