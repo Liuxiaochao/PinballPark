@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>弹珠乐园 · 功能框架文档大纲</title>
+<style>
+  :root {
+    --blue: #185FA5; --blue-l: #E6F1FB; --blue-d: #0C447C;
+    --teal: #0F6E56; --teal-l: #E1F5EE;
+    --amber: #854F0B; --amber-l: #FAEEDA;
+    --red: #A32D2D; --red-l: #FCEBEB;
+    --purple: #534AB7; --purple-l: #EEEDFE;
+    --text: #2C2C2A; --muted: #5F5E5A; --border: #E3E1D9; --bg: #FAFAF7;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; color: var(--text); background: var(--bg); line-height: 1.7; }
+  .layout { display: flex; max-width: 1200px; margin: 0 auto; }
+  nav { width: 220px; flex-shrink: 0; position: sticky; top: 0; height: 100vh; overflow-y: auto; padding: 32px 16px; border-right: 1px solid var(--border); background: #fff; }
+  nav h2 { font-size: 13px; color: var(--muted); font-weight: 500; margin-bottom: 12px; letter-spacing: 1px; }
+  nav a { display: block; padding: 6px 10px; font-size: 13px; color: var(--text); text-decoration: none; border-radius: 6px; margin-bottom: 2px; }
+  nav a:hover { background: var(--blue-l); color: var(--blue); }
+  main { flex: 1; padding: 40px 48px 80px; min-width: 0; }
+  h1 { font-size: 26px; font-weight: 600; margin-bottom: 8px; }
+  .subtitle { color: var(--muted); font-size: 14px; margin-bottom: 24px; }
+  .meta { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 32px; }
+  .tag { font-size: 12px; padding: 3px 10px; border-radius: 999px; background: var(--blue-l); color: var(--blue-d); }
+  section { margin-bottom: 48px; }
+  h2.sec { font-size: 20px; font-weight: 600; padding-bottom: 8px; border-bottom: 2px solid var(--blue); margin-bottom: 16px; }
+  h2.sec .num { color: var(--blue); margin-right: 8px; }
+  h3 { font-size: 15px; font-weight: 600; margin: 20px 0 8px; }
+  p { margin-bottom: 10px; font-size: 14px; }
+  ul, ol { margin: 0 0 12px 22px; font-size: 14px; }
+  li { margin-bottom: 4px; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0 16px; font-size: 13px; background: #fff; }
+  th { background: var(--blue-l); color: var(--blue-d); font-weight: 600; text-align: left; padding: 8px 12px; border: 1px solid var(--border); }
+  td { padding: 8px 12px; border: 1px solid var(--border); vertical-align: top; }
+  .card { background: #fff; border: 1px solid var(--border); border-left: 4px solid var(--blue); border-radius: 8px; padding: 14px 18px; margin: 12px 0; font-size: 14px; }
+  .card.warn { border-left-color: var(--red); background: var(--red-l); }
+  .card.ok { border-left-color: var(--teal); background: var(--teal-l); }
+  .card.amber { border-left-color: #BA7517; background: var(--amber-l); }
+  .card b { font-weight: 600; }
+  .flow { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 12px 0; }
+  .step { background: var(--blue-l); color: var(--blue-d); border: 1px solid #B5D4F4; border-radius: 8px; padding: 8px 12px; font-size: 13px; text-align: center; }
+  .step.hl { background: var(--purple-l); color: var(--purple); border-color: #CECBF6; }
+  .arrow { color: var(--muted); font-size: 14px; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media (max-width: 900px) { nav { display: none; } .grid2 { grid-template-columns: 1fr; } main { padding: 24px; } }
+  .badge { display: inline-block; font-size: 11px; padding: 1px 8px; border-radius: 999px; margin-left: 6px; vertical-align: middle; }
+  .badge.done { background: var(--teal-l); color: var(--teal); }
+  .badge.todo { background: var(--amber-l); color: var(--amber); }
+  code { background: #F1EFE8; padding: 1px 6px; border-radius: 4px; font-size: 12.5px; font-family: "SF Mono", Menlo, monospace; }
+  footer { color: var(--muted); font-size: 12px; border-top: 1px solid var(--border); padding-top: 16px; }
+</style>
+</head>
+<body>
+<div class="layout">
+<nav>
+  <h2>目录</h2>
+  <a href="#s0">0. 项目概览与决策</a>
+  <a href="#s1">1. 总体架构 ✓</a>
+  <a href="#s2">2. 核心玩法与数值</a>
+  <a href="#s3">3. 广告变现设计</a>
+  <a href="#s4">4. 积分与实物兑换</a>
+  <a href="#s5">5. 合规与风控</a>
+  <a href="#s6">6. 数据与运营</a>
+  <a href="#s7">7. 阶段文档规划</a>
+  <a href="#s8">8. 里程碑</a>
+</nav>
+<main>
+  <h1>弹珠乐园 · 功能框架文档大纲</h1>
+  <p class="subtitle">对标实体"弹珠乐园"游戏机的线上多端休闲游戏 —— 功能框架阶段总纲（v0.1 · 2026-07-28）</p>
+  <div class="meta">
+    <span class="tag">微信小游戏优先</span><span class="tag">Cocos Creator 3.x</span><span class="tag">自建后端 Node.js</span><span class="tag">纯免费 + 激励视频</span><span class="tag">积分兑实物</span>
+  </div>
+
+  <section id="s0">
+    <h2 class="sec"><span class="num">0</span>项目概览与已确认决策</h2>
+    <p>参考实体游戏机"弹珠乐园"的核心体验：投珠开局 → 随机倍数与亮灯出口 → 拉杆弹射 → 钉板碰撞 → 落入出口结算奖励珠 → 累积积分兑换实物。线上化后以广告变现替代投币收入。</p>
+    <table>
+      <tr><th style="width:160px">维度</th><th>决策</th><th style="width:80px">状态</th></tr>
+      <tr><td>目标平台</td><td>多端：微信小游戏首发，iOS/Android App 二期，H5 可选</td><td><span class="badge done">已确认</span></td></tr>
+      <tr><td>商业模式</td><td>纯免费，激励视频广告驱动，<b>不可付费买珠</b></td><td><span class="badge done">已确认</span></td></tr>
+      <tr><td>核心机制</td><td>物理为表、结果可控：服务端按 RTP 判定结果，客户端物理演出</td><td><span class="badge done">已确认</span></td></tr>
+      <tr><td>实物履约</td><td>对接第三方兑奖平台（话费券 / 电商卡 / 实物代发）</td><td><span class="badge done">已确认</span></td></tr>
+      <tr><td>技术路线</td><td>Cocos Creator + 自建后端（NestJS + MySQL + Redis）</td><td><span class="badge done">已确认</span></td></tr>
+      <tr><td>文档交付</td><td>全套七份阶段文档（见第 7 节）</td><td><span class="badge done">已确认</span></td></tr>
+    </table>
+  </section>
+
+  <section id="s1">
+    <h2 class="sec"><span class="num">1</span>总体架构 <span class="badge done">已确认</span></h2>
+    <h3>1.1 分层结构</h3>
+    <ul>
+      <li><b>客户端（Cocos Creator 3.x，一套代码）</b>：微信小游戏（微信登录 + 微信流量主广告）、iOS/Android App（手机号登录 + 穿山甲/聚合广告）、H5（分享传播）。广告 SDK 按端隔离封装，游戏逻辑层不感知具体广告平台。</li>
+      <li><b>后端（Node.js / NestJS 单体分模块）</b>：账号服务（跨端统一账号）、游戏结果服务（RTP 判定 · 倍数出口抽取）、资产账本服务（弹珠 · 积分流水）、兑换服务（商城 · 订单履约）、广告回调服务（服务端验证发奖）、风控服务（防刷 · 限额 · 黑名单）、运营后台（数值配置 · 数据看板）。</li>
+      <li><b>存储</b>：MySQL（账本、订单、流水），Redis（会话、限流、每日计数）。</li>
+      <li><b>第三方</b>：广告平台（微信流量主、穿山甲）、第三方兑奖平台、数据埋点统计。</li>
+    </ul>
+    <h3>1.2 两条铁律</h3>
+    <div class="card warn"><b>铁律一：所有价值判定在服务端。</b>投珠开局、倍数与出口抽取、命中判定、奖励发放、积分入账全部由服务端决定并落库；客户端仅做物理演出（收到结果后引导弹珠落入目标出口）。</div>
+    <div class="card warn"><b>铁律二：激励视频发奖必须走服务端回调验证</b>（微信 / 穿山甲均支持 server verify），杜绝客户端伪造"已看完广告"。</div>
+  </section>
+
+  <section id="s2">
+    <h2 class="sec"><span class="num">2</span>核心玩法与数值机制 <span class="badge todo">待确认</span></h2>
+    <h3>2.1 单局流程</h3>
+    <div class="flow">
+      <div class="step">投入 5–99 颗弹珠<br>开始一局</div><span class="arrow">→</span>
+      <div class="step">服务端随机刷新<br>倍数 + 亮灯出口</div><span class="arrow">→</span>
+      <div class="step hl">可选：再投珠加注<br>（发射前追加投入）</div><span class="arrow">→</span>
+      <div class="step">拉动弹簧杆<br>弹射游戏钢珠</div><span class="arrow">→</span>
+      <div class="step">钉板碰撞区<br>物理演出</div><span class="arrow">→</span>
+      <div class="step">落入出口结算<br>奖励珠 = 投入 × 倍数</div>
+    </div>
+    <h3>2.2 倍数与出口设计（12 出口方案）</h3>
+    <table>
+      <tr><th>倍数档</th><th>亮灯出口数 / 12</th><th>直观难度</th><th>说明</th></tr>
+      <tr><td>×2</td><td>5–6 个</td><td>低</td><td>保底体验档，高频出现</td></tr>
+      <tr><td>×3 / ×5</td><td>3–4 个</td><td>中</td><td>常规档</td></tr>
+      <tr><td>×8 / ×10</td><td>2 个</td><td>较高</td><td>兴奋点</td></tr>
+      <tr><td>×15 / ×20</td><td>1 个</td><td>高</td><td>稀有档，命中触发全屏庆祝</td></tr>
+    </table>
+    <p>每局开始由服务端从倍数池加权抽取当局倍数并确定亮灯出口集合；未命中亮灯出口则本局投入弹珠沉没。</p>
+    <h3>2.3 RTP（返奖率）模型</h3>
+    <ul>
+      <li>目标综合 RTP：<b>85%–95%</b>，运营后台可配；数值以"广告收益 ≥ 奖励成本 × 安全系数"为约束反推。</li>
+      <li><b>新手保护期</b>：新用户前 N 局提高 RTP（先赢体验），随后回归常态曲线（参考实体机"先赢后输"，但避免过度诱导，需配合合规提示）。</li>
+      <li>服务端按玩家个人盈亏池 + 全局池双重控制，防止个体极端偏差。</li>
+    </ul>
+    <h3>2.4 弹珠获取（纯免费）</h3>
+    <table>
+      <tr><th>途径</th><th>数量（初始值）</th><th>限制</th></tr>
+      <tr><td>每日登录赠珠</td><td>30 颗</td><td>每日 1 次</td></tr>
+      <tr><td>激励视频领珠</td><td>20 颗 / 次</td><td>每日 6 次</td></tr>
+      <tr><td>连续签到 / 任务</td><td>阶梯奖励</td><td>7 日循环</td></tr>
+      <tr><td>命中奖励</td><td>投入 × 倍数</td><td>—</td></tr>
+    </table>
+    <h3>2.5 积分产出（参考实体机积分卡规则）</h3>
+    <ul>
+      <li>单局命中奖励珠 ≥ 30 颗 → 1 张积分卡；≥ 60 颗 → 2 张；以此类推，<b>每局上限 5 张</b>。</li>
+      <li>1 张积分卡 = 固定积分值（如 10 分），积分只增不减（兑换时扣除）。</li>
+      <li>弹珠是"游戏内循环资源"，积分是"兑换资产"，两者单向转换、不可逆流。</li>
+    </ul>
+  </section>
+
+  <section id="s3">
+    <h2 class="sec"><span class="num">3</span>广告变现设计（激励视频为核心） <span class="badge todo">待确认</span></h2>
+    <table>
+      <tr><th>广告场景</th><th>触发时机</th><th>奖励</th><th>频控</th></tr>
+      <tr><td>弹珠续命</td><td>弹珠余额不足 5 颗</td><td>+20 颗</td><td>每日 6 次</td></tr>
+      <tr><td>中奖翻倍</td><td>命中亮灯出口结算时</td><td>本局奖励 ×2</td><td>每局 1 次 / 每日 10 次</td></tr>
+      <tr><td>签到翻倍</td><td>每日签到后</td><td>签到奖励 ×2</td><td>每日 1 次</td></tr>
+      <tr><td>高倍挑战入场</td><td>解锁 ×15/×20 专场</td><td>进入高倍模式 3 局</td><td>每日 3 次</td></tr>
+    </table>
+    <div class="card ok"><b>体验原则：</b>广告全部为"玩家主动选择换收益"，无强制插屏打断核心操作；发奖统一走服务端 server verify 回调；单用户单日激励视频总次数封顶（初始 20 次）。</div>
+    <div class="card amber"><b>经济模型闸门：</b>运营后台实时监控 人均广告观看次数 × eCPM ÷ 人均积分产出成本，比率低于安全阈值时自动收紧积分产出（降低 RTP / 积分卡门槛上调），保证不亏损。</div>
+  </section>
+
+  <section id="s4">
+    <h2 class="sec"><span class="num">4</span>积分商城与实物兑换 <span class="badge todo">待确认</span></h2>
+    <h3>4.1 商品结构</h3>
+    <ul>
+      <li><b>低门槛虚拟类</b>：话费券、视频会员券（拉留存，兑换快）。</li>
+      <li><b>中高门槛实物类</b>：文具、玩具、盲盒、数码周边（第三方代发）。</li>
+    </ul>
+    <h3>4.2 兑换订单流程</h3>
+    <div class="flow">
+      <div class="step">玩家发起兑换</div><span class="arrow">→</span>
+      <div class="step">风控校验<br>限额 / 黑名单 / 实名</div><span class="arrow">→</span>
+      <div class="step">扣积分（事务落库）</div><span class="arrow">→</span>
+      <div class="step">调第三方 API<br>下单履约</div><span class="arrow">→</span>
+      <div class="step">状态回调<br>发货 / 失败退积分</div>
+    </div>
+    <h3>4.3 关键规则</h3>
+    <ul>
+      <li>兑换限额：单用户每日 / 每月兑换上限；高价值商品需累计活跃天数门槛。</li>
+      <li>订单状态机：<code>created → risk_checked → deducted → fulfilling → done / failed(退积分)</code>，全流程流水可审计。</li>
+      <li>实物兑换需收货信息；虚拟券直充手机号 / 账号。</li>
+    </ul>
+  </section>
+
+  <section id="s5">
+    <h2 class="sec"><span class="num">5</span>合规与风控要点 <span class="badge todo">待确认</span></h2>
+    <div class="card warn"><b>合规红线：</b>① 弹珠不可用现金购买，切断"花钱 → 随机 → 实物"的博彩链路；② 积分与奖品不可逆向兑换成现金；③ 概率公示（倍数档位与出现概率在游戏内可查）；④ 未成年人防沉迷与消费提示；⑤ 遵守微信小游戏平台关于抽奖类玩法与实物发放的审核规范。</div>
+    <ul>
+      <li><b>防刷</b>：设备指纹 + 账号行为画像；广告回调去重；同 IP / 同设备多账号限制。</li>
+      <li><b>防外挂</b>：结果服务端判定使物理外挂无效；接口签名 + 时间戳防重放。</li>
+      <li><b>羊毛党</b>：兑换前实名 / 手机号校验，异常账号进入人工审核队列。</li>
+    </ul>
+  </section>
+
+  <section id="s6">
+    <h2 class="sec"><span class="num">6</span>数据与运营 <span class="badge todo">待确认</span></h2>
+    <ul>
+      <li><b>核心指标</b>：DAU / 次留 / 7 留、人均局数、人均激励视频次数、eCPM、ARPU（广告）、积分产出成本、兑换率、LTV/CAC。</li>
+      <li><b>运营后台能力</b>：RTP 与倍数池配置、弹珠发放配置、商城上下架、订单管理、风控名单、数据看板。</li>
+      <li><b>埋点</b>：局内漏斗（开局 → 加注 → 发射 → 结算）、广告漏斗（曝光 → 完播 → 发奖）、兑换漏斗。</li>
+    </ul>
+  </section>
+
+  <section id="s7">
+    <h2 class="sec"><span class="num">7</span>开发阶段文档规划（全套七份）</h2>
+    <table>
+      <tr><th style="width:36px">#</th><th>文档</th><th>核心内容</th><th>依赖</th></tr>
+      <tr><td>1</td><td><b>产品需求文档（PRD）</b></td><td>用户画像、功能清单、页面流程、玩法规则、广告与商城需求、验收标准</td><td>本大纲</td></tr>
+      <tr><td>2</td><td><b>玩法数值设计文档</b></td><td>RTP 模型与公式、倍数池权重表、弹珠经济循环、积分产出曲线、经济模型压力测试表</td><td>PRD</td></tr>
+      <tr><td>3</td><td><b>技术架构设计文档</b></td><td>客户端架构（场景 / 物理 / 广告适配层）、后端模块划分、数据库 ER 设计、部署拓扑</td><td>PRD</td></tr>
+      <tr><td>4</td><td><b>服务端 API 设计文档</b></td><td>接口清单（登录 / 开局 / 结算 / 广告回调 / 兑换）、鉴权与签名、错误码、幂等设计</td><td>架构文档</td></tr>
+      <tr><td>5</td><td><b>UI/UX 设计文档</b></td><td>视觉风格、页面原型（大厅 / 游戏 / 商城 / 我的）、动效与音效清单、多端适配规范</td><td>PRD</td></tr>
+      <tr><td>6</td><td><b>测试与验收文档</b></td><td>功能用例、数值仿真验证（RTP 蒙特卡洛模拟）、广告回调测试、压测方案、安全测试</td><td>2 / 3 / 4</td></tr>
+      <tr><td>7</td><td><b>上线与运营文档</b></td><td>平台审核准备清单、灰度发布计划、监控告警、运营活动日历、应急预案</td><td>全部</td></tr>
+    </table>
+  </section>
+
+  <section id="s8">
+    <h2 class="sec"><span class="num">8</span>里程碑（建议）</h2>
+    <table>
+      <tr><th>阶段</th><th>内容</th><th>产出</th></tr>
+      <tr><td>M0 文档期</td><td>完成七份阶段文档并评审</td><td>全套文档定稿</td></tr>
+      <tr><td>M1 核心玩法原型</td><td>单机版：拉杆 + 物理钉板 + 结果引导落点验证</td><td>可玩 Demo（手感验证）</td></tr>
+      <tr><td>M2 服务端联调</td><td>账号 / 开局结算 / 账本 / RTP 控制</td><td>联网版内测包</td></tr>
+      <tr><td>M3 广告与商城</td><td>激励视频接入 + server verify + 积分商城 + 第三方兑奖</td><td>功能完整版</td></tr>
+      <tr><td>M4 小游戏首发</td><td>合规审核、灰度上线、数据回收调优 RTP</td><td>微信小游戏上线</td></tr>
+      <tr><td>M5 App 二期</td><td>原生打包、聚合广告、跨端账号打通</td><td>iOS/Android 上架</td></tr>
+    </table>
+  </section>
+
+  <footer>弹珠乐园 · 功能框架文档大纲 v0.1 · 2026-07-28 · 状态：第 1 节已确认，第 2–6 节待逐节评审</footer>
+</main>
+</div>
+</body>
+</html>
