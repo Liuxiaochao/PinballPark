@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>弹珠乐园 · 机台视觉稿（透视倾斜 30° + 老虎机质感）</title>
+<title>弹珠乐园 · 机台视觉稿（透视倾斜 30° + 红 LED 跑马灯）</title>
 <style>
   :root{
     --gold:#F5C518; --gold-2:#E8B339; --gold-deep:#9A6B12;
@@ -11,6 +11,9 @@
     --neon-cyan:#39E0FF; --neon-mag:#FF4FD8; --lit:#FFD66B;
     --sink:#22304d; --good:#0F9D58; --bad:#E5484D;
     --ink:#eaf2ff;
+    /* 红色机械数字 LED 跑马灯 */
+    --led:#ff3b30; --led-soft:#ff6b63; --led-deep:#7a0c08;
+    --led-bg:#0c0404; --led-border:#5e1010;
   }
   *{box-sizing:border-box;}
   body{
@@ -36,26 +39,31 @@
       inset 0 2px 0 rgba(255,255,255,.12),
       inset 0 -10px 30px rgba(0,0,0,.5);
   }
-  /* 顶部跑马灯招牌 */
+
+  /* ===== 顶部红色 LED 跑马灯招牌 ===== */
   .marquee{
     position:relative; border-radius:16px; padding:14px 18px; margin-bottom:14px;
-    background:linear-gradient(180deg,#1c0f2e,#0e0820);
-    border:1px solid #3a2a5e;
-    box-shadow:inset 0 0 22px rgba(255,79,216,.25), inset 0 0 4px rgba(57,224,255,.4);
+    background:
+      radial-gradient(120% 140% at 50% 0%, #1a0606 0%, var(--led-bg) 70%);
+    border:1px solid var(--led-border);
+    box-shadow:inset 0 0 22px rgba(255,59,48,.22), inset 0 0 4px rgba(255,59,48,.4),
+               0 0 14px rgba(255,59,48,.18);
     text-align:center;
   }
   .marquee .title{
-    font-size:24px; font-weight:900; letter-spacing:4px;
-    background:linear-gradient(90deg,var(--neon-cyan),#fff,var(--neon-mag));
-    -webkit-background-clip:text; background-clip:text; color:transparent;
-    text-shadow:0 0 18px rgba(57,224,255,.35);
+    font-family:"Courier New",ui-monospace,monospace;
+    font-size:26px; font-weight:900; letter-spacing:6px;
+    color:var(--led);
+    text-shadow:0 0 8px var(--led), 0 0 18px rgba(255,59,48,.6);
   }
-  .marquee .sub2{font-size:10px; letter-spacing:6px; color:#9fb6d8; margin-top:3px;}
+  .marquee .sub2{font-family:"Courier New",ui-monospace,monospace;
+    font-size:11px; letter-spacing:8px; color:var(--led-soft); margin-top:4px;
+    text-shadow:0 0 6px rgba(255,59,48,.5);}
   .bulbs{position:absolute; inset:6px; border-radius:12px; pointer-events:none;}
   .bulb{position:absolute; width:7px; height:7px; border-radius:50%;
-    background:var(--gold); box-shadow:0 0 8px 2px var(--gold);
-    animation:chase 1.4s linear infinite;}
-  @keyframes chase{0%,100%{opacity:1}50%{opacity:.25}}
+    background:var(--led); box-shadow:0 0 8px 2px var(--led);
+    animation:chase 1.2s linear infinite;}
+  @keyframes chase{0%,100%{opacity:1}50%{opacity:.2}}
 
   /* ===== 屏幕透视区 ===== */
   .screen{
@@ -65,20 +73,20 @@
     border:1px solid #20406f;
     box-shadow:inset 0 0 40px rgba(0,0,0,.7), inset 0 0 0 2px rgba(57,224,255,.06);
   }
-  /* 机柜内框（填充倾斜造成的四周空隙：侧灯柱 + 顶部条幅） */
+  /* 机柜内框（填充倾斜造成的四周空隙：侧 LED 柱 + 顶部条幅） */
   .bezel{position:absolute; inset:0; z-index:0; overflow:hidden; border-radius:14px;
     background:radial-gradient(120% 80% at 50% 0%, #16294a 0%, #0a1424 60%, #05090f 100%);
     border:1px solid #2a4f86; box-shadow:inset 0 0 50px rgba(0,0,0,.7);}
   .bezel .rail{position:absolute; top:10px; bottom:10px; width:7px; border-radius:4px;
-    background:repeating-linear-gradient(0deg, var(--gold) 0 5px, transparent 5px 16px);
-    box-shadow:0 0 8px rgba(245,197,24,.55); animation:railmove 1.1s linear infinite;}
+    background:repeating-linear-gradient(0deg, var(--led) 0 5px, transparent 5px 16px);
+    box-shadow:0 0 8px rgba(255,59,48,.5); animation:railmove 1.1s linear infinite;}
   .bezel .rail.left{left:7px;} .bezel .rail.right{right:7px;}
   @keyframes railmove{to{background-position:0 21px;}}
-  .bezel .top-banner{position:absolute; top:7px; left:26px; right:26px; height:24px;
+  .bezel .top-banner{position:absolute; top:7px; left:26px; right:26px; height:22px;
     display:flex; align-items:center; justify-content:center; gap:12px;
-    font-size:12px; font-weight:800; letter-spacing:4px; color:var(--gold);
-    text-shadow:0 0 8px rgba(245,197,24,.5); pointer-events:none;}
-  .bezel .top-banner .star{color:var(--neon-cyan); text-shadow:0 0 8px var(--neon-cyan);}
+    font-family:"Courier New",ui-monospace,monospace;
+    font-size:12px; font-weight:800; letter-spacing:4px; color:var(--led);
+    text-shadow:0 0 8px rgba(255,59,48,.5); pointer-events:none;}
 
   /* 板面：向后仰 30° 的真实透视倾斜 */
   .board{
@@ -92,25 +100,23 @@
     box-shadow:inset 0 0 30px rgba(0,0,0,.6);
     transition:transform .5s ease;
   }
-  /* 平面旋转（旧方案，演示对比用） */
   .screen.flat .board{ transform:rotate(30deg); }
+  .board::after{content:""; position:absolute; inset:0; border-radius:14px;
+    background:linear-gradient(115deg, rgba(255,255,255,.05), transparent 40%);
+    pointer-events:none;}
 
   /* 钉阵 */
-  .field{position:absolute; inset:40px 70px 160px 24px; display:flex; flex-direction:column;
-    justify-content:space-between; z-index:2;}
+  .field{position:absolute; top:28px; left:24px; right:70px; bottom:248px;
+    display:flex; flex-direction:column; justify-content:space-between; z-index:2;}
   .row{display:flex; justify-content:space-around;}
   .row.offset{padding-left:26px; padding-right:0;}
   .peg{width:15px; height:15px; border-radius:50%;
     background:radial-gradient(circle at 35% 30%, #fff6cf, var(--gold) 45%, var(--gold-deep) 100%);
     box-shadow:0 1px 2px rgba(0,0,0,.55), 0 0 6px rgba(245,197,24,.35);
     flex:0 0 auto;}
-  /* 钉子在倾斜板上的投影感 */
-  .board::after{content:""; position:absolute; inset:0; border-radius:14px;
-    background:linear-gradient(115deg, rgba(255,255,255,.05), transparent 40%);
-    pointer-events:none;}
 
   /* 弹射发射道（右侧竖向通道，球由此弹起至钉板顶端） */
-  .lane{position:absolute; right:14px; top:16px; bottom:70px; width:22px; border-radius:11px;
+  .lane{position:absolute; right:14px; top:16px; bottom:64px; width:22px; border-radius:11px;
     background:linear-gradient(90deg,#0a1626,#16263f 50%,#0a1626);
     border:1px solid #2b4a78; box-shadow:inset 0 0 10px rgba(0,0,0,.75); z-index:1;}
   .lane::before{content:""; position:absolute; top:-8px; left:-24px; width:46px; height:18px;
@@ -119,9 +125,24 @@
   .lane::after{content:""; position:absolute; top:-2px; left:-10px; width:18px; height:8px;
     border-radius:4px; background:var(--lit); box-shadow:0 0 10px 2px var(--lit); opacity:.85;}
 
-  /* 底部出口 */
-  .exits{position:absolute; left:18px; right:18px; bottom:54px; height:54px;
-    display:flex; gap:8px; justify-content:center; align-items:flex-end;}
+  /* 倍率表（完整倍率，红 LED，位于出珠口上方、板内） */
+  .paytable{position:absolute; left:18px; right:48px; top:282px; height:64px; z-index:3;
+    background:var(--led-bg); border:1px solid var(--led-border); border-radius:8px;
+    padding:5px 8px; box-shadow:inset 0 0 12px rgba(255,59,48,.22), 0 0 8px rgba(255,59,48,.15);}
+  .paytable .pt-title{font-family:"Courier New",ui-monospace,monospace;
+    font-size:9px; letter-spacing:3px; color:var(--led-soft); margin-bottom:3px;
+    text-shadow:0 0 5px rgba(255,59,48,.5);}
+  .paytable .pt-grid{display:flex; flex-wrap:wrap; gap:4px 6px;}
+  .led{font-family:"Courier New",ui-monospace,monospace; font-size:12px; font-weight:800;
+    color:var(--led); padding:1px 5px; border-radius:4px;
+    border:1px solid transparent;
+    text-shadow:0 0 6px rgba(255,59,48,.8), 0 0 12px rgba(255,59,48,.35);}
+  .led.on{color:#fff; background:rgba(255,59,48,.18); border-color:var(--led);
+    box-shadow:0 0 8px rgba(255,59,48,.6);}
+
+  /* 底部亮灯出口 */
+  .exits{position:absolute; left:18px; right:48px; top:360px; height:46px;
+    display:flex; gap:6px; justify-content:center; align-items:flex-end;}
   .exit{width:34px; height:30px; border-radius:6px 6px 4px 4px;
     background:linear-gradient(180deg,#16263f,#0c1828); border:1px solid #2b4a78;
     position:relative; box-shadow:inset 0 4px 8px rgba(0,0,0,.6);}
@@ -144,12 +165,11 @@
     background:radial-gradient(circle at 34% 30%, #ffffff, #d9b14a 40%, #8a5e12 100%);
     box-shadow:0 2px 4px rgba(0,0,0,.5), 0 0 8px rgba(245,197,24,.4);
     animation:launch-fall 3s cubic-bezier(.45,0,.55,1) infinite;}
-  /* 弹射轨道：自右侧发射道底部弹起 → 升至顶端 → 转入钉板顶部 → 穿钉下落 */
   @keyframes launch-fall{
     0%   {transform:translate(308px,450px)}
-    18%  {transform:translate(308px,22px)}    /* 沿发射道弹射到顶 */
-    24%  {transform:translate(300px,22px)}    /* 顶端短暂停顿 */
-    32%  {transform:translate(250px,70px)}    /* 转入钉板右上 */
+    18%  {transform:translate(308px,22px)}
+    24%  {transform:translate(300px,22px)}
+    32%  {transform:translate(250px,70px)}
     46%  {transform:translate(205px,150px)}
     60%  {transform:translate(150px,230px)}
     74%  {transform:translate(110px,310px)}
@@ -163,56 +183,56 @@
     background:radial-gradient(circle at 35% 30%,#fff,#c7d3e6 50%,#5a6f90);
     box-shadow:0 2px 5px rgba(0,0,0,.6), 0 0 8px rgba(57,224,255,.25);}
 
-  /* 出珠盒子（屏幕底部托盘） */
-  .tray{position:absolute; left:24px; right:24px; bottom:12px; height:40px;
+  /* 出珠盒子（屏幕底部托盘，位于板内最下方，避开发射道） */
+  .tray{position:absolute; left:18px; right:48px; top:424px; height:84px;
     border-radius:8px 8px 10px 10px;
     background:linear-gradient(180deg, rgba(57,224,255,.06), rgba(57,224,255,.02));
     border:1px solid #2c4f82; overflow:hidden;
-    box-shadow:inset 0 6px 14px rgba(0,0,0,.55);}
+    box-shadow:inset 0 6px 14px rgba(0,0,0,.55); z-index:2;}
   .tray .tball{position:absolute; bottom:6px; width:9px; height:9px; border-radius:50%;
     background:radial-gradient(circle at 35% 30%,#fff,#d9b14a 45%,#8a5e12);
     box-shadow:0 1px 2px rgba(0,0,0,.5);}
-  .tray .cnt{position:absolute; right:8px; top:50%; transform:translateY(-50%);
-    font-size:11px; color:var(--neon-cyan); font-weight:700;
-    background:rgba(7,16,31,.7); border:1px solid #2c4f82; border-radius:8px; padding:2px 6px;}
+  .tray .cnt{position:absolute; right:8px; top:8px;
+    font-family:"Courier New",ui-monospace,monospace; font-size:11px; font-weight:800;
+    color:var(--led); padding:2px 6px; border-radius:6px;
+    background:var(--led-bg); border:1px solid var(--led-border);
+    text-shadow:0 0 6px rgba(255,59,48,.8);}
 
-  /* ===== HUD（不随板倾斜，屏幕正向独立图层） ===== */
-  .hud{position:absolute; inset:0; pointer-events:none;}
-  .hud-top{position:absolute; top:10px; left:12px; right:12px; display:flex;
+  /* ===== HUD（屏幕正向独立图层，置于顶部条幅下方、板面上方） ===== */
+  .hud{position:absolute; inset:0; pointer-events:none; z-index:4;}
+  .hud-top{position:absolute; top:36px; left:18px; right:18px; display:flex;
     justify-content:space-between; align-items:flex-start;}
-  .chip{position:relative; background:rgba(7,16,31,.82); border:1px solid #2c4f82; border-radius:10px;
-    padding:6px 10px; font-size:12px; font-weight:700; backdrop-filter:blur(4px);
-    box-shadow:0 2px 8px rgba(0,0,0,.4);}
-  .chip .lbl{font-size:9px; opacity:.6; font-weight:500; display:block;}
-  .chip.gold{color:var(--gold); border-color:rgba(245,197,24,.5);}
-  /* 倍率：移入倾斜 board 内、出珠口上方 */
-  .mult{position:absolute; left:50%; transform:translateX(-50%); bottom:112px; z-index:3;
-    background:linear-gradient(180deg,#3a2c08,#7a5a10); color:var(--lit);
-    border:1px solid var(--lit); border-radius:14px; padding:6px 18px;
-    font-size:22px; font-weight:900; box-shadow:0 0 18px rgba(255,214,107,.6);}
-  /* 数字框跑马灯边框（旋转彩环） */
+  .chip{position:relative; background:var(--led-bg); border:1px solid var(--led-border);
+    border-radius:10px; padding:6px 10px; min-width:84px;
+    font-family:"Courier New",ui-monospace,monospace;
+    box-shadow:inset 0 0 10px rgba(255,59,48,.22), 0 2px 8px rgba(0,0,0,.45);}
+  .chip .lbl{font-size:9px; letter-spacing:1px; color:var(--led-soft); display:block;
+    text-shadow:0 0 5px rgba(255,59,48,.4);}
+  .chip .val{font-size:13px; font-weight:800; color:var(--led);
+    text-shadow:0 0 7px rgba(255,59,48,.85), 0 0 13px rgba(255,59,48,.35);}
+
+  /* 红色跑马灯环（替换原彩色环） */
   .marquee-frame{position:relative;}
-  .marquee-frame::before{content:""; position:absolute; inset:-3px; border-radius:inherit; padding:3px;
-    background:conic-gradient(from var(--ang), #F5C518, #39E0FF, #FF4FD8, #0F9D58, #F5C518);
+  .marquee-frame::before{content:""; position:absolute; inset:-3px; border-radius:inherit; padding:2px;
+    background:conic-gradient(from var(--ang), var(--led), var(--led-deep), var(--led), var(--led-deep), var(--led));
     -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
     -webkit-mask-composite:xor; mask-composite:exclude;
-    animation:marq 2.6s linear infinite; pointer-events:none;}
+    animation:marq 2.2s linear infinite; pointer-events:none;}
   @keyframes marq{to{--ang:360deg;}}
   @property --ang{syntax:'<angle>'; inherits:false; initial-value:0deg;}
+
   .btn{pointer-events:auto; border:none; border-radius:14px; padding:14px 18px;
     font-size:15px; font-weight:800; cursor:pointer; letter-spacing:1px;
     box-shadow:0 6px 16px rgba(0,0,0,.45); transition:transform .08s ease, filter .15s ease;}
   .btn:active{transform:translateY(2px); filter:brightness(1.08);}
   .btn.launch{background:linear-gradient(180deg,#39E0FF,#1497c9); color:#04222e;}
   .btn.bet{background:linear-gradient(180deg,#FF4FD8,#b81f97); color:#fff;}
-  /* 机柜下方专用控制条：加注 / 拉杆发射，不再覆盖游戏画面 */
   .controlbar{margin-top:14px; display:flex; gap:12px; padding:12px;
     border-radius:16px; background:linear-gradient(180deg,#0e2036,#0a1626);
     border:1px solid #2a4f86;
     box-shadow:inset 0 1px 0 rgba(255,255,255,.08), 0 8px 20px rgba(0,0,0,.4);}
   .controlbar .btn{flex:1;}
 
-  /* 控制条 */
   .controls{margin-top:16px; display:flex; gap:10px; align-items:center;}
   .toggle{background:#13294d; color:var(--ink); border:1px solid #2c4f82;
     border-radius:10px; padding:8px 14px; font-size:13px; cursor:pointer;}
@@ -223,7 +243,7 @@
 </head>
 <body>
   <h1>弹珠乐园 · 机台视觉稿</h1>
-  <div class="sub">透视倾斜 30°（机台后仰）＋ 老虎机/柏青哥机柜质感 · 非线框 · 可直接预览</div>
+  <div class="sub">透视倾斜 30°（机台后仰）＋ 老虎机/柏青哥机柜 · 红色 LED 跑马灯 · 非线框 · 可直接预览</div>
 
   <div class="cabinet">
     <div class="marquee">
@@ -234,14 +254,21 @@
 
     <div class="screen" id="screen">
       <div class="bezel">
-        <div class="top-banner"><span class="star">★</span> PINBALL PARK <span class="star">★</span> 弹珠乐园 <span class="star">★</span></div>
+        <div class="top-banner"><span>★</span> PINBALL PARK <span>★</span> 弹珠乐园 <span>★</span></div>
         <div class="rail left"></div>
         <div class="rail right"></div>
       </div>
       <div class="board" id="board">
         <div class="field" id="field"></div>
         <div class="lane"><div class="shooter"></div></div>
-        <div class="mult marquee-frame">×12</div>
+        <!-- 完整倍率表（红 LED），位于出珠口上方 -->
+        <div class="paytable marquee-frame">
+          <div class="pt-title">中奖倍率 WIN MULTIPLIER</div>
+          <div class="pt-grid">
+            <span class="led">×2</span><span class="led">×3</span><span class="led">×4</span><span class="led">×5</span><span class="led">×6</span>
+            <span class="led">×8</span><span class="led">×10</span><span class="led on">×12</span><span class="led">×15</span><span class="led">×20</span>
+          </div>
+        </div>
         <div class="exits">
           <div class="exit sink"></div>
           <div class="exit lit"></div>
@@ -251,14 +278,14 @@
           <div class="exit lit"></div>
           <div class="exit sink"></div>
         </div>
+        <div class="tray" id="tray"><span class="cnt marquee-frame">×42</span></div>
         <div class="ball"></div>
       </div>
-      <div class="tray" id="tray"><span class="cnt marquee-frame">×42</span></div>
 
       <div class="hud">
         <div class="hud-top">
-          <div class="chip gold marquee-frame"><span class="lbl">珠子余额</span>1,286</div>
-          <div class="chip marquee-frame"><span class="lbl">剩余出珠</span>5</div>
+          <div class="chip gold marquee-frame"><span class="lbl">珠子余额</span><span class="val">1286</span></div>
+          <div class="chip marquee-frame"><span class="lbl">剩余出珠</span><span class="val">5</span></div>
         </div>
       </div>
     </div>
@@ -273,39 +300,32 @@
     <button class="toggle" id="toggle">切换：透视倾斜 ⟷ 平面旋转（旧方案）</button>
   </div>
   <div class="legend">
-    <b>修正点 1 · 机台质感：</b>不再是灰线框。外框为金属机柜＋顶部霓虹跑马灯招牌，板面有纵深光影、金色立体钉阵、发光奖槽（亮灯出口）与沉没暗口、右侧弹簧发射杆、底部出珠托盘——老虎机/柏青哥机台观感。<br>
-    <b>修正点 2 · 30° 倾斜：</b>默认是<b>机台向后仰 30° 的真实透视倾斜</b>（CSS <code>perspective + rotateX(30deg)</code>），板面有纵深、球沿后仰面板"下坡"滚动，符合真实机台。点上方按钮可切回旧方案（平面 2D 旋转成平行四边形）对比——那就是之前"丑且不对"的样子。<br>
-    HUD（余额/倍数/剩余）始终为屏幕正向独立图层，<b>不随板倾斜</b>，保证文字可读。<br>
-    <b>修正点 3 · 弹射轨道：</b>右侧新增竖向<b>发射道</b>（顶部亮灯入口连到钉板右上），弹珠自底部弹起、沿道升至顶端、转入钉板后穿钉下落——对应真实柏青哥"先上膛再落入钉阵"的轨道。钉板整体已上移，下方留白给发射道与出口。<br>
-    <b>修正点 4 · 控制区移出画面：</b>「加注 / 拉杆发射」不再浮在游戏画面上方遮挡出口与出珠盒子，改放到<b>机柜下方的专用控制条</b>；发射道底部保留发射旋钮（画面内的发射器本体），与下方拉杆发射按钮呼应。<br>
-    <b>修正点 5 · 出珠口贴近钉板 + board 上移：</b>出珠口/亮灯出口上移，与钉板间距由 ~68px 收到 ~50px；整块板面上移（top:34→12）更贴近顶部。<br>
-    <b>修正点 6 · 倾斜空隙丰富：</b>新增机柜内框 `.bezel`（置于板面之后），四周空隙由两侧<b>竖向跑马灯柱</b>与顶部<b>★PINBALL PARK★ 条幅</b>填充，板面顶端因透视收窄的三角区也自然成为内框装饰。<br>
-    <b>修正点 7 · 倍率移入 board：</b>「×倍数」从顶部 HUD 移入倾斜板面内、出珠口正上方的区域（随板倾斜），顶部 HUD 仅留余额/剩余出珠。<br>
-    <b>修正点 8 · 数字框跑马灯：</b>余额、剩余出珠、倍率、出珠计数四组数字框统一加<b>旋转彩环跑马灯边框</b>（`.marquee-frame`），与顶部跑马灯招牌呼应。
+    <b>修正点 1 · 机台质感：</b>金属机柜＋顶部招牌＋金色立体钉阵＋发光奖槽/沉没暗口＋右侧弹簧发射杆＋底部出珠托盘。<br>
+    <b>修正点 2 · 30° 倾斜：</b>机台向后仰 30° 的真实透视倾斜（<code>perspective + rotateX(30deg)</code>），板面有纵深。可切回旧方案（平面 2D 旋转）对比。<br>
+    <b>修正点 3 · 弹射轨道：</b>右侧竖向发射道（顶部亮灯入口连到钉板右上），弹珠自底部弹起、沿道升至顶端、转入钉板后穿钉下落。<br>
+    <b>修正点 4 · 控制区移出画面：</b>「加注 / 拉杆发射」在机柜下方控制条，不遮挡游戏画面；发射道底部保留发射旋钮。<br>
+    <b>修正点 5 · 出珠口贴近钉板 + 局部重排：</b>钉阵→倍率表→亮灯出口→出珠盒子自上而下依次排布，互不重叠；出口/托盘均避让右侧发射道（right:48 而非 18）。<br>
+    <b>修正点 6 · 红色 LED 跑马灯：</b>顶部招牌与所有数字框改为<b>暗底红字红环</b>的机械数字 LED 跑马灯（非彩色霓虹）；侧边为红色流动灯柱。<br>
+    <b>修正点 7 · 完整倍率表：</b>出珠口上方板内显示<b>全部 10 档倍率</b>（×2~×20，取自数值设计文档 §1.2），当前局示例高亮 ×12（红 LED）。
   </div>
 
 <script>
-  // 生成跑马灯灯泡
   (function(){
-    const b=document.getElementById('bulbs'); const r=6, rect=14;
-    const W=398,H=68; const n=40;
+    const b=document.getElementById('bulbs'); const W=398,H=68; const n=40;
     for(let i=0;i<n;i++){
-      const t=i/(n-1);
-      let x,y;
-      if(t<0.25){x=r+(W-2*r)*(t/0.25); y=r;}
-      else if(t<0.5){x=W-r; y=r+(H-2*r)*((t-0.25)/0.25);}
-      else if(t<0.75){x=W-r-(W-2*r)*((t-0.5)/0.25); y=H-r;}
-      else{x=r; y=H-r-(H-2*r)*((t-0.75)/0.25);}
+      const t=i/(n-1); let x,y;
+      if(t<0.25){x=6+(W-12)*(t/0.25); y=6;}
+      else if(t<0.5){x=W-6; y=6+(H-12)*((t-0.25)/0.25);}
+      else if(t<0.75){x=W-6-(W-12)*((t-0.5)/0.25); y=H-6;}
+      else{x=6; y=H-6-(H-12)*((t-0.75)/0.25);}
       const d=document.createElement('div'); d.className='bulb';
       d.style.left=(x-3.5)+'px'; d.style.top=(y-3.5)+'px';
-      d.style.animationDelay=(i*0.06)+'s';
+      d.style.animationDelay=(i*0.055)+'s';
       b.appendChild(d);
     }
   })();
-  // 生成钉阵
   (function(){
-    const f=document.getElementById('field');
-    const rows=6;
+    const f=document.getElementById('field'); const rows=6;
     for(let i=0;i<rows;i++){
       const row=document.createElement('div');
       row.className='row'+(i%2? ' offset':'');
@@ -317,7 +337,6 @@
       f.appendChild(row);
     }
   })();
-  // 出珠托盘里的珠子
   (function(){
     const t=document.getElementById('tray');
     for(let i=0;i<10;i++){
@@ -326,7 +345,6 @@
       t.insertBefore(b,t.querySelector('.cnt'));
     }
   })();
-  // 切换倾斜模式
   document.getElementById('toggle').addEventListener('click',()=>{
     document.getElementById('screen').classList.toggle('flat');
   });
