@@ -40,6 +40,31 @@
   footer{margin-top:50px;font-size:12px;color:var(--muted);border-top:1px solid var(--line);padding-top:14px;}
   .num{display:inline-block;min-width:26px;color:var(--blue);font-weight:800}
   .k{color:var(--blue);font-weight:700}
+  :root{color-scheme:light dark}
+  @media (prefers-color-scheme: dark){
+    :root{--bg:#16181d;--ink:#e7e9ee;--muted:#9aa1ab;--line:#2c313a;--blue:#56a8ee;--ok:#3ec98b;--okbg:#0f2a20;--warn:#e0a23e;--warnbg:#2b2410;--bad:#e96868;--badbg:#2e1517;--code:#cdd3dc}
+    body{background:var(--bg);color:var(--ink)}
+    .wrap{background:transparent}
+    table,.meta{background:#1b1e24!important}
+    th{background:#232834!important;color:var(--ink)}
+    td{border-color:var(--line)}
+    tr:nth-child(even) td{background:#191c22!important}
+    .card{background:#1b1e24!important;border-color:var(--line)!important}
+    .ok{background:var(--okbg)!important;color:#7fe0b0;border-color:#1f5a44!important}
+    .warn{background:var(--warnbg)!important;color:#e8c07a;border-color:#5a4320!important}
+    .bad{background:var(--badbg)!important;color:#f0a0a0;border-color:#5a2a2a!important}
+    code{background:#232834!important;color:#cfd6e0}
+    pre{background:#0c1422!important;color:#e6edf3}
+    .tag{background:#1d2733;color:var(--blue)}
+    .tag.p0{background:var(--badbg);color:var(--bad)}
+    .tag.p1{background:var(--warnbg);color:var(--warn)}
+    .tag.p2{background:#232834;color:#9aa1ab}
+    .num{color:var(--blue)}
+    .k{color:var(--blue)}
+    footer{color:var(--muted);border-color:var(--line)}
+    h1,h2,h3,p,li{color:var(--ink)}
+    h3{color:var(--blue)}
+  }
 </style>
 </head>
 <body>
@@ -99,7 +124,7 @@
   <tr><th>用例</th><th>校验项</th><th>预期</th></tr>
   <tr><td>NUM-07</td><td>发卡门槛</td><td><code>rewardBeans&lt;40 → cards=0</code>；<code>R≥40 → cards=min(5, floor(R/40))</code></td></tr>
   <tr><td>NUM-08</td><td>K 分层兑换</td><td>兑换所需卡数仅取 {5,20,50,80,120}；扣卡走事务，失败补偿退卡</td></tr>
-  <tr><td>NUM-09</td><td>经济生命线回归</td><td>重跑 <code>docs/sim/economy_sim.py</code>：K=80 时重度 A/C=1.38×、轻度 1.38×，均 ≥1.2×；广告收益 ≥ 积分成本×1.2</td></tr>
+  <tr><td>NUM-09</td><td>经济生命线回归</td><td>重跑 <code>docs/sim/economy_sim.py</code>（v2，含每日 20 次视频频控）：当前默认参数（eCPM=0.30）下 <b>K=80 重度 A/C=0.66×、轻度 1.38×，重度破防</b>；须将 eCPM 校准至 ≥0.55（或等效组合）使重度比值 ≥1.2× 后方可判定通过（达标基准：eCPM≈0.55 时 K=80 重度≈1.21×）</td></tr>
   <tr><td>NUM-10</td><td>免费珠池</td><td>每日登录 30 + 领珠 88×6 = 558；领珠每日 ≤6 次强制限频</td></tr>
   <tr><td>NUM-11</td><td>N=1980 边界</td><td>投入 99 × ×32 时单局最大奖励 = 3168；不生成 3168 个物理刚体（演出受控，计数累加至 N）</td></tr>
 </table>

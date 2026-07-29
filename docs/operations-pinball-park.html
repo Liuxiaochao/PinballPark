@@ -32,6 +32,31 @@
   footer{margin-top:50px;font-size:12px;color:var(--muted);border-top:1px solid var(--line);padding-top:14px;}
   .num{display:inline-block;min-width:26px;color:var(--blue);font-weight:800}
   .tag{display:inline-block;font-size:11px;font-weight:700;padding:1px 7px;border-radius:99px;background:#e8eef6;color:var(--blue);margin-right:4px}
+  :root{color-scheme:light dark}
+  @media (prefers-color-scheme: dark){
+    :root{--bg:#16181d;--ink:#e7e9ee;--muted:#9aa1ab;--line:#2c313a;--blue:#56a8ee;--ok:#3ec98b;--okbg:#0f2a20;--warn:#e0a23e;--warnbg:#2b2410;--bad:#e96868;--badbg:#2e1517;--code:#cdd3dc}
+    body{background:var(--bg);color:var(--ink)}
+    .wrap{background:transparent}
+    table,.meta{background:#1b1e24!important}
+    th{background:#232834!important;color:var(--ink)}
+    td{border-color:var(--line)}
+    tr:nth-child(even) td{background:#191c22!important}
+    .card{background:#1b1e24!important;border-color:var(--line)!important}
+    .ok{background:var(--okbg)!important;color:#7fe0b0;border-color:#1f5a44!important}
+    .warn{background:var(--warnbg)!important;color:#e8c07a;border-color:#5a4320!important}
+    .bad{background:var(--badbg)!important;color:#f0a0a0;border-color:#5a2a2a!important}
+    code{background:#232834!important;color:#cfd6e0}
+    pre{background:#0c1422!important;color:#e6edf3}
+    .tag{background:#1d2733;color:var(--blue)}
+    .tag.p0{background:var(--badbg);color:var(--bad)}
+    .tag.p1{background:var(--warnbg);color:var(--warn)}
+    .tag.p2{background:#232834;color:#9aa1ab}
+    .num{color:var(--blue)}
+    .k{color:var(--blue)}
+    footer{color:var(--muted);border-color:var(--line)}
+    h1,h2,h3,p,li{color:var(--ink)}
+    h3{color:var(--blue)}
+  }
 </style>
 </head>
 <body>
@@ -75,10 +100,10 @@
 <div class="card ok">三大看板（广告 / 局内 / 兑换漏斗）须完整可见，对齐 PRD §11 与测试 §8。所有"价值事件"可回溯至具体 roundId 与账本流水。</div>
 
 <h2 class="sec"><span class="num">4</span>经济运营（核心）</h2>
-<p>目标：守住<b>经济生命线 <code>广告收益 ≥ 积分成本 × 1.2</code></b>（数值 v1.2：K=80 时重度/轻度均 1.38×）。运营动作优先级：<b>先调 K 与广告 eCPM，再考虑抬发卡门槛</b>（用户偏好"体验优先"，卡要易触达）。</p>
+<p>目标：守住<b>经济生命线 <code>广告收益 ≥ 积分成本 × 1.2</code></b>。<b>[评审修订 v1.3] 数值 v1.2 原称"K=80 重度/轻度均 1.38×"，但该结论未计入每日 20 次视频频控，已作废；真实约束下当前默认参数（eCPM=0.30）全面破防，须将 eCPM 目标校准至 ≥0.55（或等效组合）方可达标（见数值 §3.2/§8）。</b>运营动作优先级：<b>先调 K 与广告 eCPM，再考虑抬发卡门槛</b>（用户偏好"体验优先"，卡要易触达）。</p>
 <table>
   <tr><th>杠杆</th><th>作用</th><th>调节纪律</th></tr>
-  <tr><td>K 分层（5/20/50/80/120）</td><td>直接改积分卡"含金量"，保生命线</td><td>eCPM 走弱时优先降 K，不抬 40 门槛</td></tr>
+  <tr><td>K 分层（5/20/50/80/120）</td><td>直接改积分卡"含金量"，保生命线</td><td><b>eCPM 走弱时优先升 K（如 80→100），不抬 40 门槛</b>[评审修订：原"降 K"方向错误，已更正]</td></tr>
   <tr><td>广告 eCPM / scene</td><td>提升广告侧收入（sign / high_multiplier 触发点优化）</td><td>A/B 优化触发时机与填充率</td></tr>
   <tr><td>倍率权重</td><td>微调均倍与手感</td><td>改动必跑 NUM 回归（测试 §3）</td></tr>
   <tr><td>新手保护曲线</td><td>前 5 局 RTP 1.5 递减至 0.90 留存</td><td>稳态不允许长期偏离 0.90</td></tr>
@@ -136,7 +161,7 @@
 <table>
   <tr><th>上游决策</th><th>本文落点</th><th>状态</th></tr>
   <tr><td>RTP 0.90 + 新手保护曲线</td><td>§4 杠杆表 / §6 风险</td><td>✅ 一致</td></tr>
-  <tr><td>经济生命线 A/C≥1.2×（K=80 1.38×）</td><td>§4 核心 / §6 破防应急</td><td>✅ 一致</td></tr>
+  <tr><td>经济生命线 A/C≥1.2×（K=80，需 eCPM≥0.55 方达标）</td><td>§4 核心 / §6 破防应急 / 数值 §8</td><td>✅ 一致（评审修订：原 1.38× 已作废）</td></tr>
   <tr><td>倍率 6 档 / 发卡 R≥40 / K 分层</td><td>§4 杠杆纪律</td><td>✅ 一致</td></tr>
   <tr><td>免费珠 558/日 + 领珠≤6 次频控</td><td>§4 / §5 / §7</td><td>✅ 一致</td></tr>
   <tr><td>game_lock TTL 30min 防死锁</td><td>§2 容灾 / §6 宕机</td><td>✅ 一致</td></tr>

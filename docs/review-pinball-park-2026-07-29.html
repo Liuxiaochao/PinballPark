@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>弹珠乐园 · 阶段文档评审报告</title>
+<style>
+  body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;max-width:980px;margin:0 auto;padding:24px;line-height:1.7;color:#1f2329}
+  h1{font-size:26px;border-bottom:3px solid #2b6cff;padding-bottom:8px}
+  h2{font-size:20px;margin-top:34px;border-left:5px solid #2b6cff;padding-left:10px}
+  h3{font-size:16px;margin-top:22px;color:#333}
+  table{border-collapse:collapse;width:100%;margin:12px 0;font-size:14px}
+  th,td{border:1px solid #d9d9d9;padding:8px 10px;text-align:left;vertical-align:top}
+  th{background:#f2f5ff;font-weight:600}
+  code{background:#f3f3f3;padding:1px 5px;border-radius:4px;font-size:13px}
+  .docinfo td{border:none;background:none}
+  .card{border-radius:8px;padding:12px 14px;margin:12px 0;font-size:14px}
+  .ok{background:#e8f8ee;border-left:4px solid #18a058}
+  .warn{background:#fff7e6;border-left:4px solid #f0a020}
+  .bad{background:#fdeaea;border-left:4px solid #d03050}
+  .p0{background:#d03050;color:#fff;padding:1px 8px;border-radius:4px;font-size:12px;font-weight:600}
+  .p1{background:#f0a020;color:#fff;padding:1px 8px;border-radius:4px;font-size:12px;font-weight:600}
+  .p2{background:#2b6cff;color:#fff;padding:1px 8px;border-radius:4px;font-size:12px;font-weight:600}
+  .verdict{background:#f2f5ff;border:2px solid #2b6cff;border-radius:10px;padding:16px 18px;margin:18px 0}
+  .finding{border:1px solid #e5e5e5;border-radius:10px;padding:14px 16px;margin:14px 0}
+  .finding h4{margin:0 0 8px;font-size:15px}
+  footer{margin-top:40px;color:#999;font-size:12px;border-top:1px solid #eee;padding-top:12px}
+  ul{margin:8px 0} li{margin:3px 0}
+  .tag{font-weight:600;color:#d03050}
+  :root{color-scheme:light dark}
+  @media (prefers-color-scheme: dark){
+    body{background:#16181d;color:#e7e9ee}
+    h1,h2,h3,h4{color:#e7e9ee}
+    table{border-color:#2c313a}
+    th{background:#232834;color:#cfd6e0}
+    td{border-color:#2c313a}
+    code{background:#232834;color:#cfd6e0}
+    .ok{background:#0f2a20;border-left-color:#3ec98b;color:#7fe0b0}
+    .warn{background:#2b2410;border-left-color:#e0a23e;color:#e8c07a}
+    .bad{background:#2e1517;border-left-color:#e96868;color:#f0a0a0}
+    .verdict{background:#1b2333;border-color:#56a8ee}
+    .finding{border-color:#2c313a}
+    footer{color:#8a909a;border-color:#2c313a}
+    .docinfo td{border:none}
+    .tag{color:#f0a0a0}
+  }
+</style>
+</head>
+<body>
+<main>
+<h1>弹珠乐园 · 阶段文档评审报告</h1>
+<section>
+  <table class="docinfo">
+    <tr><td style="width:90px;font-weight:600">评审对象</td><td>《弹珠乐园》M0 七份阶段文档（PRD / 数值 / 架构 / API / UI-UX / 测试验收 / 上线运营）+ 大纲 + 经济仿真脚本</td></tr>
+    <tr><td style="font-weight:600">评审版本</td><td>PRD v1.0 · 数值 v1.2 · 架构/API/UI-UX/测试/运营 均 v1.0 · 大纲 v0.1</td></tr>
+    <tr><td style="font-weight:600">评审日期</td><td>2026-07-29</td></tr>
+    <tr><td style="font-weight:600">评审方式</td><td>全量通读 + 跨文档一致性比对 + 仿真脚本实跑验证（<code>python3 docs/sim/economy_sim.py</code>，exit 0）</td></tr>
+    <tr><td style="font-weight:600">评审结论</td><td><b class="tag">有条件通过（需先闭环 4 项 P0 后方可定稿进入 M1）</b></td></tr>
+  </table>
+</section>
+
+<div class="verdict">
+  <b>一句话结论：</b>文档体系结构完整、模块边界清晰、价值安全红线（服务端权威）贯穿一致，<b>具备进入 M1 的基础</b>。但存在 <b>4 项 P0 阻塞问题</b>，其中最严重的是：<span class="tag">经济生命线仿真与产品频控约束不自洽</span>——仿真基于"日均 52 次激励视频"得出 A/C≥1.2×，而 PRD/API 规定每日仅 20 次上限，按真实约束重算生命线将直接破防。在经济生命线被重新验证确认前，文档不得定稿。
+</div>
+
+<h2>1. 文档成熟度总览</h2>
+<table>
+  <tr><th>文档</th><th>版本</th><th>成熟度</th><th>评审意见</th></tr>
+  <tr><td>功能框架大纲</td><td>v0.1</td><td>中</td><td>第1/2/3/4 节已确认；第5（合规风控）、第6（数据运营）仍"待评审"</td></tr>
+  <tr><td>PRD</td><td>v1.0</td><td>中</td><td>结构完整，但内部存在 Exchange 首发范围矛盾（见 P0-4）</td></tr>
+  <tr><td>玩法数值设计</td><td>v1.2</td><td>高（但存疑）</td><td>迭代充分、有仿真支撑；<b>仿真与频控/K阶梯不自洽，需重跑回填</b>（见 P0-1/2）</td></tr>
+  <tr><td>技术架构</td><td>v1.0</td><td>中</td><td>四段事务、引导路由、风控链路清晰；与 PRD 倾斜模型冲突（见 P0-3）；接口表含不存在的 <code>double</code>（见 P1-12）</td></tr>
+  <tr><td>服务端 API</td><td>v1.0</td><td>中</td><td>字段/错误码完整；settle 终态歧义（见 P1-11）；Exchange 占位</td></tr>
+  <tr><td>UI-UX</td><td>v1.0</td><td>中</td><td>规范完整；倾斜采用 3D 透视模型，与 PRD 2D 旋转冲突（见 P0-3）</td></tr>
+  <tr><td>测试验收</td><td>v1.0</td><td>中</td><td>用例详尽、门禁清晰；NUM-09 数据错误（见 P1-7）；Exchange 用例待补</td></tr>
+  <tr><td>上线运营</td><td>v1.0</td><td>中</td><td>杠杆表 K 方向写反（见 P0-5）；其余一致</td></tr>
+  <tr><td>经济仿真脚本</td><td>—</td><td>可运行</td><td>能跑通，但 K 扫描与频控约束缺失（见 P0-1/2/6）</td></tr>
+</table>
+
+<h2>2. P0 — 阻塞问题（必须闭环后才能定稿）</h2>
+
+<div class="finding">
+  <h4><span class="p0">P0-1</span> 经济生命线仿真与每日广告频控不自洽（致命）</h4>
+  <p><b>证据：</b>实跑 <code>economy_sim.py</code> 实际输出 <b>重度视频 52.3 次/日</b>、轻度 12.4 次/日；而 PRD §6.2 与 API <code>adFreq.dailyTotal=20</code> 规定<b>单用户单日激励视频总次数封顶 20 次</b>。仿真据此算出重度广告收益 ¥15.68/日（=52.3×eCPM 0.3），直接相关于"K=80 重度 A/C=1.25×"的结论。</p>
+  <p><b>影响：</b>将频控 20 次/日作为硬约束代入，重度广告收益将降至约 20×0.3=¥6（≈原值的 38%），每卡收益比值由 0.086 跌至约 0.033，K=80 可持续单价由 ¥6.88 跌至约 ¥2.6，对 ¥5 基准比值由 1.38× 跌至约 0.53×——<b>生命线直接破防</b>。文档声称"v1.2 仿真验证满足生命线"在真实产品约束下不成立。</p>
+  <p><b>建议：</b>① 在 <code>simulate_day</code> 中增加 <code>dailyVideoCap=20</code> 硬约束（领珠/翻倍/签到/高倍共享额度），并据余额与频控重算可玩局数与发卡；② 重跑后若 A/C 仍 ≥1.2×，则在文档显式注明"已在 20 次/日频控下验证"；③ 若破防，须重新调参（上调 eCPM 假设、下调 RTP、上调 K、或放宽频控），<b>调参后禁止只改表格，必须重跑脚本回填</b>（呼应数值文档自身 NUM-09 纪律）。</p>
+</div>
+
+<div class="finding">
+  <h4><span class="p0">P0-2</span> 仿真 K 扫描范围与文档推荐阶梯不匹配（生命线结论无实证）</h4>
+  <p><b>证据：</b>脚本第 109 行 <code>for K in [3, 5, 8, 10, 15, 20, 30, 50]</code>，<b>最高仅 K=50</b>，从未运行 K=80（实物主档）/K=120（高实物档）。而数值文档 §3.2 表格与 §4.1 却给出 K=80（重度 ¥6.88、比值 1.38×）、K=120（¥10.31）的数值，并标注"数值来自 docs/sim/economy_sim.py"。</p>
+  <p><b>影响：</b>主档/高档的生命线比值（1.25×/1.38×）是<b>手工按公式 <code>K×(广告收益/卡数)</code> 外推</b>，脚本从未产出，文档"数值来自脚本"的声明与事实不符；K=80/120 的可持续性缺乏可复现证据。</p>
+  <p><b>建议：</b>将脚本 K 循环改为 <code>[5,20,50,80,120]</code>（对齐 PRD §7.1 / 数值 §3.2 阶梯）并重跑，使 §3.2/§4.1 表格可由脚本直接产出；或如实标注 K=80/120 为"公式外推、待脚本覆盖"。</p>
+</div>
+
+<div class="finding">
+  <h4><span class="p0">P0-3</span> 板面 30° 倾斜模型：PRD 与架构/UI-UX/测试 直接冲突</h4>
+  <p><b>证据：</b>PRD §4.7 明确定义"板面相对屏幕<b>绕 Z 轴旋转 30°（屏幕平面内的 2D 旋转，非 3D 透视变形）</b>，即呈 30° 平行四边形，物理在板面局部坐标跑、渲染整体 2D 旋转"。而架构 §4.1 与测试 §6 UI-01 采用"<b>perspective + rotateX(30°)（机台后仰，3D 透视，板面有纵深）</b>"。</p>
+  <p><b>影响：</b>这是两套根本不同的实现——2D 平面旋转 vs 3D 透视后仰。物理重力方向、引导力坐标系、渲染层、测试验收标准（UI-01 "板面有纵深" vs PRD "非 3D 透视"）全部随之不同。架构 §4.1 还称 3D 后仰"替代旧方案'竖直板+纯视觉旋转'"，与 PRD 当前方案相悖。不裁决将导致 M1 物理原型实现分歧。</p>
+  <p><b>建议：</b>由架构/客户端负责人裁决统一为单一模型（推荐 3D 后仰 rotateX，更贴近实体机"机台后仰、球受重力分量沿板下滑"的真实物理与观感），并同步修订 PRD §4.7 措辞与测试 UI-01，使三者一致。评审记录：当前 PRD §4.7 自述"绕 Z 轴 2D 旋转"与同节"视觉沿倾斜板下坡滚动"在 2D 旋转下缺乏真实重力分量，物理自洽性弱于 3D 方案。</p>
+</div>
+
+<div class="finding">
+  <h4><span class="p0">P0-4</span> Exchange（商城兑换）首发范围：PRD 标 P0 与其余文档"后续版本"矛盾</h4>
+  <p><b>证据：</b>PRD §3 功能清单将 #5 积分系统、#7 商城与兑换均标 <b>P0 首发必备</b>，§7 详述兑换订单状态机；但 API §8 明确"本版不实现 Exchange"、架构 §13 标"后续版本"、测试 §9 #6 标"延后"、运营 §9 将 Exchange 履约列入"短期（首发后）"。</p>
+  <p><b>影响：</b>首发是否包含实物兑换未对齐，将导致排期、API 工作量、测试范围与合规准备（微信实物发放审核）整体偏差。</p>
+  <p><b>建议：</b>二选一明确：① 若首发含兑换——API 须补全 Exchange 接口契约、测试须补 §9 #6 用例；② 若首发仅做"积分/卡积累 + 虚拟档"，将 PRD §3 的 #5/#7 降级为 P2 并注明"实物兑换后续版本"，与 API/架构/测试/运营一致。推荐②（与多数文档一致），但需在 PRD 内保持一致。</p>
+</div>
+
+<h2>3. P1 — 重要问题（定稿前应修正）</h2>
+
+<div class="finding">
+  <h4><span class="p1">P1-5</span> 运营 §4 杠杆表 "eCPM 走弱时降 K" 方向写反</h4>
+  <p>运营 §4 写"eCPM 走弱时优先<b>降 K</b>，不抬 40 门槛"；但数值 §8、数值 §4、架构 §11.3 均要求 eCPM 走弱时<b>升 K（如 80→100）</b>以收紧兑换。降 K 会让兑换更易、成本更高，<b>与保生命线方向相反</b>，若运营据此操作将加速击穿。建议改为"升 K / 提 K"。</p>
+</div>
+
+<div class="finding">
+  <h4><span class="p1">P1-6</span> 新手保护期（前 15 局 RTP 1.5→0.9）未纳入仿真</h4>
+  <p>数值 §7 定义了新手保护曲线，架构 §9.2 / PRD §4.5 一致引用；但脚本 <code>simulate_day</code> 固定 <code>rtp=0.90</code>，<b>未实现前 15 局高 RTP</b>。首发前若干天的实际发卡量将高于稳态仿真值，初期 A/C 可能低于 1.2×，与"获客成本另行计量"的假设需对齐。建议仿真补充新手期建模或在文档显式标注"仿真为稳态、首发初期成本更高"。</p>
+</div>
+
+<div class="finding">
+  <h4><span class="p1">P1-7</span> 测试 NUM-09 数据错误</h4>
+  <p>测试 §3.2 NUM-09 写"K=80 时重度 A/C=1.38×、<b>轻度 1.38×</b>"。实际（对 ¥5 基准）重度 1.38、轻度约 1.52；若按文档 §4.1 实际 ¥5.5 档则为重度 1.25×/轻度 1.38×。将重度值误复制给轻度，需校正。</p>
+</div>
+
+<div class="finding">
+  <h4><span class="p1">P1-8</span> 概率公示合规不充分</h4>
+  <p>合规红线（PRD §9.1 / CMP-01）仅要求公示"6 档倍率及各自<b>抽取概率（权重）</b>"。抽奖类玩法通常还需公示<b>综合返奖率 RTP 与命中概率</b>。当前公示未覆盖 RTP，存在平台审核与监管风险。建议游戏内概率公示补充 RTP 及各档命中率，并在合规章节说明依据（微信小游戏抽奖类审核规范）。</p>
+</div>
+
+<div class="finding">
+  <h4><span class="p1">P1-9</span> deviceSecret 长期设备密钥无轮换/吊销机制</h4>
+  <p>API §4 将 <code>deviceSecret</code> 设为设备级长期密钥，参与所有写接口 HMAC 签名；测试 SEC-09 仅标 P2。一旦泄露可伪造任意请求签名。建议提升至 P1：补充密钥轮换、设备绑定、异常吊销，并明确泄露后的应急响应。</p>
+</div>
+
+<div class="finding">
+  <h4><span class="p1">P1-10</span> 术语不统一：弹珠 / 珠子</h4>
+  <p>PRD / API / 架构统一用"弹珠"（<code>beans</code>）；数值文档与仿真脚本用"珠子"。建议全局统一为"弹珠"，脚本内部加注释对齐，避免实现期歧义。</p>
+</div>
+
+<div class="finding">
+  <h4><span class="p1">P1-11</span> settle 响应终态歧义</h4>
+  <p>API §5 警告"settle 旧响应中的 <code>doubled</code> 不可作为终态"，但响应未提供显式 <code>double_pending</code> 标志，客户端只能自行猜测是否待补发。建议在 settle 响应中增加 <code>double_pending: bool</code>，消除歧义。</p>
+</div>
+
+<div class="finding">
+  <h4><span class="p1">P1-12</span> 架构 §8 接口表含不存在的 <code>double</code></h4>
+  <p>架构 §8 将 <code>double</code> 列入 game 包对外接口，但 API 无此接口（翻倍通过 <code>/ad/callback</code> 实现，见架构 §9.3）。建议架构 §8 删除 <code>double</code> 或注明"非独立对外接口，由广告回调内部处理"。</p>
+</div>
+
+<h2>4. P2 — 建议优化</h2>
+<table>
+  <tr><th>#</th><th>问题</th><th>建议</th></tr>
+  <tr><td>P2-13</td><td>轻度"3 天/件"口径：按仿真 K=80 轻度 39.3 卡/日 → 80/39.3≈2.04 天/件，PRD §7.1 与数值 §4.1 写"约 3 天"，偏保守/不一致</td><td>统一为 ~2 天或注明为上限估计</td></tr>
+  <tr><td>P2-14</td><td>"积分卡"与"积分"命名混用：point_ledger 存积分（1 卡=10 分），settle 返回 totalCards、入账 type settle_card</td><td>API 明确"卡→积分 ×10 在入账时换算"并统一命名</td></tr>
+  <tr><td>P2-15</td><td>仿真未含"再投珠加注"放大效应（脚本 bet 固定、无加注），结论偏乐观</td><td>补充加注建模，或标注为"不含加注的保守估计"</td></tr>
+  <tr><td>P2-16</td><td>各文档自带"一致性核对"表流于形式，未捕获运营 K 方向、测试 NUM-09、仿真 K 不匹配等真实冲突</td><td>定稿前由独立角色做交叉复核，而非各文档自审</td></tr>
+</table>
+
+<h2>5. 评审复核一致性总表（跨文档）</h2>
+<table>
+  <tr><th>上游决策</th><th>落点</th><th>评审复核</th></tr>
+  <tr><td>倍率 6 档 {2,4,6,8,16,32} 权重 {30,22,14,9,3,1.5}，均倍 5.03</td><td>数值 §3 / 测试 NUM-02/03/04 / PRD §4.5</td><td>✅ 一致</td></tr>
+  <tr><td>发卡 R≥40，min(5,floor(R/40))；K 分层 5/20/50/80/120</td><td>数值 §3 / PRD §4.5,§7.1 / 测试 NUM-07/08</td><td>✅ 一致（数值口径）</td></tr>
+  <tr><td>RTP 0.90 + 新手保护前 5 局 1.5 递减至 0.9</td><td>数值 §7 / PRD §4.5 / 架构 §9.2</td><td>⚠️ 一致但未入仿真（P1-6）</td></tr>
+  <tr><td>经济生命线 A/C≥1.2×（K=80 1.25×/1.38×）</td><td>数值 §3.2,§4.1 / PRD §1.3,§6.5 / 测试 NUM-09 / 运营 §4</td><td>❌ 仿真与频控冲突（P0-1/2）</td></tr>
+  <tr><td>每日免费珠 558 = 30 登录 + 88×6 领珠；领珠 ≤6 次</td><td>数值 §2 / PRD §4.5,§6.1 / API config / 测试 NUM-10</td><td>✅ 一致</td></tr>
+  <tr><td>单日激励视频总上限 20 次</td><td>PRD §6.2 / API adFreq.dailyTotal</td><td>❌ 仿真用 52 次，未约束（P0-1）</td></tr>
+  <tr><td>30° 倾斜：PRD 绕 Z 轴 2D 旋转 vs 架构/UI-UX/测试 3D 透视后仰</td><td>PRD §4.7 / 架构 §4.1 / UI-UX §2 / 测试 UI-01</td><td>❌ 模型冲突（P0-3）</td></tr>
+  <tr><td>eCPM 走弱时调 K 方向</td><td>数值 §8（升 K）/ 架构 §11.3（升 K）/ 运营 §4（<b>降 K</b>）</td><td>❌ 运营方向写反（P1-5）</td></tr>
+  <tr><td>Exchange 兑换模块范围</td><td>PRD §3（P0 首发）/ API §8（后续）/ 测试 §9#6（延后）/ 运营 §9（首发后）</td><td>❌ 范围矛盾（P0-4）</td></tr>
+  <tr><td>价值权威仅服务端 / 广告回调验真</td><td>PRD §4.2,§6.2 / 架构 §9 / 测试 SEC-03/04/06 / 运营 §6</td><td>✅ 一致（贯穿良好）</td></tr>
+</table>
+
+<h2>6. 处置建议与下一步</h2>
+<div class="card warn">
+  <b>定稿前置条件（必须 100% 闭环方可定稿）：</b>
+  <ol>
+    <li>修正 <code>economy_sim.py</code>：加入每日视频 20 次硬上限、K 扫描覆盖 [5,20,50,80,120]、补新手保护期建模；重跑回填数值文档 §3.2/§4.1 与测试 NUM-09，确认真实约束下 A/C≥1.2×。</li>
+    <li>裁决并统一 30° 倾斜模型（推荐 3D 透视后仰），同步 PRD §4.7 与测试 UI-01。</li>
+    <li>裁决 Exchange 首发范围，使 PRD 与其余文档一致（推荐首发仅虚拟档 + 积分积累）。</li>
+    <li>更正运营 §4 K 方向（升 K）、测试 NUM-09 数据。</li>
+  </ol>
+</div>
+<div class="card ok">
+  <b>闭环后即可推进：</b>M1 核心玩法原型（拉杆 + Box2D 钉板 + 落点引导），并以仿真脚本作为经济回归门禁（每次调参必重跑）；补充 P1-8 概率公示合规、P1-9 设备密钥轮换、P1-11/12 接口澄清；Exchange 模块留作 M3 专项，届时补全 API/测试。
+</div>
+
+<h2>7. 评审结论</h2>
+<table>
+  <tr><th>维度</th><th>评价</th></tr>
+  <tr><td>体系完整性</td><td>✅ 七份文档 + 大纲 + 仿真脚本齐全，模块边界清晰，依赖关系明确</td></tr>
+  <tr><td>价值安全一致性</td><td>✅ 服务端权威判定、广告回调验真、账本双写贯穿全文档，红线统一</td></tr>
+  <tr><td>经济模型可信度</td><td>❌ 仿真与频控/K 阶梯不自洽，生命线结论需重验（P0-1/2/6）</td></tr>
+  <tr><td>技术/产品一致性</td><td>⚠️ 倾斜模型冲突（P0-3）、Exchange 范围矛盾（P0-4）、运营 K 方向错（P1-5）</td></tr>
+  <tr><td>合规与风险</td><td>⚠️ 概率公示不充分（P1-8）、设备密钥机制偏弱（P1-9）、第5/6节待细评</td></tr>
+  <tr><td><b>总体</b></td><td><b class="tag">有条件通过 — 4 项 P0 闭环后定稿，方可进入 M1</b></td></tr>
+</table>
+
+<h2>8. 修订跟踪（评审后已闭环项）</h2>
+<div class="card ok">
+  <b>执行日期：2026-07-29（评审当轮）</b>。根据用户指令"执行评审→改吧"，已对评审发现的根因项进行闭环，并重跑仿真取证。
+</div>
+<table>
+  <tr><th>评审项</th><th>处置</th><th>结果 / 证据</th></tr>
+  <tr><td>P0-1 经济生命线与频控不自洽</td><td><b>已闭环（根因修复）</b>：<code>economy_sim.py</code> 新增每日视频 20 次硬上限</td><td>重度视频 52.3→<b>18.4</b> 次/日、广告 ¥15.68→<b>¥5.53</b>、A/C 0.086→<b>0.041</b>。原"满足生命线"结论被推翻</td></tr>
+  <tr><td>P0-2 仿真 K 扫描不匹配</td><td><b>已闭环</b>：脚本 K 循环改为 [5,20,50,80,120]，与 PRD/数值一致</td><td>K=80/120 现已由脚本直接产出，文档 §3.2 数据可复现</td></tr>
+  <tr><td>P1-6 新手保护期未建模</td><td><b>已闭环</b>：新增账号级前 15 局 RTP=1.5 建模</td><td>稳态日均受影响 &lt;0.2%，影响可忽略（计入获客成本）</td></tr>
+  <tr><td>P1-5 运营 §4 K 方向写反</td><td><b>已闭环</b>：运营 §4 杠杆表"降 K"→<b>"升 K（80→100）"</b></td><td>与数值 §8 / 架构 §11.3 对齐</td></tr>
+  <tr><td>P1-7 测试 NUM-09 数据错误</td><td><b>已闭环</b>：NUM-09 更正为"重度 0.66×、轻度 1.38×，重度破防"</td><td>并补充达标基准 eCPM≈0.55</td></tr>
+  <tr><td>数值 / 运营 / 测试 一致性与结论</td><td><b>已同步回填</b></td><td>数值 v1.2→<b>v1.3（评审修订）</b>；§3.2/§4.1/§8 全部标注破防与 eCPM≥0.55 校准要求</td></tr>
+  <tr><td>P0-3 倾斜模型冲突 / P0-4 Exchange 范围</td><td><b>待裁决（非脚本可改）</b></td><td>需架构/产品负责人裁决 3D 后仰 vs 2D 旋转；及 Exchange 是否入首发</td></tr>
+</table>
+
+<div class="card bad">
+  <b>重跑后的核心结论（取代原 v1.2 结论）：</b>在真实产品约束（每日 20 次视频频控、RTP=0.90）下，当前默认 <b>eCPM=0.30 假设使生命线全面破防</b>（K=80 重度 0.66×、K=120 0.99×）。复跑验证 <b>eCPM≈0.55（频控 20）</b>或 <b>频控 30 + eCPM≥0.40</b> 可恢复达标。文档已统一将 eCPM 目标校准至 ≥0.55，并以 <code>economy_sim.py</code> 作为唯一经济回归门禁。
+</div>
+
+<footer>弹珠乐园 · 阶段文档评审报告 · 2026-07-29 · 评审方式：全量通读 + 跨文档比对 + 仿真实跑（exit 0）· 共识别 P0×4 / P1×9 / P2×4 · 当轮已闭环 P0-1/P0-2/P1-5/P1-6/P1-7 并回填数值 v1.3</footer>
+</main>
+</body>
+</html>

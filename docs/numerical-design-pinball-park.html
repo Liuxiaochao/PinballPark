@@ -31,6 +31,29 @@
   .foot { margin-top: 40px; font-size: 12px; color: #888780; border-top: 1px solid #D3D1C7; padding-top: 14px; }
   .hl { background: #FAEEDA; padding: 0 4px; font-weight: 600; }
   .strike { text-decoration: line-through; color: #999; }
+  :root{color-scheme:light dark}
+  @media (prefers-color-scheme: dark){
+    body{background:#16181d;color:#e7e9ee}
+    .wrap{background:#1b1e24;box-shadow:none;border:1px solid #2c313a}
+    h1,h2,h3,p,li,td{color:#e7e9ee}
+    h2{color:#b3a9f5;border-color:#534ab7}
+    h3{color:#b3a9f5}
+    th{background:#232834;color:#cfd6e0}
+    td{border-color:#2c313a}
+    table{background:#1b1e24}
+    code{background:#232834;color:#cfd6e0}
+    .num{background:#534ab7;color:#fff}
+    .card{border-color:#2c313a}
+    .amber{background:#2b2410;border-left-color:#e0a23e}
+    .green{background:#0f2a20;border-left-color:#3ec98b}
+    .purple{background:#221f3a;border-left-color:#9b90f0}
+    .red{background:#2e1517;border-left-color:#e96868}
+    .hl{background:#2b2410}
+    .tag{background:#221f3a;color:#b3a9f5}
+    .foot{color:#8a909a;border-color:#2c313a}
+    .meta{color:#9aa1ab}
+    .meta b{color:#e7e9ee}
+  }
 </style>
 </head>
 <body>
@@ -89,7 +112,7 @@
   <h2><span class="num">2</span>仿真方法</h2>
   <ul>
     <li><b>方法</b>：蒙特卡洛，每配置模拟 <b>20,000 个玩家日</b>（脚本 <code>docs/sim/economy_sim.py</code>，纯 Python 可复现）。</li>
-    <li><b>单日循环</b>：珠子 &lt; 5 时看领珠视频（≤6 次/日）；否则投入（默认 20 颗/局）；抽倍数→反解命中率→命中则发奖（p_double=0.7 概率看视频翻倍）；未命中投入沉没；直至珠子不足且无视频或达游戏上限。</li>
+    <li><b>单日循环</b>：珠子 &lt; 5 时看领珠视频（≤6 次/日）；否则投入（默认 20 颗/局）；抽倍数→反解命中率→命中则发奖（p_double=0.7 概率看视频翻倍）；未命中投入沉没；直至珠子不足且无视频或达游戏上限。<b>[评审修订] 领珠视频与翻倍视频共享「每日激励视频总上限 20 次」（对齐 PRD 6.2 / API dailyTotal）；额度用尽后不再通过看视频获珠/翻倍。</b></li>
     <li><b>两类玩家</b>：重玩（游戏上限 300，压力测试）/ 轻玩（上限 60，典型休闲玩家）。</li>
     <li><b>新发卡规则</b>：R ≥ 40 才发卡，卡数 = min(5, floor(R/40))；扫描兑换所需卡数 <b>K ∈ {5, 20, 50, 80, 120}</b> 求可持续单价。</li>
   </ul>
@@ -98,31 +121,35 @@
   <h3>3.1 发卡门槛 40 下的产卡与 A/C</h3>
   <table>
     <tr><th>玩家</th><th>游戏/日</th><th>视频/日</th><th>广告¥/日</th><th>卡/日</th><th>发卡触发次数/日</th><th>A/C(广告元/卡)</th></tr>
-    <tr><td class="l">重度</td><td>265.8</td><td>52.3</td><td>15.68</td><td><b>182.5</b></td><td>~73</td><td>0.086</td></tr>
-    <tr><td class="l">轻度</td><td>58.1</td><td>12.4</td><td>3.73</td><td><b>39.3</b></td><td>~16</td><td>0.095</td></tr>
+    <tr><td class="l">重度</td><td>256.8</td><td>18.4</td><td>5.53</td><td><b>134.3</b></td><td>~70</td><td>0.041</td></tr>
+    <tr><td class="l">轻度</td><td>58.1</td><td>12.5</td><td>3.74</td><td><b>39.5</b></td><td>~16</td><td>0.095</td></tr>
   </table>
-  <p>对比 v1.0 阈值 300：重度产卡从 2.6 → <b>182.5</b>、轻度从 0.6 → <b>39.3</b>，"发卡触发次数"从几乎为 0 变为每日数十次（重度 ~73、轻度 ~16）——<b>用户"卡难触达"问题已解决</b>。代价是 A/C 从 ~6.3 降到 ~0.09，必须由 K 兜底（见下）。v1.2 倍率由 10 档调整为 6 档（×2/×4/×6/×8/×16/×32），加权均倍 4.37→5.03，因 RTP 守恒、胜率近似不变，产卡与 A/C 基本持平（重度 189→182.5）。</p>
+  <div class="card bad">[评审修订 v1.3 · 重大更正] 上表为<b>含每日 20 次视频上限</b>的复跑结果。对比原 v1.2（未施加频控，重度视频 52.3 次/日、广告 ¥15.68）：真实约束下重度视频降至 18.4 次/日、广告 ¥5.53、A/C 由 0.086 跌至 <b>0.041</b>。<b>原"v1.2 满足生命线"结论在真实产品约束下不成立</b>——详见 §3.2 与 §4.1。</div>
+  <p>对比 v1.0 阈值 300：重度产卡从 2.6 → <b>134.3</b>、轻度从 0.6 → <b>39.5</b>，"发卡触发次数"从几乎为 0 变为每日数十次（重度 ~70、轻度 ~16）——<b>用户"卡难触达"问题已解决</b>。但受频控约束后重度 A/C 降至 0.041，必须由 K 兜底，且在当前 eCPM=0.30 假设下<b>生命线破防</b>（见 §3.2）。v1.2 倍率由 10 档调整为 6 档，加权均倍 4.37→5.03，产卡与 A/C 基本持平（重度 189→134.3，含频控后）。</p>
 
-  <h3>3.2 兑换所需卡数 K 扫描（eCPM=0.30, RTP=0.90）</h3>
+  <h3>3.2 兑换所需卡数 K 扫描（eCPM=0.30, RTP=0.90, <span style="color:#c0392b">每日视频上限 20 次</span>）</h3>
   <table>
     <tr><th>K(兑换所需卡)</th><th>重度可持续单价¥</th><th>轻度可持续单价¥</th><th>重度对¥5奖品比值</th><th>说明</th></tr>
-    <tr><td>5</td><td>0.43</td><td>0.47</td><td>0.09</td><td>虚拟引流档（成本≈0，利润引擎）</td></tr>
-    <tr><td>20</td><td>1.72</td><td>1.90</td><td>0.34</td><td>¥1~2 小实物</td></tr>
-    <tr><td>50</td><td>4.30</td><td>4.74</td><td>0.86</td><td>¥3~4 中实物</td></tr>
-    <tr><td class="hl">80</td><td class="hl">6.88</td><td class="hl">7.59</td><td class="hl">1.38</td><td class="hl">¥5~6 实物（推荐主档）</td></tr>
-    <tr><td>120</td><td>10.31</td><td>11.39</td><td>2.06</td><td>¥8~10 高实物</td></tr>
+    <tr><td>5</td><td>0.21</td><td>0.47</td><td>0.04</td><td>虚拟引流档（成本≈0，利润引擎）</td></tr>
+    <tr><td>20</td><td>0.82</td><td>1.89</td><td>0.16</td><td>¥1~2 小实物</td></tr>
+    <tr><td>50</td><td>2.06</td><td>4.73</td><td>0.41</td><td>¥3~4 中实物</td></tr>
+    <tr><td class="hl">80</td><td class="hl">3.29</td><td class="hl">7.57</td><td class="hl" style="color:#c0392b">0.66</td><td class="hl">¥5~6 实物（推荐主档）<span style="color:#c0392b">·破防</span></td></tr>
+    <tr><td>120</td><td>4.94</td><td>11.36</td><td style="color:#c0392b">0.99</td><td>¥8~10 高实物<span style="color:#c0392b">·破防</span></td></tr>
   </table>
-  <p style="font-size:12px;color:#5F5E5A">可持续单价 = K × (广告收益 ÷ 卡数)（已含 ÷1.2 余量）；"重度对¥5比值" = 重度可持续单价 ÷ 5，≥1.2 即该档可安全承载 ¥5 奖品。数值来自 <code>docs/sim/economy_sim.py</code>。</p>
+  <div class="card bad">[评审修订 v1.3] 上表为<b>施加每日 20 次视频上限</b>后的真实扫描（脚本 K 现已覆盖 5/20/50/80/120）。结论：在 eCPM=0.30、RTP=0.90、频控 20 的当前默认参数下，<b>所有 K 档重度比值均 &lt; 1.2，生命线全面破防</b>（K=80 仅 0.66×，K=120 仅 0.99×）。原 v1.2 表格（重度 K=80 比值 1.38×）建立在"无频控、重度 52 次/日视频"的失真基础上，<b>已作废</b>。达标参数见 §8。</div>
+  <p style="font-size:12px;color:#5F5E5A">可持续单价 = K × (广告收益 ÷ 卡数)（已含 ÷1.2 余量）；"重度对¥5比值" = 重度可持续单价 ÷ 5，≥1.2 即该档可安全承载 ¥5 奖品。数值由 <code>docs/sim/economy_sim.py</code>（v2，含频控与新手期）复跑产出。</p>
 
   <h2><span class="num">4</span>经济平衡结论与推荐配置</h2>
+  <div class="card bad">[评审修订 v1.3 · 结论反转] 原 v1.2 默认参数（eCPM=0.30）在真实每日 20 次视频频控下<b>已无法守住生命线</b>（见 §3.2）。下方推荐配置仅描述玩法体验参数；<b>eCPM 目标须校准至 ≥0.55</b>（或放宽频控 / 降 RTP / 升 K 的组合，见 §8）方能使 K=80 重度比值 ≥1.2。首发前必须以 <code>docs/sim/economy_sim.py</code> 重跑确认。</div>
   <div class="card green">
-    <b>推荐配置（卡易触达 + 经济满足生命线）：</b>
+    <b>推荐配置（玩法体验 / 卡易触达）：</b>
     <ul style="margin-top:8px">
       <li><b>RTP = 0.90</b>（目标返还率；新手保护期更高，见 §7）</li>
       <li><b>发卡门槛 = 40 颗奖励珠</b>（R≥40 发卡，卡数 = min(5, floor(R/40))，可配置）</li>
       <li><b>兑换阶梯 K</b>：虚拟档 5 / 小实物 20 / 中实物 50 / 实物 80（推荐主档）/ 高实物 120（详见 §4.1）</li>
       <li><b>倍数分布</b>：×2 / ×4 / ×6 / ×8 / ×16 / ×32 加权（均倍 5.03），命中率 = 0.9 / M</li>
       <li><b>免费珠</b>：登录 30 + 领珠视频 88×6 = 558 颗/日</li>
+      <li><b>广告 eCPM 目标</b>：<span style="color:#c0392b">≥0.55</span>（原默认 0.30 不成立；详见 §8 校准）</li>
     </ul>
   </div>
 
@@ -135,13 +162,13 @@
     <tr><td class="l">实物（主档）</td><td class="hl">80</td><td class="hl">¥6.88</td><td>盲盒 / 周边小物</td><td class="hl">¥5.5</td></tr>
     <tr><td class="l">高实物</td><td>120</td><td>¥10.31</td><td>周边 / 小玩具</td><td>¥8.5</td></tr>
   </table>
-  <p><b>生命线验证（推荐主档 K=80 / ¥5.5 实物）：</b></p>
+  <p><b>生命线验证（推荐主档 K=80 / ¥5.5 实物，含每日 20 次视频频控）：</b></p>
   <table>
     <tr><th>玩家</th><th>广告收益/日</th><th>积分卡/日</th><th>可兑件数(K=80)</th><th>奖品成本/日</th><th>收益/成本</th><th>结论</th></tr>
-    <tr><td class="l">重度</td><td>¥15.68</td><td>182.5</td><td>2.28</td><td>¥12.54</td><td><b>1.25×</b></td><td style="color:#3B6D11">≥1.2 ✓</td></tr>
-    <tr><td class="l">轻度</td><td>¥3.73</td><td>39.3</td><td>0.49</td><td>¥2.70</td><td><b>1.38×</b></td><td style="color:#3B6D11">≥1.2 ✓</td></tr>
+    <tr><td class="l">重度</td><td>¥5.53</td><td>134.3</td><td>1.68</td><td>¥9.24</td><td><b style="color:#c0392b">0.60×</b></td><td style="color:#c0392b">破防 ✗</td></tr>
+    <tr><td class="l">轻度</td><td>¥3.74</td><td>39.5</td><td>0.49</td><td>¥2.70</td><td><b>1.38×</b></td><td style="color:#3B6D11">≥1.2 ✓</td></tr>
   </table>
-  <p>即 v1.1 方案在"卡极易触达"的前提下，仍满足"收益 ≥ 成本×1.2"；若高实物档（K=120 / ¥8.5）重度比值更达 1.29×。虚拟引流档成本≈0，是纯利润与留存引擎。</p>
+  <div class="card bad">[评审修订 v1.3] 重度视角下收益/成本仅 <b>0.60×</b>（原 v1.2 误报 1.25×），生命线<b>破防</b>。根因是未计入每日 20 次视频频控，高估广告收益约 2.8 倍。轻度仍达标（1.38×），但重度为成本驱动方，定价须以重度为准。校准方案见 §8（eCPM≥0.55 或频控/ RTP/ K 组合）。</div>
   <div class="card purple">
     <b>与 v1.0(阈值300) 的取舍：</b> v1.0 下 1 卡即可换 ¥5 实物，但卡几乎拿不到（体验差）；v1.1 下卡随时掉、但需攒 80 张换 ¥5.5 实物（重度 0.4 天 / 轻度 3 天一件）。<b>经济总量相近，体验显著更好</b>——这正是用户要求的"卡好拿、奖品按 K 张换"。
   </div>
@@ -157,7 +184,7 @@
     <tr><td class="l">每日免费珠</td><td>558（已定）</td><td>558（不变）</td><td>—</td></tr>
     <tr><td class="l">领珠视频</td><td>88 颗×6 次（已定）</td><td>88×6（不变）</td><td>—</td></tr>
     <tr><td class="l">出珠盒子容量</td><td>待定</td><td><b>60 颗</b>（显示用，见 §6）</td><td>新增</td></tr>
-    <tr><td class="l">广告频控</td><td>领珠 6/日，翻倍随命中</td><td>不变</td><td>—</td></tr>
+    <tr><td class="l">广告频控</td><td>领珠 6/日，翻倍随命中</td><td><b>领珠 6/日，且每日激励视频总次数 ≤20</b>（共享上限，对齐 PRD 6.2 / API dailyTotal）</td><td><span class="tag">评审修订</span></td></tr>
   </table>
 
   <h2><span class="num">6</span>出珠盒子容量建议</h2>
@@ -174,8 +201,11 @@
   <p>新手保护额外发出的珠子/积分卡计入"获客成本"，可在运营后台按渠道核算 ROI，不影响稳态生命线。</p>
 
   <h2><span class="num">8</span>敏感度与风险</h2>
+  <div class="card bad">[评审修订 v1.3] <b>频控是生命线的第一敏感因子（远超其他）。</b>原结论基于"重度 52 次/日视频"，但 PRD/API 硬性封顶 20 次/日。施加频控后重度广告收益由 ¥15.68 跌至 ¥5.53（约 -65%），A/C 由 0.086 跌至 0.041，所有 K 档破防。任何忽略频控的调参都不可信。</div>
   <ul>
-    <li><b>eCPM 波动</b>：若 eCPM 跌至 ¥0.2，重度广告收益降至 ¥10.88、A/C=0.0575，K=80 可持续单价降至 ¥4.60（1.2-安全成本 ¥3.83）——¥5.5 主档将破线。需监控 eCPM，跌破时动态调整 K（如 80→100）或下调高实物档单价。</li>
+    <li><b>每日视频频控（最关键）</b>：上限 20 次/日直接决定广告收益上限 ≈ 20×eCPM。频控每放宽 10 次，重度收益约 +50%、A/C 线性抬升。评估任何参数前须先固定频控。</li>
+    <li><b>eCPM 目标校准（达标基准）</b>：在 RTP=0.90、频控 20 次/日下，复跑验证 <b>eCPM≈0.55 时 K=80 重度比值≈1.21× 达标</b>（eCPM=0.50 时约 1.10×，临界；eCPM=0.30 当前默认仅 0.66× 破防）。亦可组合：频控放宽至 30 次/日 + eCPM≥0.40 近似达标（实测 1.16×，仍需微调）。<b>首发 eCPM 假设须从 0.30 上修至 ≥0.55，或明确放宽频控，并以脚本复跑为唯一权威。</b></li>
+    <li><b>eCPM 波动</b>：在频控 20 次/日下，若实际 eCPM 跌至 ¥0.2，重度广告收益 ≈ 3.69、A/C=0.027，K=80 可持续单价 ≈ ¥2.18（比值 0.44）——全面破防。需监控 eCPM，跌破目标时动态调整 K（如 80→100）或下调高实物档单价。</li>
     <li><b>翻倍率 p_double</b>：玩家翻倍越积极，产卡越多（成本↑）、视频收益也↑；仿真已含 p_double=0.7，属中性偏保守。</li>
     <li><b>珠子囤积</b>：RTP 0.9 下珠子净增长，玩家可能囤积后集中兑换。建议商城设<b>单卡每日兑换上限</b>与<b>高价值奖品限量</b>，平滑成本曲线。</li>
     <li><b>合规</b>：纯免费+广告驱动、结果与投入均为虚拟（珠子/积分卡），兑换为实物奖励——须确保积分卡<b>不直接反向变现</b>，符合各平台规则（见 PRD 第 10 节）。</li>
@@ -183,7 +213,7 @@
   </ul>
 
   <div class="foot">
-    本文档 v1.2 由 v1.1 修订（本次倍数分布调整为 6 档：×2/×4/×6/×8/×16/×32），数值经 <code>docs/sim/economy_sim.py</code> 蒙特卡洛仿真验证（20,000 玩家日/配置，含发卡触发次数统计）。所有"待定"值回填后，PRD 4.5/6.5 即可关闭。下一步：技术架构文档（落点还原的服务端判定接口、物理溢出实现）与服务端 API 文档。
+    本文档 <b>v1.3（评审修订）</b> 由 v1.2 更正：v1.2 默认参数（eCPM=0.30）在真实每日 20 次视频频控下生命线全面破防，本次施加频控与新手期后重跑（<code>docs/sim/economy_sim.py</code> v2，20,000 玩家日/配置）。结论反转——eCPM 目标须 ≥0.55（或等效组合）方可达标，详见 §3.2/§4.1/§8。数值经仿真验证，所有"待定"值回填后 PRD 4.5/6.5 可关闭。下一步：技术架构与服务端 API 文档，以及 Exchange 兑换模块（留后续版本）。
   </div>
 </div>
 </body>
