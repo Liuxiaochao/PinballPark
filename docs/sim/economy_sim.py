@@ -8,7 +8,11 @@
 - 命中率反解 P(hit) = RTP / M  -> 单局期望返还率恒为 RTP (与 M 无关)
 - 命中: 奖励 = 有效投入 x M ; 看视频 x2 再翻倍
 - 未命中: 投入沉没
-- 积分卡: 奖励 R 颗 -> min(card_cap, R // card_threshold) 张 (沿用 PRD)
+- 积分卡 (新规则, 用户方案):
+    单局奖励 R, 仅当 R >= CARD_THRESHOLD(默认40, 可配置) 才发卡,
+    卡数 = min(CARD_CAP, R // CARD_THRESHOLD); R < 阈值则 0 张.
+    这样小奖不再滴水式产卡, 卡被集中到"大赢一把"的爽点, 用户易触达.
+- 兑换所需卡数 K (可配置): 实物奖品单位成本须 <= K x (广告收益/卡数)
 - 每日免费珠供给 = 登录 login + 领珠视频 max_free_videos x video_beads
 - 翻倍视频: 命中后玩家以 p_double 概率看视频翻倍, 既是收益事件也膨胀珠子
 """
@@ -18,6 +22,9 @@ import random
 MULT_DIST = [(2, 30), (3, 22), (4, 16), (5, 11), (6, 8), (8, 5), (10, 4), (12, 2), (15, 1.5), (20, 1.0)]
 TOTAL_W = sum(w for _, w in MULT_DIST)
 WEIGHTED_AVG_M = sum(m * w for m, w in MULT_DIST) / TOTAL_W
+
+CARD_THRESHOLD = 40   # 单局奖励珠达到该值(含)才发卡, 可配置
+CARD_CAP = 5          # 单局发卡上限
 
 
 def roll_mult():
@@ -29,7 +36,7 @@ def roll_mult():
     return 2
 
 
-def simulate_day(rtp, card_threshold, card_cap, bet, p_double, eCPM,
+def simulate_day(rtp, bet, p_double, eCPM,
                  max_free_videos=6, login=30, video_beads=88,
                  max_games=300, seed=None):
     if seed is not None:
@@ -59,7 +66,9 @@ def simulate_day(rtp, card_threshold, card_cap, bet, p_double, eCPM,
                 reward *= 2
                 videos += 1  # 翻倍 = 一次激励视频 = 收益事件
             beads += reward
-            cards += min(card_cap, reward // card_threshold)
+            # 新发卡规则: 仅当奖励达到阈值才按颗数发卡
+            if reward >= CARD_THRESHOLD:
+                cards += min(CARD_CAP, reward // CARD_THRESHOLD)
         # 未命中: 投入沉没
     ad_rev = videos * eCPM
     return games, videos, beads, cards, ad_rev
@@ -79,40 +88,31 @@ def avg_over(n_days, *args, **kw):
 
 def main():
     print(f"加权平均倍数 WEIGHTED_AVG_M = {WEIGHTED_AVG_M:.3f}")
+    print(f"发卡规则: 单局奖励>= {CARD_THRESHOLD} 才发卡, 卡数=floor(R/{CARD_THRESHOLD}) 上限{CARD_CAP}")
     print(f"免费珠日供给 = 30(登录) + 6x88(领珠视频) = {30 + 6*88} 颗")
     print()
-    print(f"{'cfg':<28}{'RTP':>5}{'thr':>5}{'bet':>5}{'pDbl':>5}"
-          f"{'游戏/日':>9}{'视频/日':>9}{'广告¥/日':>10}{'卡/日':>8}"
-          f"{'可持续卡价¥':>11}{'×1.2临界¥':>11}")
-    configs = [
-        # (label, rtp, card_threshold, bet, p_double, max_games)
-        ("A 现状naive",        0.90, 30,  20, 0.70, 300),
-        ("B 阈值300",          0.90, 300, 20, 0.70, 300),
-        ("C RTP.80+阈300",     0.80, 300, 20, 0.70, 300),
-        ("D RTP.75+阈300",     0.75, 300, 20, 0.70, 300),
-        ("E RTP.85+阈100",     0.85, 100, 20, 0.70, 300),
-        ("F RTP.80+阈500",     0.80, 500, 20, 0.70, 300),
-        ("G RTP.80+阈300+轻玩",0.80, 300, 20, 0.70, 60),
-        ("H RTP.75+阈300+轻玩",0.75, 300, 20, 0.70, 60),
-        ("I RTP.90+阈150",       0.90, 150, 20, 0.70, 300),
-        ("J RTP.90+阈200",       0.90, 200, 20, 0.70, 300),
-        ("K RTP.90+阈400",       0.90, 400, 20, 0.70, 300),
-        ("L RTP.90+阈300+轻玩",  0.90, 300, 20, 0.70, 60),
-    ]
     eCPM = 0.30
-    for label, rtp, thr, bet, pd, mg in configs:
-        g, v, b, c, r = avg_over(20000, rtp, thr, 5, bet, pd, eCPM, max_games=mg)
-        # 可持续卡价 = 广告收益 / (1.2 x 卡数)  -> 单价低于此值才不亏
-        sustain = r / (1.2 * c) if c > 0 else float('inf')
-        crit = r / c if c > 0 else float('inf')  # 临界: 收益刚好覆盖成本 (无1.2余量)
-        print(f"{label:<28}{rtp:>5.2f}{thr:>5}{bet:>5}{pd:>5.2f}"
-              f"{g:>9.1f}{v:>9.1f}{r:>10.2f}{c:>8.1f}"
-              f"{sustain:>11.3f}{crit:>11.3f}")
+    rtp = 0.90
+    bet = 20
+    pd = 0.70
+    # 重度(压力测试, 300局) / 轻度(休闲, 60局)
+    gh, vh, bh, ch, rh = avg_over(20000, rtp, bet, pd, eCPM, max_games=300)
+    gl, vl, bl, cl, rl = avg_over(20000, rtp, bet, pd, eCPM, max_games=60)
+    print(f"重度玩家: 游戏 {gh:.1f}/日 视频 {vh:.1f}/日 广告¥{rh:.2f}/日 卡{ch:.2f}/日  A/C={rh/ch:.3f}")
+    print(f"轻度玩家: 游戏 {gl:.1f}/日 视频 {vl:.1f}/日 广告¥{rl:.2f}/日 卡{cl:.2f}/日  A/C={rl/cl:.3f}")
+    print()
+    print(f"{'K(兑换所需卡)':>14}{'重度可持续单价¥':>16}{'轻度可持续单价¥':>16}{'重度比值(x1.2)':>16}")
+    for K in [3, 5, 8, 10, 15, 20, 30, 50]:
+        # 可持续奖品单价 = K x (广告收益/卡数); 比值=单价/5 (以¥5奖品为基准看是否>=1.2)
+        sustain_h = K * (rh / ch)
+        sustain_l = K * (rl / cl)
+        ratio = sustain_h / 5.0  # 重度视角下, 对¥5奖品的 收益/成本 比值
+        print(f"{K:>14}{sustain_h:>16.2f}{sustain_l:>16.2f}{ratio:>16.2f}")
     print()
     print("说明:")
-    print("  可持续卡价 = 广告收益/(1.2 x 卡数): 实物奖品单价需 <= 此值才满足 收益>=成本x1.2")
-    print("  ×1.2临界 = 广告收益/卡数: 单价 <= 此值仅保本(无1.2安全余量)")
-    print("  轻玩 = 每日游戏上限 60 (典型休闲玩家); 重玩 = 300 (重度玩家压力测试)")
+    print("  可持续奖品单价 = K x (广告收益/卡数): 该档奖品单位成本须 <= 此值才满足 收益>=成本x1.2")
+    print("  '重度比值(x1.2)' = 重度视角下 对¥5奖品的(收益/成本)比值; >=1.2 即安全")
+    print("  重度是成本驱动方(产卡多/广告元少), 定价以重度为准; 轻度更赚, 可用于低价引流档")
 
 
 if __name__ == "__main__":
