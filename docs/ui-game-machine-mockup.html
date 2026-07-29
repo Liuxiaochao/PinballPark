@@ -127,8 +127,8 @@
   .lane::after{content:""; position:absolute; top:-2px; left:-10px; width:18px; height:8px;
     border-radius:4px; background:var(--lit); box-shadow:0 0 10px 2px var(--lit); opacity:.85;}
 
-  /* 倍率表（完整倍率，红 LED，板内紧凑单行条，位于出珠口上方，避让右侧发射道） */
-  .paytable{position:absolute; left:18px; right:66px; top:284px; height:32px; z-index:3;
+  /* 倍率表（完整倍率，红 LED，板内紧凑单行条，宽度严格对齐钉板 field：left:24/right:70） */
+  .paytable{position:absolute; left:24px; right:70px; top:284px; height:32px; z-index:3;
     display:flex; align-items:center; justify-content:center; gap:12px;
     background:var(--led-bg); border:1px solid var(--led-border); border-radius:8px;
     padding:0 12px; box-shadow:inset 0 0 10px rgba(255,59,48,.2), 0 0 6px rgba(255,59,48,.12);}
@@ -318,7 +318,7 @@
     <b>修正点 4 · 控制区移出画面：</b>「加注 / 拉杆发射」在机柜下方控制条，不遮挡游戏画面；发射道底部保留发射旋钮。<br>
     <b>修正点 5 · 出珠口贴近钉板 + 局部重排：</b>钉阵→倍率表→亮灯出口→出珠盒子自上而下依次排布，互不重叠；出口/托盘均避让右侧发射道（right:48 而非 18）。<br>
     <b>修正点 6 · 红色 LED 跑马灯：</b>顶部招牌与所有数字框改为<b>暗底红字红环</b>的机械数字 LED 跑马灯（非彩色霓虹）；侧边为红色流动灯柱。<br>
-    <b>修正点 7 · 完整倍率表（板内紧凑单行条）：</b>出珠口上方板内显示<b>全部 6 档倍率</b>（×2 / ×4 / ×6 / ×8 / ×16 / ×32，取自数值设计文档 §1.2 v1.2），标题＋倍率横排居中、高 32px 不再是大红框；当前局示例高亮 ×8（红 LED）。
+    <b>修正点 7 · 完整倍率表（板内紧凑单行条）：</b>出珠口上方板内显示<b>全部 6 档倍率</b>（×2 / ×4 / ×6 / ×8 / ×16 / ×32，取自数值设计文档 §1.2 v1.2），标题＋倍率横排居中、高 32px 不再是大红框；当前局示例高亮 ×8（红 LED）。宽度严格对齐钉板 <code>field</code>（left:24 / right:70），右缘不与右侧弹珠轨道（发射道）交叠。
   </div>
 
 <script>
