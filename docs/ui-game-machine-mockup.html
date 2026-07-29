@@ -127,18 +127,19 @@
   .lane::after{content:""; position:absolute; top:-2px; left:-10px; width:18px; height:8px;
     border-radius:4px; background:var(--lit); box-shadow:0 0 10px 2px var(--lit); opacity:.85;}
 
-  /* 倍率表（完整倍率，红 LED，板内紧凑单行条，位于出珠口上方） */
-  .paytable{position:absolute; left:18px; right:48px; top:284px; height:32px; z-index:3;
-    display:flex; align-items:center; gap:8px;
+  /* 倍率表（完整倍率，红 LED，板内紧凑单行条，位于出珠口上方，避让右侧发射道） */
+  .paytable{position:absolute; left:18px; right:66px; top:284px; height:32px; z-index:3;
+    display:flex; align-items:center; justify-content:center; gap:12px;
     background:var(--led-bg); border:1px solid var(--led-border); border-radius:8px;
-    padding:0 10px; box-shadow:inset 0 0 10px rgba(255,59,48,.2), 0 0 6px rgba(255,59,48,.12);}
-  .paytable .pt-title{font-family:"Courier New",ui-monospace,monospace;
-    font-size:8px; letter-spacing:2px; color:var(--led-soft); flex:0 0 auto;
+    padding:0 12px; box-shadow:inset 0 0 10px rgba(255,59,48,.2), 0 0 6px rgba(255,59,48,.12);}
+  .paytable > *{position:relative; z-index:1;}   /* 保证文字绘制在跑马灯环之上 */
+  .paytable .pt-title{font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    font-size:10px; letter-spacing:1px; color:var(--led-soft); flex:0 0 auto;
     text-shadow:0 0 5px rgba(255,59,48,.5);}
-  .paytable .pt-grid{display:flex; flex-wrap:nowrap; gap:4px 7px; flex:1; justify-content:center;}
+  .paytable .pt-grid{display:flex; flex-wrap:nowrap; gap:6px 10px; flex:0 1 auto; justify-content:center;}
   .led{font-family:"Courier New",ui-monospace,monospace; font-size:12px; font-weight:800;
-    line-height:1.4; color:var(--led); padding:1px 5px; border-radius:4px;
-    border:1px solid transparent;
+    line-height:1; color:var(--led); padding:1px 5px; border-radius:4px;
+    border:1px solid transparent; white-space:nowrap;
     text-shadow:0 0 6px rgba(255,59,48,.8), 0 0 12px rgba(255,59,48,.35);}
   .led.on{color:#fff; background:rgba(255,59,48,.18); border-color:var(--led);
     box-shadow:0 0 8px rgba(255,59,48,.6);}
@@ -275,7 +276,7 @@
         <div class="lane"><div class="shooter"></div></div>
         <!-- 完整倍率表（红 LED），位于出珠口上方 -->
         <div class="paytable marquee-frame">
-          <div class="pt-title">中奖倍率 WIN MULTIPLIER</div>
+          <div class="pt-title">倍率</div>
           <div class="pt-grid">
             <span class="led">×2</span><span class="led">×4</span><span class="led">×6</span><span class="led on">×8</span><span class="led">×16</span><span class="led">×32</span>
           </div>
