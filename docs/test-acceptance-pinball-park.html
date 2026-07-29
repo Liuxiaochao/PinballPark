@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>弹珠乐园 · 测试与验收文档 v1.0</title>
+<style>
+  :root{ --bg:#f6f7f9; --ink:#1c1f23; --muted:#5f6368; --line:#e2e5ea;
+    --blue:#185FA5; --ok:#0F7a3d; --okbg:#e7f6ec; --warn:#9a5b00; --warnbg:#fff4e0;
+    --bad:#c0392b; --badbg:#fdecea; --code:#24292e; }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:15px/1.7 -apple-system,"PingFang SC","Microsoft YaHei",system-ui,sans-serif;}
+  .wrap{max-width:980px;margin:0 auto;padding:32px 22px 80px;}
+  h1{font-size:25px;margin:0 0 6px}
+  h2.sec{font-size:20px;margin:38px 0 12px;padding-bottom:8px;border-bottom:2px solid var(--blue);}
+  h3{font-size:16px;margin:22px 0 8px;color:var(--blue)}
+  .meta{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+    font-size:13px;color:var(--muted);margin:14px 0 22px;}
+  .meta b{color:var(--ink)}
+  p{margin:8px 0}
+  table{border-collapse:collapse;width:100%;margin:10px 0;font-size:13.5px;background:#fff;}
+  th,td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top;}
+  th{background:#eef2f7;font-weight:700}
+  tr:nth-child(even) td{background:#fafbfc}
+  .card{border-radius:10px;padding:12px 14px;margin:12px 0;font-size:14px;border:1px solid;}
+  .ok{border-color:#bfe6cd;background:var(--okbg);color:#0c5130}
+  .warn{border-color:#f0d9a8;background:var(--warnbg);color:#6b4300}
+  .bad{border-color:#f1b5ad;background:var(--badbg);color:#8a261c}
+  code{background:#eef1f4;padding:1px 5px;border-radius:4px;font:13px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--code)}
+  pre{background:#0f1620;color:#e6edf3;padding:12px 14px;border-radius:8px;overflow:auto;
+    font:12.5px/1.6 ui-monospace,Menlo,monospace;}
+  .tag{display:inline-block;font-size:11px;font-weight:700;padding:1px 7px;border-radius:99px;
+    background:#e8eef6;color:var(--blue);margin-right:4px}
+  .tag.p0{background:#fdecea;color:var(--bad)} .tag.p1{background:#fff4e0;color:var(--warn)}
+  .tag.p2{background:#eef2f7;color:#3a4756}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:760px){.grid{grid-template-columns:1fr}}
+  ul{margin:8px 0;padding-left:22px} li{margin:4px 0}
+  footer{margin-top:50px;font-size:12px;color:var(--muted);border-top:1px solid var(--line);padding-top:14px;}
+  .num{display:inline-block;min-width:26px;color:var(--blue);font-weight:800}
+  .k{color:var(--blue);font-weight:700}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>弹珠乐园 · 测试与验收文档</h1>
+<div class="meta">
+  版本 <b>v1.0</b> · 日期 2026-07-29 · 状态：初稿（设计期文档，待研发评审）<br>
+  上游：《PRD v1.0》《玩法数值设计 v1.2》《技术架构 v1.0》《服务端 API v1.0》《UI-UX v1.0》《功能框架大纲 v0.1》<br>
+  本文目标：将 PRD §11 的 9 条验收标准展开为<b>可执行</b>的测试 spec（功能 / 数值 / 性能 / 安全 / 渲染 / 合规 / 验收），并定义发布门禁。<br>
+  <b>范围说明：</b>Exchange 兑换模块（商城履约 / 订单状态机）的详细测试用例留待该模块实现时补全（与 API/UI-UX 一致，属后续版本）。
+</div>
+
+<h2 class="sec"><span class="num">1</span>测试策略与分层</h2>
+<p>按「价值安全边界」优先排序：服务端判定（命中/落点/奖励/卡）为<b>唯一权威</b>，一切客户端表现与本地计算不得参与价值判定。测试分层如下：</p>
+<table>
+  <tr><th>层级</th><th>范围</th><th>主要手段</th><th>对应章节</th></tr>
+  <tr><td>单元</td><td>命中算法、发卡规则、K 分层、签名、状态机</td><td>Go 表驱动单测 + 蒙特卡洛脚本</td><td>§3 / §5</td></tr>
+  <tr><td>集成</td><td>四段事务端到端、账本一致性、断线恢复</td><td>API 自动化（Postman/Testify）+ 影子库对账</td><td>§2 / §5</td></tr>
+  <tr><td>性能</td><td>演出帧率、N=1980 边界、并发、延迟</td><td>压测（k6/自研）+ 真机帧率采集</td><td>§4</td></tr>
+  <tr><td>安全</td><td>签名、防重放、防客户端伪造、频控</td><td>模糊测试 + 逆向尝试 + 审计</td><td>§5</td></tr>
+  <tr><td>渲染</td><td>透视倾斜、出珠盒子、倍率表、LED 跑马灯</td><td>真机截图 diff + 计数一致性校验</td><td>§6</td></tr>
+  <tr><td>合规</td><td>概率公示、未成年、广告频控、隐私</td><td>静态审查 + 法务走查</td><td>§7</td></tr>
+  <tr><td>验收</td><td>PRD §11 九条 + 扩展门禁</td><td>验收用例逐条执行</td><td>§9</td></tr>
+</table>
+
+<h2 class="sec"><span class="num">2</span>功能测试 · 四段事务状态机</h2>
+<p>一局状态机：<code>open(bet_locked) → [bet] → launch(launched) → settle(settled)</code>；异常路径 <code>bet_locked→aborted</code>（锁超时）。单用户同时仅一局（<code>game_lock:{uid}</code>，TTL 30min）。</p>
+<table>
+  <tr><th>用例</th><th>标题</th><th>前置 / 步骤</th><th>预期</th><th>级别</th></tr>
+  <tr><td>FUN-01</td><td>完整一局happy path</td><td>余额≥5 → open(5) → launch → settle</td><td>余额扣 5 后按结果增减；<code>game_lock</code> 在 settle 后释放；<code>status=settled</code></td><td><span class="tag p0">P0</span></td></tr>
+  <tr><td>FUN-02</td><td>open 锁投入</td><td>余额 25，open(bet=5)</td><td>响应 <code>balance=20</code>；<code>bean_ledger</code> 增 <code>type=open_lock</code> 5；<code>game_rounds.status=bet_locked</code></td><td><span class="tag p0">P0</span></td></tr>
+  <tr><td>FUN-03</td><td>加注上限与锁</td><td>open(5) 后 bet(addBet=10)，再 bet(addBet=90)</td><td>第一次 <code>effectiveBet=15</code>；第二次拒（<code>effective_bet+addBet&gt;99</code>），返回 4xx</td><td><span class="tag p1">P1</span></td></tr>
+  <tr><td>FUN-04</td><td>launch 权威判定</td><td>launch(roundId)</td><td>返回 <code>hit/targetExitId/rewardBeans/cards/multiplier/rtpApplied</code>；<code>chargePower</code> 仅记录不参与判定；<code>status=launched</code> 且<b>未发放</b></td><td><span class="tag p0">P0</span></td></tr>
+  <tr><td>FUN-05</td><td>settle 幂等入账</td><td>同一 roundId 连续 settle 两次</td><td>第二次返回首次结果；<code>bean_ledger</code>/<code>point_ledger</code> 仅一次写入；无重复发奖</td><td><span class="tag p0">P0</span></td></tr>
+  <tr><td>FUN-06</td><td>并发锁</td><td>同一用户在局中进行中再发 open</td><td>返回 <code>40903 game_locked</code>；不创建新局、不重复扣币</td><td><span class="tag p0">P0</span></td></tr>
+  <tr><td>FUN-07</td><td>断线恢复-已结算</td><td>settle 后断线重连，调 <code>GET /game/round/{id}</code></td><td><code>status=settled, settleDone=true</code>；客户端直接展示，不重复 settle</td><td><span class="tag p0">P0</span></td></tr>
+  <tr><td>FUN-08</td><td>断线恢复-已发射未结算</td><td>launch 后断线，重连</td><td><code>status=launched</code>；客户端播放落点演出后调 settle</td><td><span class="tag p1">P1</span></td></tr>
+  <tr><td>FUN-09</td><td>锁超时回滚</td><td>open 后 30min 内未 launch/settle</td><td><code>game_lock</code> TTL 触发 → <code>status=aborted</code>，锁释放，bet 经 <code>bean_ledger(type=open_refund)</code> 回滚；不丢资产</td><td><span class="tag p0">P0</span></td></tr>
+  <tr><td>FUN-10</td><td>暗口沉没</td><td>未命中局</td><td><code>targetExitId</code> ∈ 暗口集（litExits 之外独立沉没通道）；<code>rewardBeans=0, cards=0</code></td><td><span class="tag p1">P1</span></td></tr>
+</table>
+<div class="card ok">对齐 API §3：四段事务价值在 <code>launch</code> 一次定死、<code>settle</code> 才入账；<code>chargePower</code> 仅演出。所有「写价值」接口以 <code>roundId</code> 行级锁 + 状态机去重，客户端可安全重试。</div>
+
+<h2 class="sec"><span class="num">3</span>数值与经济回归测试</h2>
+<p>目标：验证玩法数值设计 v1.2 的仿真结论在真实服务端实现中成立，且 RTP 完全可控。</p>
+<h3>3.1 命中率与倍率分布</h3>
+<table>
+  <tr><th>用例</th><th>校验项</th><th>预期</th><th>容差</th></tr>
+  <tr><td>NUM-01</td><td>命中率 <code>P(hit)=rtpApplied/multiplier</code></td><td>每个倍数档实测命中率 ≈ 理论值</td><td>±0.5%（百万局蒙特卡洛）</td></tr>
+  <tr><td>NUM-02</td><td>倍率集合</td><td>仅出现 {2,4,6,8,16,32} 六档</td><td>—</td></tr>
+  <tr><td>NUM-03</td><td>倍率权重近似</td><td>观测分布 ≈ 权重 {30,22,14,9,3,1.5}</td><td>χ² 检验 p&gt;0.01</td></tr>
+  <tr><td>NUM-04</td><td>加权均倍</td><td>= 5.03（v1.2 仿真结论）</td><td>±0.05</td></tr>
+  <tr><td>NUM-05</td><td>整体 RTP</td><td>稳态 ≈ 0.90</td><td>±0.02</td></tr>
+  <tr><td>NUM-06</td><td>新手保护曲线</td><td>前 5 局 rtpApplied=1.5，第 6–15 局线性递减至 0.90，第 16 局起稳态</td><td>分段边界精确</td></tr>
+</table>
+<h3>3.2 积分卡与经济生命线</h3>
+<table>
+  <tr><th>用例</th><th>校验项</th><th>预期</th></tr>
+  <tr><td>NUM-07</td><td>发卡门槛</td><td><code>rewardBeans&lt;40 → cards=0</code>；<code>R≥40 → cards=min(5, floor(R/40))</code></td></tr>
+  <tr><td>NUM-08</td><td>K 分层兑换</td><td>兑换所需卡数仅取 {5,20,50,80,120}；扣卡走事务，失败补偿退卡</td></tr>
+  <tr><td>NUM-09</td><td>经济生命线回归</td><td>重跑 <code>docs/sim/economy_sim.py</code>：K=80 时重度 A/C=1.38×、轻度 1.38×，均 ≥1.2×；广告收益 ≥ 积分成本×1.2</td></tr>
+  <tr><td>NUM-10</td><td>免费珠池</td><td>每日登录 30 + 领珠 88×6 = 558；领珠每日 ≤6 次强制限频</td></tr>
+  <tr><td>NUM-11</td><td>N=1980 边界</td><td>投入 99 × ×32 时单局最大奖励 = 3168；不生成 3168 个物理刚体（演出受控，计数累加至 N）</td></tr>
+</table>
+<div class="card warn">NUM-09 是商业生命线，每次改动倍率/权重/卡规则/广告 eCPM 模型后<b>必须重跑仿真</b>回填，禁止只改表格。仿真脚本 <code>docs/sim/economy_sim.py</code> 即唯一权威回归入口。</div>
+
+<h2 class="sec"><span class="num">4</span>性能与压力测试</h2>
+<table>
+  <tr><th>用例</th><th>场景</th><th>指标 / 预期</th><th>级别</th></tr>
+  <tr><td>PERF-01</td><td>常态演出（中端机）</td><td>板面钉阵 + 弹珠动画 ≥ 30 fps</td><td><span class="tag p0">P0</span></td></tr>
+  <tr><td>PERF-02</td><td>N=1980 大奖演出</td><td>物理珠 ≤ 60（盒子容量）+ 溢出若干；<b>禁止</b>生成 N 个全刚体；帧率不低于 25 fps</td><td><span class="tag p0">P0</span></td></tr>
+  <tr><td>PERF-03</td><td>出珠盒子满溢</td><td>奖励 &gt; 60 时溢出珠以物理溢出掉落，计数仍精确 = N</td><td><span class="tag p1">P1</span></td></tr>
+  <tr><td>PERF-04</td><td>settle 接口延迟</td><td>P99 &lt; 300ms（含账本双写）</td><td><span class="tag p1">P1</span></td></tr>
+  <tr><td>PERF-05</td><td>并发开局</td><td>1000 并发 open，game_lock 无误授予、无双开、账本无脏写</td><td><span class="tag p0">P0</span></td></tr>
+  <tr><td>PERF-06</td><td>Redis 锁 TTL</td><td>30min TTL 到点自动释放且回滚正确（同 FUN-09）</td><td><span class="tag p1">P1</span></td></tr>
+</table>
+<div class="card ok">对齐架构 §5 / PRD §5.3：N 可能高达 3168（99×32），实现策略——演出仅生成有限物理珠（容量上限 60 + 溢出若干），数字计数器累加至 N，保证移动端帧率。这是性能与视觉一致性的硬约束。</div>
+
+<h2 class="sec"><span class="num">5</span>安全与防作弊测试</h2>
+<table>
+  <tr><th>用例</th><th>攻击 / 场景</th><th>预期</th><th>级别</th></tr>
+  <tr><td>SEC-01</td><td>签名缺失/错误</td><td>写接口无 <code>X-Sign</code> 或校验失败 → <code>40102 sign_invalid</code>；不执行</td><td><span class="tag p0">P0</span></td></tr>
+  <tr><td>SEC-02</td><td>重放攻击</td><td><code>timestamp</code> 偏离 ±5min 或 <code>nonce</code> 复用 → 拒绝</td><td><span class="tag p0">P0</span></td></tr>
+  <tr><td>SEC-03</td><td>篡改 launch 响应</td><td>客户端伪造 <code>hit=true, rewardBeans=9999</code> → 服务端权威结果为准，入账以服务端定值为准</td><td><span class="tag p0">P0</span></td></tr>
+  <tr><td>SEC-04</td><td>伪造命中算法</td><td>本地计算 <code>P(hit)</code> / 选出口无效；命中仅由服务端密码学安全随机源决定</td><td><span class="tag p0">P0</span></td></tr>
+  <tr><td>SEC-05</td><td>chargePower 作弊</td><td>拉杆力度影响判定 → 无效（仅演出）</td><td><span class="tag p1">P1</span></td></tr>
+  <tr><td>SEC-06</td><td>广告回调伪造</td><td>伪造「看完广告」直接领珠 → 必须经平台 server-to-server 回调验真（adModule 验签）才发奖</td><td><span class="tag p0">P0</span></td></tr>
+  <tr><td>SEC-07</td><td>领珠频控绕过</td><td>尝试第 7 次领珠 → 拒绝；客户端改本地时钟无效（以服务端日期为准）</td><td><span class="tag p1">P1</span></td></tr>
+  <tr><td>SEC-08</td><td>并发双 settle 刷奖</td><td>同 roundId 并发 settle → 仅一次入账（状态机去重）</td><td><span class="tag p0">P0</span></td></tr>
+  <tr><td>SEC-09</td><td>deviceSecret 泄露面</td><td>token 刷新不影响 deviceSecret；签名始终用同一 deviceSecret；传输仅 HTTPS</td><td><span class="tag p2">P2</span></td></tr>
+</table>
+<div class="card bad">价值安全红线：任何「弹珠 / 积分卡 / 广告发奖」的权威值<b>必须</b>来自服务端。客户端仅负责演出与上报，不得参与判定。SEC-03/04/06 为高危用例，门禁一票否决。</div>
+
+<h2 class="sec"><span class="num">6</span>客户端 / 引擎渲染专项</h2>
+<p>注：当前仅为设计示意稿（<code>docs/ui-game-machine-mockup.html</code> 等 HTML）已冻结为方向 spec；本节省略「示意稿像素级」验收，聚焦<b>真实 Cocos 实现</b>须满足的几何与一致性硬指标。</p>
+<table>
+  <tr><th>用例</th><th>项</th><th>预期（真实界面）</th></tr>
+  <tr><td>UI-01</td><td>透视倾斜</td><td>机台后仰 30°（<code>perspective + rotateX(30°)</code>），板面有纵深；球沿后仰面板下落观感正确</td></tr>
+  <tr><td>UI-02</td><td>弹射轨道</td><td>右侧发射道：球自底部弹起 → 沿道升至顶端 → 转入钉板顶部 → 穿钉下落；与亮灯出口/出珠盒子不交叠</td></tr>
+  <tr><td>UI-03</td><td>倍率表</td><td>板内紧凑单行条，6 档 <code>×2 ×4 ×6 ×8 ×16 ×32</code>，宽度对齐钉板（左 24/右 70），红色 LED；当前局高亮</td></tr>
+  <tr><td>UI-04</td><td>出珠盒子计数</td><td>盒子计数与权威 <code>rewardBeans</code> 一致；溢出珠物理掉落但计数不丢（与 PERF-03 共验）</td></tr>
+  <tr><td>UI-05</td><td>红色 LED 跑马灯</td><td>招牌 / 数字框（余额·奖励珠·倍率·出珠计数）/ 侧灯柱为暗底红字红环跑马灯，非彩色霓虹</td></tr>
+  <tr><td>UI-06</td><td>控制区</td><td>加注 / 拉杆发射位于机柜下方控制条，不遮挡游戏画面功能区</td></tr>
+  <tr><td>UI-07</td><td>HUD 不随板旋转</td><td>余额 / 奖励珠 / 倍率 / 按钮等屏幕正向图层不随板面倾斜变形，文字可读</td></tr>
+  <tr><td>UI-08</td><td>多端一致</td><td>小游戏 / App / H5 三端布局与倍率表 / 跑马灯风格一致；低配降级（钉数 30/45/60）不破版</td></tr>
+</table>
+
+<h2 class="sec"><span class="num">7</span>合规与内容安全</h2>
+<table>
+  <tr><th>用例</th><th>项</th><th>预期</th><th>级别</th></tr>
+  <tr><td>CMP-01</td><td>概率公示常驻</td><td>大厅金刚区 + 设置页可一键查看 6 档倍率及各自出现概率（取自数值 §1.2 权重）；不可移除或深藏</td><td><span class="tag p0">P0</span></td></tr>
+  <tr><td>CMP-02</td><td>未成年提示</td><td>启动 / 设置页存在未成年防沉迷提示与时段限制入口</td><td><span class="tag p0">P0</span></td></tr>
+  <tr><td>CMP-03</td><td>广告频控提示</td><td>领珠每日 6 次、翻倍触发有频控与剩余次数提示；不诱导过度观看</td><td><span class="tag p1">P1</span></td></tr>
+  <tr><td>CMP-04</td><td>隐私与权限</td><td>仅申请必要权限；隐私政策链接可达；deviceSecret 不落不安全存储</td><td><span class="tag p2">P2</span></td></tr>
+  <tr><td>CMP-05</td><td>虚拟道具明示</td><td>弹珠 / 积分卡明确标注为「虚拟道具，不可反向兑换现金」</td><td><span class="tag p1">P1</span></td></tr>
+</table>
+
+<h2 class="sec"><span class="num">8</span>埋点与监控</h2>
+<p>对齐 PRD §11「三大漏斗」：广告 / 局内 / 兑换。以下事件须完整且看板可见：</p>
+<ul>
+  <li><b>广告漏斗</b>：ad_request → ad_show → ad_reward(server_verify) → beans_grant；scene ∈ {sign, high_multiplier} 触发时机可溯。</li>
+  <li><b>局内漏斗</b>：open → bet(可选) → launch → settle → beans/cards 变化；含 <code>rtpApplied</code> 与 <code>multiplier</code> 维度。</li>
+  <li><b>兑换漏斗</b>：exchange_enter → risk_pass → deduct_card → fulfill → order_status（Exchange 模块上线后补全）。</li>
+  <li><b>监控告警</b>：实时 RTP 偏离阈值（&gt;±3%）告警；单用户异常高频局 / 异常大额奖励审计；game_lock 堆积告警。</li>
+</ul>
+
+<h2 class="sec"><span class="num">9</span>验收清单（对齐 PRD §11 + 扩展）</h2>
+<table>
+  <tr><th>#</th><th>PRD §11 验收项</th><th>对应测试</th><th>门禁</th></tr>
+  <tr><td>1</td><td>微信小游戏可登录、完整一局跑通</td><td>FUN-01, SEC-09</td><td>必过</td></tr>
+  <tr><td>2</td><td>倍数/落口由服务端决定，客户端不可伪造</td><td>SEC-03, SEC-04, FUN-04</td><td>必过</td></tr>
+  <tr><td>3</td><td>激励视频发奖须服务端回调验证</td><td>SEC-06</td><td>必过</td></tr>
+  <tr><td>4</td><td>登录 30 / 领珠 88×6 发放与限频</td><td>NUM-10, SEC-07</td><td>必过</td></tr>
+  <tr><td>5</td><td>积分卡规则 R≥40 发卡、K 分层、账本不可逆</td><td>NUM-07, NUM-08</td><td>必过</td></tr>
+  <tr><td>6</td><td>商城兑换全流程（风控→扣卡→履约→订单）</td><td>Exchange 模块用例（待补）</td><td>延后</td></tr>
+  <tr><td>7</td><td>倍数概率公示可查、未成年提示存在</td><td>CMP-01, CMP-02</td><td>必过</td></tr>
+  <tr><td>8</td><td>经济闸门可配置并触发收紧</td><td>NUM-05, NUM-09, 监控告警</td><td>必过</td></tr>
+  <tr><td>9</td><td>三大漏斗埋点完整、看板可见</td><td>§8</td><td>必过</td></tr>
+</table>
+<div class="card ok">扩展门禁：FUN-05（幂等）、FUN-06（并发锁）、FUN-09（超时回滚）、NUM-09（经济生命线）、PERF-02（N=1980 边界）、SEC-03/04/06（价值安全红线）一并纳入 P0 发布门禁。</div>
+
+<h2 class="sec"><span class="num">10</span>测试环境 / 数据 / 工具</h2>
+<ul>
+  <li><b>环境</b>：本地（SQLite 影子）+ 测试服（MySQL/Redis 同构）+ 灰度（1% 流量）。</li>
+  <li><b>造数</b>：固定种子复现特定局（roundId 可回溯）；RTP/权重参数化注入，便于 NUM 回归。</li>
+  <li><b>工具</b>：Go Testify（单元）、k6（压测）、Postman/Newman（API）、economy_sim.py（经济回归）、真机帧率采集 + 截图 diff（渲染）。</li>
+  <li><b>对账</b>：每日 <code>bean_ledger</code> + <code>point_ledger</code> 与余额快照对账，差异 &gt;0 即告警。</li>
+</ul>
+
+<h2 class="sec"><span class="num">11</span>缺陷分级与发布门禁</h2>
+<table>
+  <tr><th>级别</th><th>定义</th><th>处理</th></tr>
+  <tr><td><span class="tag p0">P0</span></td><td>价值安全 / 数据丢失 / 无法开局 / 合规缺失</td><td>阻塞发布，24h 内修复</td></tr>
+  <tr><td><span class="tag p1">P1</span></td><td>功能缺陷影响体验但可绕行</td><td>当版修复或下版排期</td></tr>
+  <tr><td><span class="tag p2">P2</span></td><td>体验优化 / 边缘场景</td><td> backlog 排期</td></tr>
+</table>
+<div class="card warn"><b>发布门禁：</b>所有 P0 用例 100% 通过；NUM-09 经济生命线回归通过；实时监控 RTP 偏离 &lt;±3%；对账差异 = 0。任一不满足不得灰度。</div>
+
+<h2 class="sec"><span class="num">12</span>一致性核对</h2>
+<table>
+  <tr><th>上游决策</th><th>本文落点</th><th>状态</th></tr>
+  <tr><td>四段事务 + launch 权威判定</td><td>§2 FUN-01~10, §5 SEC-03/04</td><td>✅ 一致</td></tr>
+  <tr><td>倍率 6 档 {2,4,6,8,16,32} 权重 {30,22,14,9,3,1.5}</td><td>§3 NUM-02/03/04</td><td>✅ 一致</td></tr>
+  <tr><td>发卡 R≥40, min(5,floor(R/40))；K 分层 5/20/50/80/120</td><td>§3 NUM-07/08</td><td>✅ 一致</td></tr>
+  <tr><td>RTP 0.90，新手保护前 5 局 1.5 递减</td><td>§3 NUM-01/05/06</td><td>✅ 一致</td></tr>
+  <tr><td>N=1980(现 3168) 不出全刚体 / ≥30fps</td><td>§4 PERF-01/02, §6 UI-04</td><td>✅ 一致</td></tr>
+  <tr><td>签名 HMAC-SHA256 ±5min / game_lock TTL 30min</td><td>§5 SEC-01/02, §2 FUN-09</td><td>✅ 一致</td></tr>
+  <tr><td>红色 LED 跑马灯 / 透视倾斜 / 倍率表对齐钉板</td><td>§6 UI-01/03/05（真实实现指标）</td><td>✅ 一致（spec 冻结）</td></tr>
+  <tr><td>Exchange 兑换模块留后续版本</td><td>§0 / §9 #6 / §11</td><td>⏳ 待补</td></tr>
+</table>
+
+<footer>弹珠乐园 · 测试与验收文档 v1.0 · 2026-07-29 · 与 PRD v1.0 / 数值 v1.2 / 架构 v1.0 / API v1.0 / UI-UX v1.0 一致 · Exchange 用例待补</footer>
+</div>
+</body>
+</html>
