@@ -94,7 +94,7 @@
   <h1>弹珠乐园 · 技术架构设计文档</h1>
   <p class="subtitle">对标实体"弹珠乐园"游戏机的多端休闲游戏 —— 第三份阶段文档（技术架构 v1.0）</p>
   <div class="meta">
-    <span class="tag">Cocos Creator 3.x</span><span class="tag">NestJS</span><span class="tag">MySQL + Redis</span><span class="tag">物理为表·结果可控</span><span class="tag">多端隔离</span>
+    <span class="tag">Cocos Creator 3.x</span><span class="tag">Go</span><span class="tag">MySQL + Redis</span><span class="tag">物理为表·结果可控</span><span class="tag">多端隔离</span>
   </div>
 
   <section id="s0">
@@ -119,13 +119,13 @@
       <li><b>物理为表、结果可控</b>：客户端物理引擎只负责真实手感演出；结果（命中、落点、奖励）服务端先定，引导力只是把球"扶"进已定出口。</li>
       <li><b>账本强一致、演出可重连</b>：弹珠/积分入账以服务端为准、事务内完成；客户端演出失败/掉线，服务端结果仍可补发（结算幂等）。</li>
       <li><b>配置驱动、可灰度</b>：RTP、倍数池、K 阈值、广告频控全部后台可配，支持按用户分群 A/B（如新手保护曲线）。</li>
-      <li><b>演进优先</b>：服务端先单体分模块（NestJS modules），量大再拆微服务；接口与存储设计预留迁移路径。</li>
+      <li><b>演进优先</b>：服务端先单体分模块（Go packages），量大再拆微服务；接口与存储设计预留迁移路径。</li>
     </ul>
   </section>
 
   <section id="s2">
     <h2 class="sec"><span class="num">2</span>总体架构</h2>
-    <p>自顶向下分五层：<b>客户端 → API 网关/接入层 → 后端应用（NestJS 模块）→ 存储（MySQL/Redis）→ 第三方（广告/兑奖/统计）</b>。两条铁律的约束力体现在"价值判定"全部收敛在后端应用层，客户端不持有任何产生价值的随机源。</p>
+    <p>自顶向下分五层：<b>客户端 → API 网关/接入层 → 后端应用（Go 服务）→ 存储（MySQL/Redis）→ 第三方（广告/兑奖/统计）</b>。两条铁律的约束力体现在"价值判定"全部收敛在后端应用层，客户端不持有任何产生价值的随机源。</p>
     <svg viewBox="0 0 680 360" xmlns="http://www.w3.org/svg" font-family="-apple-system,'PingFang SC',sans-serif">
       <defs>
         <marker id="ar" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#5F5E5A"/></marker>
@@ -152,7 +152,7 @@
       <text x="255" y="188" text-anchor="middle" font-size="11" fill="#2C2C2A">验签入口</text>
 
       <rect x="344" y="20" width="170" height="320" rx="10" fill="#E6F1FB" stroke="#185FA5"/>
-      <text x="429" y="40" text-anchor="middle" font-size="13" font-weight="700" fill="#0C447C">后端应用 (NestJS)</text>
+      <text x="429" y="40" text-anchor="middle" font-size="13" font-weight="700" fill="#0C447C">后端应用 (Go)</text>
       <text x="429" y="66" text-anchor="middle" font-size="11" fill="#2C2C2A">Auth / 账号</text>
       <text x="429" y="84" text-anchor="middle" font-size="11" fill="#2C2C2A">Game 核心判定</text>
       <text x="429" y="102" text-anchor="middle" font-size="11" fill="#0C447C" font-weight="700">Asset 资产账本</text>
@@ -323,20 +323,20 @@
   </section>
 
   <section id="s8">
-    <h2 class="sec"><span class="num">8</span>服务端架构（NestJS 模块）</h2>
-    <p>后端以 NestJS 单体起步，按业务域分 module；价值判定与账本集中在 Game/Asset 模块，保证铁律一。模块间通过服务调用，不跨库直连。</p>
+    <h2 class="sec"><span class="num">8</span>服务端架构（Go 服务）</h2>
+    <p>后端以 <b>Go</b> 单体服务起步，按业务域分 package（见下表）；价值判定与账本集中在 <code>game</code>/<code>asset</code> 包，保证铁律一。包间通过接口/服务调用，不跨库直连。HTTP 框架推荐 <b>Gin</b>（或 Echo / 标准库 + chi 路由），依赖注入用 <code>google/wire</code> 或手写；ORM 用 <b>GORM</b>（默认）/ <b>sqlx</b>（账本高性能路径可选）。</p>
     <table>
-      <tr><th style="width:24%">Module</th><th>核心职责</th><th>对外接口（概览）</th></tr>
-      <tr><td>AuthModule</td><td>微信/手机号登录、跨端统一 uid、游客兜底、token 签发</td><td>login / token/refresh</td></tr>
-      <tr><td><b>GameModule</b></td><td><b>开局 / 加注锁 / 拉杆判定 / 结算入账 / 翻倍</b>——核心价值判定</td><td>open / bet / launch / settle / double</td></tr>
-      <tr><td>AssetModule</td><td>弹珠账本、积分账本、流水；事务与幂等</td><td>内部服务 + 查询</td></tr>
-      <tr><td>ExchangeModule</td><td>商城列表、兑换下单、风控后扣卡、第三方履约、订单状态机</td><td>list / create / status</td></tr>
-      <tr><td>AdModule</td><td>广告场景频控、回调验真、发奖</td><td>reward / callback</td></tr>
-      <tr><td>RiskModule</td><td>设备指纹、行为画像、频控、黑名单、兑换实名校验</td><td>内部 + 决策</td></tr>
-      <tr><td>ConfigModule</td><td>RTP/倍数池/K/频控 动态配置、A/B 分群</td><td>get / set（admin）</td></tr>
-      <tr><td>AdminModule</td><td>运营后台：配置、订单、风控名单、数据看板、经济闸门</td><td>后台 API</td></tr>
+      <tr><th style="width:24%">Package（业务域）</th><th>核心职责</th><th>对外接口（概览）</th></tr>
+      <tr><td><code>auth</code></td><td>微信/手机号登录、跨端统一 uid、游客兜底、token 签发</td><td>login / token/refresh</td></tr>
+      <tr><td><code><b>game</b></code></td><td><b>开局 / 加注锁 / 拉杆判定 / 结算入账 / 翻倍</b>——核心价值判定</td><td>open / bet / launch / settle / double</td></tr>
+      <tr><td><code>asset</code></td><td>弹珠账本、积分账本、流水；事务与幂等</td><td>内部服务 + 查询</td></tr>
+      <tr><td><code>exchange</code></td><td>商城列表、兑换下单、风控后扣卡、第三方履约、订单状态机</td><td>list / create / status</td></tr>
+      <tr><td><code>ad</code></td><td>广告场景频控、回调验真、发奖</td><td>reward / callback</td></tr>
+      <tr><td><code>risk</code></td><td>设备指纹、行为画像、频控、黑名单、兑换实名校验</td><td>内部 + 决策</td></tr>
+      <tr><td><code>config</code></td><td>RTP/倍数池/K/频控 动态配置、A/B 分群</td><td>get / set（admin）</td></tr>
+      <tr><td><code>admin</code></td><td>运营后台：配置、订单、风控名单、数据看板、经济闸门</td><td>后台 API</td></tr>
     </table>
-    <div class="card ok">Game/Asset 模块是安全边界：所有"产生价值"的逻辑（判定、发奖、扣减）必须落在此二模块且经事务；其它模块（如商城展示）只读或经 Game/Asset 代理写。</div>
+    <div class="card ok"><code>game</code>/<code>asset</code> 包是安全边界：所有"产生价值"的逻辑（判定、发奖、扣减）必须落在此二包且经事务；其它包（如商城展示）只读或经 <code>game</code>/<code>asset</code> 代理写。</div>
   </section>
 
   <section id="s9">
@@ -476,7 +476,7 @@ POST /game/settle { roundId }  → { beans, cards, balance }
   <section id="s15">
     <h2 class="sec"><span class="num">15</span>部署拓扑</h2>
     <ul>
-      <li><b>后端</b>：NestJS 容器化（Docker）+ K8s/轻量云；多副本无状态，状态在 MySQL/Redis。小游戏与 App 接入层独立 Ingress/域名，共用后端服务。</li>
+      <li><b>后端</b>：Go 容器化（Docker 单二进制）+ K8s/轻量云；多副本无状态，状态在 MySQL/Redis。单二进制部署降低运维复杂度。小游戏与 App 接入层独立 Ingress/域名，共用后端服务。</li>
       <li><b>存储</b>：MySQL 主从（读写分离，账本强一致走主库）；Redis 哨兵/集群（会话/限流/日计数）。</li>
       <li><b>第三方</b>：广告回调接收端需公网可达且验签；兑奖平台 API 走内网/专线或加签 HTTPS。</li>
       <li><b>客户端构建</b>：Cocos Creator 一处构建多 target（微信小游戏包 / App 原生工程 / H5），CI 出包。</li>
@@ -501,8 +501,8 @@ POST /game/settle { roundId }  → { beans, cards, balance }
     <table>
       <tr><th>层</th><th>选型</th><th>说明</th></tr>
       <tr><td>客户端引擎</td><td>Cocos Creator 3.x + Box2D（内置 2D 物理）</td><td>一套代码多端；物理为表</td></tr>
-      <tr><td>服务端框架</td><td>NestJS（Node.js 18+）+ TypeScript</td><td>模块清晰、DI、可演进微服务</td></tr>
-      <tr><td>ORM</td><td>Prisma 或 TypeORM</td><td>账本事务安全；迁移管理</td></tr>
+      <tr><td>服务端语言/框架</td><td>Go 1.22+ + Gin（默认）/ Echo / net/http+chi</td><td>高并发、单二进制部署、适合长连接与高频写账；Gin 生态成熟</td></tr>
+      <tr><td>ORM/数据访问</td><td>GORM（默认）/ sqlx（账本高性能路径）</td><td>事务安全；迁移管理；sqlx 直控 SQL 便于审计</td></tr>
       <tr><td>数据库</td><td>MySQL 8</td><td>强一致账本</td></tr>
       <tr><td>缓存/限流</td><td>Redis 7</td><td>会话/日计数/锁</td></tr>
       <tr><td>广告 SDK</td><td>微信流量主 / 穿山甲（聚合可选）</td><td>适配层隔离</td></tr>

@@ -71,7 +71,7 @@
   <h1>弹珠乐园 · 功能框架文档大纲</h1>
   <p class="subtitle">对标实体"弹珠乐园"游戏机的线上多端休闲游戏 —— 功能框架阶段总纲（v0.1 · 2026-07-28）</p>
   <div class="meta">
-    <span class="tag">微信小游戏优先</span><span class="tag">Cocos Creator 3.x</span><span class="tag">自建后端 Node.js</span><span class="tag">纯免费 + 激励视频</span><span class="tag">积分兑实物</span>
+    <span class="tag">微信小游戏优先</span><span class="tag">Cocos Creator 3.x</span><span class="tag">自建后端 Go</span><span class="tag">纯免费 + 激励视频</span><span class="tag">积分兑实物</span>
   </div>
 
   <section id="s0">
@@ -83,7 +83,7 @@
       <tr><td>商业模式</td><td>纯免费，激励视频广告驱动，<b>不可付费买珠</b></td><td><span class="badge done">已确认</span></td></tr>
       <tr><td>核心机制</td><td>物理为表、结果可控：服务端按 RTP 判定结果，客户端物理演出</td><td><span class="badge done">已确认</span></td></tr>
       <tr><td>实物履约</td><td>对接第三方兑奖平台（话费券 / 电商卡 / 实物代发）</td><td><span class="badge done">已确认</span></td></tr>
-      <tr><td>技术路线</td><td>Cocos Creator + 自建后端（NestJS + MySQL + Redis）</td><td><span class="badge done">已确认</span></td></tr>
+      <tr><td>技术路线</td><td>Cocos Creator + 自建后端（Go + MySQL + Redis）</td><td><span class="badge done">已确认</span></td></tr>
       <tr><td>文档交付</td><td>全套七份阶段文档（见第 7 节）</td><td><span class="badge done">已确认</span></td></tr>
     </table>
   </section>
@@ -93,7 +93,7 @@
     <h3>1.1 分层结构</h3>
     <ul>
       <li><b>客户端（Cocos Creator 3.x，一套代码）</b>：微信小游戏（微信登录 + 微信流量主广告）、iOS/Android App（手机号登录 + 穿山甲/聚合广告）、H5（分享传播）。广告 SDK 按端隔离封装，游戏逻辑层不感知具体广告平台。</li>
-      <li><b>后端（Node.js / NestJS 单体分模块）</b>：账号服务（跨端统一账号）、游戏结果服务（RTP 判定 · 倍数出口抽取）、资产账本服务（弹珠 · 积分流水）、兑换服务（商城 · 订单履约）、广告回调服务（服务端验证发奖）、风控服务（防刷 · 限额 · 黑名单）、运营后台（数值配置 · 数据看板）。</li>
+      <li><b>后端（Go 单体分 package）</b>：账号服务（跨端统一账号）、游戏结果服务（RTP 判定 · 倍数出口抽取）、资产账本服务（弹珠 · 积分流水）、兑换服务（商城 · 订单履约）、广告回调服务（服务端验证发奖）、风控服务（防刷 · 限额 · 黑名单）、运营后台（数值配置 · 数据看板）。</li>
       <li><b>存储</b>：MySQL（账本、订单、流水），Redis（会话、限流、每日计数）。</li>
       <li><b>第三方</b>：广告平台（微信流量主、穿山甲）、第三方兑奖平台、数据埋点统计。</li>
     </ul>
