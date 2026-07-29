@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>弹珠乐园 · 玩法数值设计文档</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; color: #2C2C2A; background: #F1EFE8; line-height: 1.6; padding: 40px 20px; }
+  .wrap { max-width: 920px; margin: 0 auto; background: #fff; border-radius: 16px; padding: 48px 56px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+  h1 { font-size: 26px; font-weight: 700; margin-bottom: 6px; }
+  h2 { font-size: 20px; font-weight: 700; margin: 36px 0 14px; padding-bottom: 8px; border-bottom: 2px solid #534AB7; color: #26215C; }
+  h3 { font-size: 16px; font-weight: 700; margin: 22px 0 10px; color: #3C3489; }
+  p { margin: 10px 0; font-size: 14px; }
+  .meta { font-size: 13px; color: #5F5E5A; margin-bottom: 24px; }
+  .meta b { color: #2C2C2A; }
+  table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 13px; }
+  th, td { border: 1px solid #D3D1C7; padding: 8px 10px; text-align: center; }
+  th { background: #EEEDFE; color: #26215C; font-weight: 600; }
+  td.l { text-align: left; }
+  .num { display: inline-block; background: #534AB7; color: #fff; width: 24px; height: 24px; border-radius: 6px; text-align: center; line-height: 24px; font-size: 13px; margin-right: 8px; }
+  .card { border-radius: 12px; padding: 16px 20px; margin: 14px 0; font-size: 14px; }
+  .amber { background: #FAEEDA; border-left: 4px solid #EF9F27; }
+  .green { background: #EAF3DE; border-left: 4px solid #639922; }
+  .purple { background: #EEEDFE; border-left: 4px solid #534AB7; }
+  .red { background: #FCEBEB; border-left: 4px solid #A32D2D; }
+  code { background: #F1EFE8; padding: 1px 6px; border-radius: 4px; font-size: 13px; }
+  .tag { display: inline-block; font-size: 12px; padding: 1px 8px; border-radius: 10px; background: #EEEDFE; color: #534AB7; margin-left: 6px; }
+  ul { margin: 10px 0 10px 22px; font-size: 14px; }
+  li { margin: 6px 0; }
+  .foot { margin-top: 40px; font-size: 12px; color: #888780; border-top: 1px solid #D3D1C7; padding-top: 14px; }
+  .hl { background: #FAEEDA; padding: 0 4px; font-weight: 600; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>弹珠乐园 · 玩法数值设计文档</h1>
+  <div class="meta">版本 <b>v1.0 草稿</b> · 日期 2026-07-29 · 上游：《产品需求文档 PRD v1.0》· 下游：技术架构 / 服务端 API / 客户端实现<br>本文目标：用仿真填满 PRD 中 4.5 / 6.5 的"待定"数值，并验证 PRD 生命线 <b>广告收益 ≥ 积分成本 × 1.2</b>。</div>
+
+  <h2><span class="num">1</span>数值模型</h2>
+
+  <h3>1.1 RTP 控制法（结果可控的核心）</h3>
+  <p>采用 PRD 4.6 确定的"物理为表、结果可控"：每局<b>服务端先抽倍数、反解命中率</b>，使单局期望返还率恒等于目标 RTP，与倍数大小无关：</p>
+  <div class="card purple">
+    <b>单局流程：</b>服务端抽倍数 <code>M</code>（×2~×20）→ 计算命中率 <code>P(hit) = RTP / M</code> → 抽命中/未命中 → 命中则奖励 = 有效投入 × M（命中后看视频 ×2 再翻倍）→ 未命中则投入沉没。<br>
+    <b>期望返还</b> = P(hit) × 有效投入 × M = (RTP/M) × 投入 × M = <span class="hl">RTP × 投入</span>。无论 M 多少，单位投入的期望返还恒为 RTP。
+  </div>
+  <p>含义：低倍数（×2）命中率高、小奖频繁；高倍数（×20）命中率低（≈4.5%）、稀有 jackpot。玩家体感"经常中小奖、偶尔中大獎"，符合弹珠机手感，同时 RTP 完全可控。</p>
+
+  <h3>1.2 倍数分布</h3>
+  <p>低倍率高权重、高倍率稀有（jackpot）。加权平均倍数 <b>4.37</b>。整体命中率 ≈ RTP / 4.37 ≈ 20.6%（RTP=0.9 时）。</p>
+  <table>
+    <tr><th>倍数 M</th><td>×2</td><td>×3</td><td>×4</td><td>×5</td><td>×6</td><td>×8</td><td>×10</td><td>×12</td><td>×15</td><td>×20</td></tr>
+    <tr><th>权重</th><td>30</td><td>22</td><td>16</td><td>11</td><td>8</td><td>5</td><td>4</td><td>2</td><td>1.5</td><td>1.0</td></tr>
+    <tr><th>命中率(RTP=0.9)</th><td>45%</td><td>30%</td><td>22.5%</td><td>18%</td><td>15%</td><td>11.3%</td><td>9%</td><td>7.5%</td><td>6%</td><td>4.5%</td></tr>
+  </table>
+
+  <h3>1.3 积分卡换算 <span class="tag">需改 PRD</span></h3>
+  <p>PRD 现状为"奖励 30 颗=1 张、60 颗=2 张、每局上限 5 张"。仿真证明该阈值对实物兑换<b>经济不可持续</b>（见 §3）。本文推荐改为：</p>
+  <div class="card red">
+    <b>推荐：积分卡阈值 = 300 颗奖励珠 = 1 张</b>（600→2，900→3，1200→4，1500→5 封顶 / 局）。<br>
+    理由：阈值 300 时重度玩家约 2.6 张/日、轻度约 0.6 张/日，可持续奖品单价回到 ¥5.1~5.7，能覆盖 ¥3~8 小实物与全部虚拟奖励；阈值 30 会产出 216 张/日、可持续单价仅 ¥0.06，必亏。
+  </div>
+
+  <h3>1.4 每日免费珠供给与广告收益模型</h3>
+  <table>
+    <tr><th>来源</th><th>数量</th><th>频控</th><th>备注</th></tr>
+    <tr><td class="l">每日登录</td><td>30 颗</td><td>1 次/日</td><td>免费基础供给</td></tr>
+    <tr><td class="l">激励视频领珠</td><td>88 颗/次</td><td>6 次/日</td><td>PRD 指定；= 528 颗</td></tr>
+    <tr><td class="l">合计免费珠</td><td colspan="3"><b>558 颗/日</b></td></tr>
+    <tr><td class="l">翻倍视频</td><td>奖励 ×2</td><td>每次命中 1 次</td><td>既是收益事件，也膨胀珠子与积分卡</td></tr>
+  </table>
+  <p>广告收益按 eCPM ≈ <b>¥0.30 / 次激励视频</b>（微信流量主/聚合广告中位估算，区间 ¥0.2~0.5）。收益 = 看视频总次数 × 0.30。</p>
+
+  <h3>1.5 生命线（经济可持续性判据）</h3>
+  <div class="card green">
+    <b>广告收益 ≥ 积分成本 × 1.2</b> 即安全。等价地，<b>可持续奖品单价 = 广告收益 ÷ (1.2 × 每日积分卡数)</b>。实物奖品单位成本须 ≤ 该值。
+  </div>
+
+  <h2><span class="num">2</span>仿真方法</h2>
+  <ul>
+    <li><b>方法</b>：蒙特卡洛，每配置模拟 <b>20,000 个玩家日</b>（脚本 <code>docs/sim/economy_sim.py</code>，纯 Python 可复现）。</li>
+    <li><b>单日循环</b>：珠子 < 5 时看领珠视频（≤6 次/日）；否则投入（默认 20 颗/局，受余额约束）；抽倍数→反解命中率→命中则发奖（p_double=0.7 概率看视频翻倍）；未命中投入沉没；直至珠子不足且无视频或达游戏上限。</li>
+    <li><b>两类玩家</b>：重玩（游戏上限 300，压力测试）/ 轻玩（上限 60，典型休闲玩家）。</li>
+    <li><b>扫描变量</b>：RTP ∈ {0.75, 0.80, 0.85, 0.90}，积分卡阈值 ∈ {30, 100, 150, 200, 300, 400, 500}。</li>
+  </ul>
+
+  <h2><span class="num">3</span>仿真结果</h2>
+  <table>
+    <tr><th>配置</th><th>RTP</th><th>阈值</th><th>游戏/日</th><th>视频/日</th><th>广告¥/日</th><th>卡/日</th><th>可持续卡价¥</th><th>×1.2临界¥</th></tr>
+    <tr><td class="l">A 现状(naive)</td><td>0.90</td><td>30</td><td>271.5</td><td>54.4</td><td>16.31</td><td><b>216.8</b></td><td class="hl">0.063</td><td>0.075</td></tr>
+    <tr><td class="l">E 阈100</td><td>0.85</td><td>100</td><td>258.8</td><td>49.2</td><td>14.77</td><td>39.3</td><td>0.313</td><td>0.376</td></tr>
+    <tr><td class="l">I 阈150</td><td>0.90</td><td>150</td><td>271.5</td><td>54.4</td><td>16.31</td><td>19.3</td><td>0.705</td><td>0.846</td></tr>
+    <tr><td class="l">J 阈200</td><td>0.90</td><td>200</td><td>271.5</td><td>54.4</td><td>16.31</td><td>10.4</td><td>1.308</td><td>1.570</td></tr>
+    <tr><td class="l">B 阈300(重)</td><td>0.90</td><td>300</td><td>271.5</td><td>54.4</td><td>16.31</td><td><b>2.6</b></td><td class="hl">5.144</td><td>6.173</td></tr>
+    <tr><td class="l">C RTP.80+阈300</td><td>0.80</td><td>300</td><td>242.1</td><td>43.7</td><td>13.10</td><td>2.1</td><td>5.219</td><td>6.263</td></tr>
+    <tr><td class="l">K 阈400</td><td>0.90</td><td>400</td><td>271.5</td><td>54.4</td><td>16.31</td><td>1.3</td><td>10.165</td><td>12.198</td></tr>
+    <tr><td class="l">F 阈500</td><td>0.80</td><td>500</td><td>242.1</td><td>43.7</td><td>13.10</td><td>0.2</td><td>53.857</td><td>64.629</td></tr>
+    <tr><td class="l">L 阈300(轻)</td><td>0.90</td><td>300</td><td>58.4</td><td>12.7</td><td>3.80</td><td><b>0.6</b></td><td class="hl">5.712</td><td>6.855</td></tr>
+    <tr><td class="l">G RTP.80+阈300(轻)</td><td>0.80</td><td>300</td><td>57.1</td><td>11.5</td><td>3.44</td><td>0.5</td><td>6.065</td><td>7.277</td></tr>
+  </table>
+  <p style="font-size:12px;color:#5F5E5A">注：可持续卡价 = 广告收益 ÷(1.2×卡数)；×1.2临界 = 广告收益 ÷ 卡数（仅保本无余量）。重=游戏上限300，轻=上限60。</p>
+
+  <h2><span class="num">4</span>经济平衡结论与推荐配置</h2>
+  <div class="card green">
+    <b>推荐配置（满足生命线且保留手感）：</b>
+    <ul style="margin-top:8px">
+      <li><b>RTP = 0.90</b>（目标返还率；新手保护期更高，见 §7）</li>
+      <li><b>积分卡阈值 = 300 颗奖励珠 = 1 张</b>（600→2 / 900→3 / 1200→4 / 1500→5 封顶）</li>
+      <li><b>倍数分布</b>：×2~×20 加权（均倍 4.37），命中率 = 0.9 / M</li>
+      <li><b>免费珠</b>：登录 30 + 领珠视频 88×6 = 558 颗/日</li>
+    </ul>
+  </div>
+  <p><b>生命线验证（推荐配置）：</b></p>
+  <table>
+    <tr><th>玩家</th><th>广告收益/日</th><th>积分卡/日</th><th>若奖单价¥5 成本/日</th><th>收益/成本</th><th>结论</th></tr>
+    <tr><td class="l">重度</td><td>¥16.31</td><td>2.6</td><td>¥13.0</td><td><b>1.25×</b></td><td style="color:#3B6D11">≥1.2 ✓</td></tr>
+    <tr><td class="l">轻度</td><td>¥3.80</td><td>0.6</td><td>¥3.0</td><td><b>1.27×</b></td><td style="color:#3B6D11">≥1.2 ✓</td></tr>
+  </table>
+  <p>即推荐配置下，即便实物奖品单位成本高达 <b>¥5</b>，重度与轻度玩家均满足"收益 ≥ 成本×1.2"。若奖品成本控制在 ¥3 以内（小文具/盲盒 bulk 价），安全余量升至 2 倍以上。</p>
+  <div class="card amber">
+    <b>为什么不用"阈值 30 + 降 RTP"替代？</b> 降 RTP 会直接恶化手感（沉没更多）；而阈值 300 在 RTP 0.90 下依然可覆盖 ¥5 奖品，故优先调阈值而非砍 RTP。阈值 200 仅能覆盖 ¥1.3、150 仅 ¥0.7，均不足以支撑实物，故排除。
+  </div>
+
+  <h2><span class="num">5</span>回填 PRD 的待定值总表</h2>
+  <table>
+    <tr><th>参数</th><th>PRD 现状</th><th>本文推荐</th><th>动作</th></tr>
+    <tr><td class="l">目标 RTP</td><td>85~95%（待定）</td><td><b>0.90</b></td><td>确认</td></tr>
+    <tr><td class="l">倍数档</td><td>×2~×20（待定分布）</td><td><b>×2~×20 加权(均4.37)</b></td><td>确认</td></tr>
+    <tr><td class="l">命中率模型</td><td>—</td><td><b>P(hit)=RTP/M</b></td><td>新增</td></tr>
+    <tr><td class="l">积分卡换算</td><td>30→1 / 60→2 / 上限5</td><td><b>300→1 / 600→2 / … / 1500→5</b></td><td><span class="tag">改 PRD</span></td></tr>
+    <tr><td class="l">每日免费珠</td><td>558（已定）</td><td>558（不变）</td><td>—</td></tr>
+    <tr><td class="l">领珠视频</td><td>88 颗×6 次（已定）</td><td>88×6（不变）</td><td>—</td></tr>
+    <tr><td class="l">出珠盒子容量</td><td>待定</td><td><b>60 颗</b>（显示用，见 §6）</td><td>新增</td></tr>
+    <tr><td class="l">广告频控</td><td>领珠 6/日，翻倍随命中</td><td>不变</td><td>—</td></tr>
+  </table>
+
+  <h2><span class="num">6</span>出珠盒子容量建议</h2>
+  <p>容量是<b>纯显示参数</b>，不影响经济（入账以服务端为准）。推荐容量 <b>60 颗</b>：多数中奖（如投入 20×M≥60 常见）会超出容量，从而稳定触发 PRD 5.3 的<b>物理引擎溢出掉落</b>演出，强化爽感；同时 60 容量下盒子在视觉上"将满未满"最有张力。可调范围 50~99，由 UI/UX 阶段定稿。</p>
+
+  <h2><span class="num">7</span>新手保护曲线</h2>
+  <p>为提升首日留存与转化，前若干局临时抬高 RTP（仍用 P(hit)=RTP/M 反解，机制不变）：</p>
+  <table>
+    <tr><th>阶段</th><th>局数</th><th>临时 RTP</th><th>目的</th></tr>
+    <tr><td class="l">新手保护</td><td>第 1~5 局</td><td><b>1.50</b></td><td>高频中奖建立正反馈</td></tr>
+    <tr><td class="l">平滑过渡</td><td>第 6~15 局</td><td>1.50 → 0.90 线性递减</td><td>避免断崖</td></tr>
+    <tr><td class="l">稳态</td><td>第 16 局起</td><td>0.90</td><td>长期经济平衡</td></tr>
+  </table>
+  <p>新手保护额外发出的珠子/积分卡计入"获客成本"，可在运营后台按渠道核算 ROI，不影响稳态生命线。</p>
+
+  <h2><span class="num">8</span>敏感度与风险</h2>
+  <ul>
+    <li><b>eCPM 波动</b>：若 eCPM 跌至 ¥0.2，重度广告收益降至 ¥10.9，对 ¥5 奖品比值 10.9/13=0.84 < 1.2 → 触发告警。需监控 eCPM 并动态下调积分卡阈值或提高翻频。</li>
+    <li><b>翻倍率 p_double</b>：玩家翻倍越积极，积分卡越多（成本↑）、视频收益也↑；仿真已含 p_double=0.7，属中性偏保守。</li>
+    <li><b>珠子囤积</b>：RTP 0.9 下珠子净增长，玩家可能囤积后集中兑换。建议商城设<b>单卡每日兑换上限</b>与<b>高价值奖品限量</b>，平滑成本曲线。</li>
+    <li><b>合规</b>：纯免费+广告驱动、结果与投入均为虚拟（珠子/积分卡），兑换为实物奖励——须确保积分卡<b>不直接反向变现</b>，符合各平台规则（见 PRD 第 10 节）。</li>
+    <li><b>AB 验证</b>：阈值 300 为仿真推荐值，首发应预留开关，按真实 eCPM/翻倍率回测后 ±50 微调。</li>
+  </ul>
+
+  <div class="foot">
+    本文档由 PRD 阶段延伸，数值经 <code>docs/sim/economy_sim.py</code> 蒙特卡洛仿真验证（20,000 玩家日/配置）。所有"待定"值回填后，PRD 4.5/6.5 即可关闭。下一步：技术架构文档（落点还原的服务端判定接口、物理溢出实现）与服务端 API 文档。
+  </div>
+</div>
+</body>
+</html>
