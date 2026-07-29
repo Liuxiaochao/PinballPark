@@ -81,8 +81,8 @@
   .screen.flat .board{ transform:rotate(30deg); }
 
   /* 钉阵 */
-  .field{position:absolute; inset:70px 26px 150px; display:flex; flex-direction:column;
-    justify-content:space-between;}
+  .field{position:absolute; inset:44px 70px 196px 24px; display:flex; flex-direction:column;
+    justify-content:space-between; z-index:2;}
   .row{display:flex; justify-content:space-around;}
   .row.offset{padding-left:26px; padding-right:0;}
   .peg{width:15px; height:15px; border-radius:50%;
@@ -93,6 +93,16 @@
   .board::after{content:""; position:absolute; inset:0; border-radius:14px;
     background:linear-gradient(115deg, rgba(255,255,255,.05), transparent 40%);
     pointer-events:none;}
+
+  /* 弹射发射道（右侧竖向通道，球由此弹起至钉板顶端） */
+  .lane{position:absolute; right:14px; top:18px; bottom:66px; width:22px; border-radius:11px;
+    background:linear-gradient(90deg,#0a1626,#16263f 50%,#0a1626);
+    border:1px solid #2b4a78; box-shadow:inset 0 0 10px rgba(0,0,0,.75); z-index:1;}
+  .lane::before{content:""; position:absolute; top:-8px; left:-24px; width:46px; height:18px;
+    background:linear-gradient(180deg,#16263f,#0a1626); border:1px solid #2b4a78;
+    border-radius:10px 10px 0 0; box-shadow:inset 0 0 8px rgba(0,0,0,.6);}
+  .lane::after{content:""; position:absolute; top:-2px; left:-10px; width:18px; height:8px;
+    border-radius:4px; background:var(--lit); box-shadow:0 0 10px 2px var(--lit); opacity:.85;}
 
   /* 底部出口 */
   .exits{position:absolute; left:18px; right:18px; bottom:64px; height:64px;
@@ -114,19 +124,22 @@
     background:radial-gradient(circle,#000,#11203a);}
 
   /* 弹珠 */
-  .ball{position:absolute; left:50%; top:0; width:18px; height:18px; margin-left:-9px;
+  .ball{position:absolute; left:0; top:0; width:18px; height:18px;
     border-radius:50%;
     background:radial-gradient(circle at 34% 30%, #ffffff, #d9b14a 40%, #8a5e12 100%);
     box-shadow:0 2px 4px rgba(0,0,0,.5), 0 0 8px rgba(245,197,24,.4);
-    animation:drop 2.6s cubic-bezier(.4,0,.7,1) infinite;}
-  @keyframes drop{
-    0%{top:6px; transform:translateX(0)}
-    18%{transform:translateX(-22px)}
-    34%{transform:translateX(14px)}
-    52%{transform:translateX(-10px)}
-    70%{transform:translateX(8px)}
-    86%{top:430px; transform:translateX(2px)}
-    100%{top:430px; opacity:.85}
+    animation:launch-fall 3s cubic-bezier(.45,0,.55,1) infinite;}
+  /* 弹射轨道：自右侧发射道底部弹起 → 升至顶端 → 转入钉板顶部 → 穿钉下落 */
+  @keyframes launch-fall{
+    0%   {transform:translate(308px,470px)}
+    18%  {transform:translate(308px,22px)}    /* 沿发射道弹射到顶 */
+    24%  {transform:translate(300px,22px)}    /* 顶端短暂停顿 */
+    32%  {transform:translate(250px,70px)}    /* 转入钉板右上 */
+    46%  {transform:translate(205px,150px)}
+    60%  {transform:translate(150px,230px)}
+    74%  {transform:translate(110px,310px)}
+    88%  {transform:translate(72px,400px)}
+    100% {transform:translate(64px,432px)}
   }
 
   /* 弹簧发射杆 */
@@ -194,6 +207,7 @@
     <div class="screen" id="screen">
       <div class="board" id="board">
         <div class="field" id="field"></div>
+        <div class="lane"></div>
         <div class="exits">
           <div class="exit sink"></div>
           <div class="exit lit"></div>
@@ -228,7 +242,8 @@
   <div class="legend">
     <b>修正点 1 · 机台质感：</b>不再是灰线框。外框为金属机柜＋顶部霓虹跑马灯招牌，板面有纵深光影、金色立体钉阵、发光奖槽（亮灯出口）与沉没暗口、右侧弹簧发射杆、底部出珠托盘——老虎机/柏青哥机台观感。<br>
     <b>修正点 2 · 30° 倾斜：</b>默认是<b>机台向后仰 30° 的真实透视倾斜</b>（CSS <code>perspective + rotateX(30deg)</code>），板面有纵深、球沿后仰面板"下坡"滚动，符合真实机台。点上方按钮可切回旧方案（平面 2D 旋转成平行四边形）对比——那就是之前"丑且不对"的样子。<br>
-    HUD（余额/倍数/剩余/按钮）始终为屏幕正向独立图层，<b>不随板倾斜</b>，保证文字可读。
+    HUD（余额/倍数/剩余/按钮）始终为屏幕正向独立图层，<b>不随板倾斜</b>，保证文字可读。<br>
+    <b>修正点 3 · 弹射轨道：</b>右侧新增竖向<b>发射道</b>（顶部亮灯入口连到钉板右上），弹珠自底部弹起、沿道升至顶端、转入钉板后穿钉下落——对应真实柏青哥"先上膛再落入钉阵"的轨道。钉板整体已上移，下方留白给发射道与出口。
   </div>
 
 <script>
