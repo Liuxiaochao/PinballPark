@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>弹珠乐园 · 服务端 API 设计文档 v1.0</title>
+<style>
+  :root{
+    --bg:#f6f8fb; --ink:#1f2733; --muted:#6b7785; --line:#e3e9f0;
+    --blue:#0C447C; --teal:#0E8C8C; --amber:#b7791f; --amberbg:#fff8e6;
+    --ok:#1a7f4b; --okbg:#e9f7ef; --red:#c0392b; --redbg:#fdecea;
+    --chip:#eef3f9;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    line-height:1.65;font-size:15px}
+  .wrap{max-width:980px;margin:0 auto;padding:32px 24px 80px}
+  header.top{border-bottom:3px solid var(--blue);padding-bottom:16px;margin-bottom:24px}
+  h1{font-size:26px;margin:0 0 6px;color:var(--blue)}
+  h2.sec{font-size:20px;margin:38px 0 14px;padding-left:12px;border-left:5px solid var(--teal);color:#10314f}
+  h3{font-size:16px;margin:22px 0 8px;color:#16324d}
+  h4{font-size:14px;margin:16px 0 6px;color:#22405c}
+  p{margin:8px 0}
+  code{background:var(--chip);padding:1px 6px;border-radius:4px;font-size:13px;color:#0a3b66;font-family:"SFMono-Regular",Consolas,monospace}
+  pre{background:#0f1b2d;color:#e6edf3;padding:14px 16px;border-radius:10px;overflow:auto;font-size:13px;line-height:1.55;font-family:"SFMono-Regular",Consolas,monospace}
+  pre .c{color:#7f93a8}
+  pre .k{color:#7ee0d6}
+  pre .s{color:#ffd479}
+  table{border-collapse:collapse;width:100%;margin:12px 0;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  th,td{border-bottom:1px solid var(--line);padding:9px 12px;text-align:left;vertical-align:top;font-size:13.5px}
+  th{background:#eef3f9;color:#16324d;font-weight:600}
+  tr:last-child td{border-bottom:none}
+  .card{border:1px solid var(--line);background:#fff;border-radius:10px;padding:12px 16px;margin:14px 0}
+  .card.amber{background:var(--amberbg);border-color:#f0d9a8}
+  .card.ok{background:var(--okbg);border-color:#bfe6cf}
+  .card.warn{background:var(--redbg);border-color:#f3c6c0}
+  .card b{color:#16324d}
+  .tag{display:inline-block;background:var(--chip);color:#0a3b66;border:1px solid #d4e0ee;border-radius:999px;padding:1px 10px;font-size:12px;margin:2px 4px 2px 0}
+  .tag.go{background:#e8f0ff;border-color:#bcd2f5;color:#1746a0}
+  .tag.star{background:#fff1e0;border-color:#f3c98a;color:#9a5a00}
+  .badge{display:inline-block;padding:1px 8px;border-radius:5px;font-size:12px;font-weight:600}
+  .badge.done{background:var(--okbg);color:var(--ok)}
+  .badge.later{background:#eef0f3;color:#8a94a3}
+  .badge.p0{background:var(--redbg);color:var(--red)}
+  .badge.p1{background:#fff3e0;color:#b06a00}
+  ul,ol{margin:8px 0;padding-left:22px}
+  li{margin:5px 0}
+  .endpoint{font-family:monospace;font-size:13.5px;background:#0f1b2d;color:#e6edf3;padding:8px 12px;border-radius:8px;margin:6px 0;display:block}
+  .endpoint .m{color:#7ee0d6;font-weight:700;margin-right:8px}
+  .kbd{font-family:monospace;background:#0f1b2d;color:#9fe9df;padding:2px 8px;border-radius:5px}
+  footer{margin-top:48px;padding-top:16px;border-top:1px solid var(--line);color:var(--muted);font-size:12.5px}
+  .toc{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 20px;margin:18px 0}
+  .toc a{color:#0a3b66;text-decoration:none}
+  .toc a:hover{text-decoration:underline}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="top">
+  <h1>弹珠乐园 · 服务端 API 设计文档</h1>
+  <div>版本 v1.0 &nbsp;·&nbsp; 2026-07-29 &nbsp;·&nbsp; 状态：初稿（与 PRD v1.0 / 数值设计 v1.1 / 架构 v1.0 一致）</div>
+  <div style="margin-top:8px">
+    <span class="tag go">Go 后端 (Gin/GORM)</span>
+    <span class="tag">Cocos Creator 3.x 客户端</span>
+    <span class="tag">MySQL + Redis</span>
+    <span class="tag star">价值判定全在服务端</span>
+  </div>
+</header>
+
+<div class="card amber">
+  <b>范围声明（重要）：</b>本版 API 文档<b>不包含「积分卡订单兑换（Exchange 模块）」的实现细节</b>——按需求该能力留待后续版本补全。本文档第 8 节仅列出该模块<b>计划中的接口占位与契约骨架</b>，不展开 request/response 字段与订单状态机。其余承载价值判定的接口（鉴权、游戏四段、广告、配置）均完整定义。
+</div>
+
+<div class="toc">
+  <b>目录</b><br/>
+  <a href="#s1">1. 通用约定（BaseURL / 请求头 / 响应信封）</a> ·
+  <a href="#s2">2. 签名与鉴权规范（HMAC + nonce + 防重放）</a> ·
+  <a href="#s3">3. 错误码表</a> ·
+  <a href="#s4">4. 鉴权模块（Auth）</a> ·
+  <a href="#s5">5. 游戏模块（Game：open/bet/launch/settle）</a> ·
+  <a href="#s6">6. 广告模块（Ad：reward/callback）</a> ·
+  <a href="#s7">7. 配置模块（Config）</a> ·
+  <a href="#s8">8. 兑换模块（Exchange — 后续版本，占位）</a> ·
+  <a href="#s9">9. 数据字典与幂等说明</a> ·
+  <a href="#s10">10. 一致性与下游依赖</a>
+</div>
+
+<!-- 1 -->
+<section id="s1">
+  <h2 class="sec">1. 通用约定</h2>
+  <ul>
+    <li><b>传输</b>：全站 HTTPS；所有写接口强制签名（见 §2）。</li>
+    <li><b>Base URL</b>：<code>https://api.pinball-park.com</code>（小游戏与 App 共用；多副本无状态，状态在 MySQL/Redis）。</li>
+    <li><b>Content-Type</b>：<code>application/json; charset=utf-8</code>，请求体为 JSON。</li>
+    <li><b>时间格式</b>：Unix 毫秒时间戳（<code>timestamp</code> 字段）。</li>
+  </ul>
+
+  <h3>1.1 公共请求头</h3>
+  <table>
+    <tr><th>Header</th><th>必填</th><th>说明</th></tr>
+    <tr><td><code>Authorization</code></td><td>写接口必填</td><td><code>Bearer {token}</code>，登录后下发</td></tr>
+    <tr><td><code>X-Device-Id</code></td><td>是</td><td>设备唯一标识（小游戏 OT / App IDFA 脱敏）</td></tr>
+    <tr><td><code>X-Platform</code></td><td>是</td><td><code>wechat_mini</code> / <code>app_ios</code> / <code>app_android</code> / <code>h5</code></td></tr>
+    <tr><td><code>X-Nonce</code></td><td>写接口必填</td><td>单次随机串（≤36 字符），单次有效</td></tr>
+    <tr><td><code>X-Timestamp</code></td><td>写接口必填</td><td>毫秒时间戳，±5min 窗口</td></tr>
+    <tr><td><code>X-Sign</code></td><td>写接口必填</td><td>HMAC-SHA256 签名（§2）</td></tr>
+    <tr><td><code>X-Request-Id</code></td><td>否</td><td>客户端幂等/链路追踪用，原样返回</td></tr>
+  </table>
+
+  <h3>1.2 响应信封</h3>
+  <p>所有接口统一返回：</p>
+  <pre>{
+  <span class="k">"code"</span>: 0,            <span class="c">// 0=成功；非0见错误码表</span>
+  <span class="k">"message"</span>: "ok",     <span class="c">// 人类可读描述；失败时为错误原因</span>
+  <span class="k">"data"</span>: { ... },      <span class="c">// 业务数据；失败时为 null</span>
+  <span class="k">"requestId"</span>: "r-xxxx" <span class="c">// 服务端追踪 ID</span>
+}</pre>
+</section>
+
+<!-- 2 -->
+<section id="s2">
+  <h2 class="sec">2. 签名与鉴权规范</h2>
+  <p>防篡改 + 防重放双保险（对应架构 §14）。<b>所有写接口</b>必须带 <code>X-Sign</code>。</p>
+
+  <h3>2.1 签名串构造</h3>
+  <pre><span class="c">// 1) 取待签原文（拼接，无分隔符）</span>
+stringToSign = token + nonce + timestamp + canonicalBody
+
+<span class="c">// 2) canonicalBody = JSON 序列化请求体，key 按字典序排序（稳定可复现）</span>
+<span class="c">// 3) 签名</span>
+X-Sign = HMAC-SHA256( deviceSecret, stringToSign ).toHexUpper()
+
+<span class="c">// deviceSecret 由登录下发，存于客户端安全存储；可与 token 共用一套派生密钥</span></pre>
+
+  <h3>2.2 服务端校验顺序（Go 参考实现）</h3>
+  <pre><span class="c">// 架构/后端均为 Go；以下为 Gin 中间件伪代码</span>
+<span class="k">func</span> SignMiddleware(c *gin.Context) {
+    token   := c.GetHeader(<span class="s">"Authorization"</span>)[7:] <span class="c">// strip "Bearer "</span>
+    nonce   := c.GetHeader(<span class="s">"X-Nonce"</span>)
+    ts      := c.GetHeader(<span class="s">"X-Timestamp"</span>)
+    sign    := c.GetHeader(<span class="s">"X-Sign"</span>)
+    body    := rawBody(c) <span class="c">// 必须读取原始 body（不可经 JSON 反序列化再回写）</span>
+
+    <span class="c">// a. 时间窗口 ±5min</span>
+    <span class="k">if</span> abs(nowMs()-parseInt64(ts)) &gt; 5*60*1000 { abort(40104) }
+    <span class="c">// b. nonce 单次有效（Redis SET NX，TTL 10min）</span>
+    <span class="k">if</span> !redis.SetNX(<span class="s">"nonce:"</span>+nonce, 1, 10*time.Minute) { abort(40103) }
+    <span class="c">// c. 重算并比对签名</span>
+    secret  := loadDeviceSecret(token)
+    expect  := hmacSHA256(secret, token+nonce+ts+canonical(body))
+    <span class="k">if</span> !constantTimeEq(expect, sign) { abort(40102) }
+    c.Next()
+}</pre>
+  <div class="card">读取 <b>rawBody</b> 而非反序列化后的对象，避免序列化差异导致签名不一致；canonical 函数须与客户端约定一致（推荐 <code>encoding/json</code> + <code>map[string]interface{}</code> 排序后 marshal）。</div>
+</section>
+
+<!-- 3 -->
+<section id="s3">
+  <h2 class="sec">3. 错误码表</h2>
+  <table>
+    <tr><th>code</th><th>message</th><th>含义 / 客户端处理</th></tr>
+    <tr><td>0</td><td>ok</td><td>成功</td></tr>
+    <tr><td>40001</td><td>invalid_param</td><td>参数缺失/越界（如 bet 不在 5–99）；提示并阻断</td></tr>
+    <tr><td>40101</td><td>unauthorized</td><td>token 缺失/过期；走 refresh 或重新登录</td></tr>
+    <tr><td>40102</td><td>sign_invalid</td><td>签名校验失败；检查 deviceSecret/序列化</td></tr>
+    <tr><td>40103</td><td>nonce_reused</td><td>nonce 重复；客户端每次请求换新 nonce</td></tr>
+    <tr><td>40104</td><td>timestamp_out_of_window</td><td>时间戳越界；校准设备时间</td></tr>
+    <tr><td>40901</td><td>balance_insufficient</td><td>弹珠余额不足（open/bet/ad reward 前置校验）；引导领珠</td></tr>
+    <tr><td>40902</td><td>round_conflict</td><td>roundId 状态机冲突（重复 launch/settle 或状态不符）；以首次结果为准</td></tr>
+    <tr><td>40903</td><td>game_locked</td><td>该用户已有进行中的局（game_lock）；需先 settle</td></tr>
+    <tr><td>42901</td><td>rate_limited</td><td>广告场景达当日/单局频控上限；提示"今日已达上限"</td></tr>
+    <tr><td>42902</td><td>ad_verify_failed</td><td>广告平台 server verify 不通过；不发奖</td></tr>
+    <tr><td>50001</td><td>server_error</td><td>服务端内部错误；可重试（写接口需幂等）</td></tr>
+  </table>
+  <div class="card ok"><b>幂等约定：</b>所有「写价值」接口（<code>open/bet/launch/settle/ad/callback</code>）均由服务端以 <code>roundId</code> 或 <code>thirdTransId</code> 做行级锁 + 状态机去重，<b>客户端可安全重试</b>；重复请求返回首次结果，不产生二次扣减/发奖。</div>
+</section>
+
+<!-- 4 -->
+<section id="s4">
+  <h2 class="sec">4. 鉴权模块（Auth）</h2>
+
+  <span class="endpoint"><span class="m">POST</span>/auth/login</span>
+  <p>登录/注册一体；跨端统一 uid；游客可兜底（下发临时 uid，绑定后可迁移资产）。</p>
+  <h4>Request</h4>
+  <pre>{
+  <span class="k">"platform"</span>: <span class="s">"wechat_mini"</span>,   <span class="c">// wechat_mini | app_ios | app_android | h5</span>
+  <span class="k">"code"</span>: <span class="s">"wx_login_code"</span>,     <span class="c">// 微信/平台登录 code（code 或 phone 二选一）</span>
+  <span class="k">"phone"</span>: <span class="s">"138xxxx"</span>,           <span class="c">// 手机号验证码登录（可选）</span>
+  <span class="k">"deviceId"</span>: <span class="s">"d-xxxx"</span>,
+  <span class="k">"deviceFp"</span>: <span class="s">"fp-xxxx"</span>          <span class="c">// 设备指纹（风控用）</span>
+}</pre>
+  <h4>Response</h4>
+  <pre>{
+  <span class="k">"uid"</span>: <span class="s">"u_10001"</span>,
+  <span class="k">"token"</span>: <span class="s">"eyJ..."</span>,
+  <span class="k">"refreshToken"</span>: <span class="s">"rt-..."</span>,
+  <span class="k">"expiresIn"</span>: 7200,            <span class="c">// token 秒数</span>
+  <span class="k">"isNewUser"</span>: false,
+  <span class="k">"assets"</span>: { <span class="k">"beans"</span>: 30, <span class="k">"cards"</span>: 0, <span class="k">"points"</span>: 0 }
+}</pre>
+  <div class="card"><b>登录即送每日登录 30 珠</b>（在 <code>daily:{uid}:{date}</code> 未签到时发放，幂等）。deviceSecret 随 token 一并安全下发，供后续写接口签名。</div>
+
+  <span class="endpoint"><span class="m">POST</span>/auth/token/refresh</span>
+  <pre>Request:  { <span class="k">"refreshToken"</span>: <span class="s">"rt-..."</span> }
+Response: { <span class="k">"token"</span>: <span class="s">"eyJ..."</span>, <span class="k">"expiresIn"</span>: 7200 }</pre>
+</section>
+
+<!-- 5 -->
+<section id="s5">
+  <h2 class="sec">5. 游戏模块（Game）</h2>
+  <div class="card">一局分四段：<code>open</code> →（可选）<code>bet</code> → <code>launch</code> → <code>settle</code>。<b>价值在 launch 一次定死，settle 才入账</b>（架构 §9）。单用户同时仅一局进行中（<code>game_lock:{uid}</code>）。</div>
+
+  <span class="endpoint"><span class="m">POST</span>/game/open <span class="tag star">★ 锁投入·抽倍数/亮灯出口</span></span>
+  <pre>Request:  { <span class="k">"bet"</span>: 5 }                       <span class="c">// 5 ≤ bet ≤ 99，受余额约束</span>
+Response: {
+  <span class="k">"roundId"</span>: <span class="s">"r-20260729-a1b2"</span>,
+  <span class="k">"multiplier"</span>: 8,                    <span class="c">// 本局单倍数（×2~×20 加权）</span>
+  <span class="k">"litExits"</span>: [3, 5, 7, 9],            <span class="c">// 亮灯出口（可中区），子集 of 1..12</span>
+  <span class="k">"rtpApplied"</span>: 1.35,                  <span class="c">// 含新手保护系数（前5局1.5→递减）</span>
+  <span class="k">"balance"</span>: 25                        <span class="c">// 扣 bet 后余额</span>
+}</pre>
+  <p>事务：校验余额 ≥ bet → 扣 bet 入 <code>bean_ledger(type=open_lock)</code> → 写 <code>game_rounds(status=bet_locked)</code> → 置 <code>game_lock:{uid}</code>。</p>
+
+  <span class="endpoint"><span class="m">POST</span>/game/bet <span class="tag">加注（可选）</span></span>
+  <pre>Request:  { <span class="k">"roundId"</span>: <span class="s">"r-..."</span>, <span class="k">"addBet"</span>: 10 }   <span class="c">// effectiveBet ≤ 99</span>
+Response: { <span class="k">"effectiveBet"</span>: 15, <span class="k">"estReward"</span>: 120 }  <span class="c">// estReward = effectiveBet×multiplier（预估）</span></pre>
+  <p>事务：校验余额 ≥ addBet 且 <code>effective_bet+addBet ≤ 99</code> → 扣 addBet（行锁 <code>UPDATE beans=beans-delta WHERE beans≥delta</code>）→ 更新 <code>effective_bet</code>。与 <code>launch</code> 串行于同一 roundId 锁。</p>
+
+  <span class="endpoint"><span class="m">POST</span>/game/launch <span class="tag star">★ 服务端定命中/落点/奖励/卡</span></span>
+  <pre>Request:  { <span class="k">"roundId"</span>: <span class="s">"r-..."</span>, <span class="k">"chargePower"</span>: 72 }   <span class="c">// chargePower 0..100 仅演出用</span>
+Response: {
+  <span class="k">"hit"</span>: true,
+  <span class="k">"targetExitId"</span>: 7,              <span class="c">// 命中→litExits 内按权重选；未中→暗口集</span>
+  <span class="k">"rewardBeans"</span>: 120,            <span class="c">// effectiveBet×multiplier（未中=0）</span>
+  <span class="k">"cards"</span>: 3,                    <span class="c">// hit && rewardBeans≥40 → min(5, floor(R/40))；否则 0</span>
+  <span class="k">"multiplier"</span>: 8,
+  <span class="k">"rtpApplied"</span>: 1.35
+}</pre>
+  <div class="card"><b>命中算法（服务端唯一权威）：</b><code>P(hit) = rtpApplied / multiplier</code>，用密码学安全随机源。命中从 <code>litExits</code> 按「低倍出口权重高、高倍稀有」抽取；未中从暗口集选。<code>chargePower</code> 仅记录、<b>不参与判定</b>。写入 <code>game_rounds(status=launched)</code>，<b>不发放</b>。</div>
+
+  <span class="endpoint"><span class="m">POST</span>/game/settle <span class="tag star">★ 入账（弹珠+卡）</span></span>
+  <pre>Request:  { <span class="k">"roundId"</span>: <span class="s">"r-..."</span> }
+Response: {
+  <span class="k">"beans"</span>: 145,                   <span class="c">// 入账后弹珠余额（含 rewardBeans，翻倍则×2）</span>
+  <span class="k">"cards"</span>: 3,                     <span class="c">// 入账后积分卡</span>
+  <span class="k">"balance"</span>: 145,
+  <span class="k">"doubled"</span>: false               <span class="c">// 是否看过视频翻倍</span>
+}</pre>
+  <p>事务：幂等（同 round 仅一次）；若 hit 则 <code>+rewardBeans</code> 入 <code>bean_ledger(type=settle_win)</code>、<code>+cards</code> 入 <code>point_ledger</code>；写 <code>status=settled</code>；释放 <code>game_lock:{uid}</code>。失败重连可重查重放。</p>
+  <div class="card ok">客户端「再来一局」必须等本局 <code>settle</code> 成功（释放锁）后再 <code>open</code>；直接并发 <code>open</code> 将收到 <code>40903 game_locked</code>。</div>
+</section>
+
+<!-- 6 -->
+<section id="s6">
+  <h2 class="sec">6. 广告模块（Ad）</h2>
+  <div class="card">发奖铁律：<b>领珠 +88 / 翻倍奖励仅在 <code>/ad/callback</code> server verify 通过后由 AdModule 调 AssetModule 入账</b>（架构 §11.2 / 铁律二）。客户端不可伪造"已看完"。</div>
+
+  <span class="endpoint"><span class="m">POST</span>/ad/reward <span class="tag">频控前置校验</span></span>
+  <pre>Request:  { <span class="k">"scene"</span>: <span class="s">"claim_beans"</span>, <span class="k">"roundId"</span>: <span class="s">"r-..."</span>? }  <span class="c">// scene: claim_beans|double|sign|high_multiplier</span>
+Response: {
+  <span class="k">"canWatch"</span>: true,
+  <span class="k">"remainingTimes"</span>: 5,           <span class="c">// 本场景当日剩余次数</span>
+  <span class="k">"reason"</span>: null                   <span class="c">// canWatch=false 时返回 "daily_limit" / "balance_enough"（续命场景）</span>
+}</pre>
+  <p>领珠（<code>claim_beans</code>）为常驻按钮，随时可点；当日 6 次达上限返回 <code>canWatch=false, reason=daily_limit</code>（客户端置灰 + 提示"今日已达上限，明天再来"）。续命语义已改为：余额足够时不强制弹广告（PRD 5.2）。</p>
+
+  <span class="endpoint"><span class="m">POST</span>/ad/callback <span class="tag star">★ server verify 后发奖</span></span>
+  <pre>Request:  {
+  <span class="k">"platform"</span>: <span class="s">"wechat"</span>,
+  <span class="k">"scene"</span>: <span class="s">"double"</span>,              <span class="c">// claim_beans | double | sign | high_multiplier</span>
+  <span class="k">"thirdTransId"</span>: <span class="s">"wx-txn-xxx"</span>,  <span class="c">// 平台下发交易号，唯一索引去重</span>
+  <span class="k">"roundId"</span>: <span class="s">"r-..."</span>?,           <span class="c">// double 场景必填</span>
+  <span class="k">"verifySign"</span>: <span class="s">"..."</span>            <span class="c">// 平台回调签名（服务端验真）</span>
+}
+Response: {
+  <span class="k">"rewardBeans"</span>: 120,           <span class="c">// claim_beans→+88；double→本局 rewardBeans×2</span>
+  <span class="k">"cards"</span>: 0,
+  <span class="k">"balance"</span>: 265
+}</pre>
+  <div class="card warn"><b>翻倍时序：</b>命中后点"看视频 ×2"→ 播广告 → 平台回调本接口 → 将本局 <code>rewardBeans×=2, doubled=true</code>（幂等，仅限 hit 且未翻倍）。<b>若翻倍回调发生在 settle 之后</b>，补一次入账事务（同 roundId 幂等累加），客户端补播额外 N 颗（PRD 5.3 / 架构 §9.3）。</div>
+</section>
+
+<!-- 7 -->
+<section id="s7">
+  <h2 class="sec">7. 配置模块（Config）</h2>
+  <span class="endpoint"><span class="m">POST</span>/config/get</span>
+  <pre>Request:  { <span class="k">"keys"</span>: [<span class="s">"rtp"</span>,<span class="s">"multiplierPool"</span>,<span class="s">"kTiers"</span>,<span class="s">"adFreq"</span>,<span class="s">"board"</span>]? }
+Response: {
+  <span class="k">"rtp"</span>: 0.90,
+  <span class="k">"multiplierPool"</span>: [              <span class="c">// 倍数加权池，均倍 4.37</span>
+    {<span class="k">"m"</span>:2,<span class="k">"w"</span>:20},{<span class="k">"m"</span>:3,<span class="k">"w"</span>:16}, ..., {<span class="k">"m"</span>:20,<span class="k">"w"</span>:1}
+  ],
+  <span class="k">"kTiers"</span>: [5,20,50,80,120],       <span class="c">// 兑换所需卡数 K（兑换模块后续版本用）</span>
+  <span class="k">"adFreq"</span>: { <span class="k">"claimBeans"</span>:6, <span class="k">"double"</span>:10, <span class="k">"sign"</span>:1, <span class="k">"highMultiplier"</span>:3, <span class="k">"dailyTotal"</span>:20 },
+  <span class="k">"board"</span>: { <span class="k">"exits"</span>:12, <span class="k">"tiltDeg"</span>:30, <span class="k">"boxCap"</span>:60 } <span class="c">// 板面：出口数/倾斜/出珠盒子容量</span>
+}</pre>
+  <p>客户端启动拉取动态配置（RTP、倍数池、K 分层、广告频控、板面参数）。服务端为唯一校验方，下发值可经运营后台（ConfigModule/Admin）热更，无需发版。</p>
+</section>
+
+<!-- 8 -->
+<section id="s8">
+  <h2 class="sec">8. 兑换模块（Exchange — 后续版本，占位）</h2>
+  <div class="card warn"><b>本版不实现。</b>按需求，积分卡订单兑换能力留待后续版本补全。下列接口为<b>计划占位与契约骨架</b>，字段与状态机待补，不计入本版验收。</div>
+  <table>
+    <tr><th>接口</th><th>方法</th><th>计划职责（骨架）</th><th>状态</th></tr>
+    <tr><td><code>/exchange/list</code></td><td>GET</td><td>商城商品列表（按 K 分层：5/20/50/80/120），含积分价与是否够兑</td><td><span class="badge later">后续版本</span></td></tr>
+    <tr><td><code>/exchange/create</code></td><td>POST</td><td>风控校验 → 扣积分卡（事务）→ 调第三方兑奖平台 → 写订单（状态机 created→…→done/failed）</td><td><span class="badge later">后续版本</span></td></tr>
+    <tr><td><code>/exchange/status</code></td><td>GET</td><td>订单状态/物流追踪查询</td><td><span class="badge later">后续版本</span></td></tr>
+  </table>
+  <div class="card"><b>已锁定的契约约束（实现时必须遵守）：</b>
+    <ul>
+      <li>兑换所需卡数 <code>K</code> 由 ConfigModule 下发，<b>服务端为唯一校验方</b>（铁律一）。</li>
+      <li>扣卡走事务 + 订单状态机，失败补偿退卡（幂等）。</li>
+      <li>第三方履约回调须 <code>third_order_id</code> 唯一索引去重。</li>
+      <li>实名/设备/限额/黑名单校验在风控（RiskModule）前置。</li>
+    </ul>
+  </div>
+</section>
+
+<!-- 9 -->
+<section id="s9">
+  <h2 class="sec">9. 数据字典与幂等说明</h2>
+  <h3>9.1 枚举</h3>
+  <table>
+    <tr><th>字段</th><th>取值</th></tr>
+    <tr><td>round.status</td><td><code>bet_locked</code> → <code>launched</code> → <code>settled</code>（失败可 <code>aborted</code>）</td></tr>
+    <tr><td>ad.scene</td><td><code>claim_beans</code> / <code>double</code> / <code>sign</code> / <code>high_multiplier</code></td></tr>
+    <tr><td>bean_ledger.type</td><td><code>open_lock</code> / <code>bet_add</code> / <code>settle_win</code> / <code>ad_claim</code> / <code>ad_double</code></td></tr>
+    <tr><td>point_ledger.type</td><td><code>settle_card</code>（入账）/ <code>exchange_cost</code>（兑换扣减，后续版本）</td></tr>
+    <tr><td>platform</td><td><code>wechat_mini</code> / <code>app_ios</code> / <code>app_android</code> / <code>h5</code></td></tr>
+  </table>
+
+  <h3>9.2 幂等关键</h3>
+  <ul>
+    <li><b>open/bet</b>：余额扣减走 <code>UPDATE beans=beans-delta WHERE beans≥delta</code> 原子条件 + 行锁，余额不足即拒绝（防超投）。</li>
+    <li><b>launch/settle</b>：以 <code>roundId</code> + 行级锁 + 状态机去重，重复请求返回首次结果。</li>
+    <li><b>ad/callback</b>：<code>thirdTransId</code> 唯一索引去重，重放/伪造不发奖。</li>
+    <li><b>单局并发</b>：<code>game_lock:{uid}</code> 保证同一时刻仅一局进行中。</li>
+  </ul>
+</section>
+
+<!-- 10 -->
+<section id="s10">
+  <h2 class="sec">10. 一致性与下游依赖</h2>
+  <div class="card ok"><b>与上游文档一致：</b>
+    <ul>
+      <li>四段事务、命中算法 <code>P(hit)=rtpApplied/multiplier</code>、卡规则 <code>R≥40→min(5,floor(R/40))</code>：对齐数值设计 v1.1。</li>
+      <li>落点还原服务端定（launch 定 <code>targetExitId</code>）、物理溢出演出、出珠盒子容量 60：对齐 PRD 4.6/4.7/5.3。</li>
+      <li>常驻领珠按钮、无结算弹窗、翻倍走 <code>ad/callback</code>：对齐 PRD 5.2/5.4。</li>
+      <li>后端语言 Go（Gin/GORM）、签名 HMAC、数据模型 ER：对齐架构 v1.0。</li>
+    </ul>
+  </div>
+  <p><b>下游文档：</b>《UI-UX 设计文档》（数值已定稿，可启动视觉与多端规范）、《测试与验收文档》（蒙特卡洛仿真回归、广告回调测试、并发压测）、《上线与运营文档》。</p>
+</section>
+
+<footer>弹珠乐园 · 服务端 API 设计文档 v1.0 · 2026-07-29 · 兑换模块（Exchange）留待后续版本补全 · 与 PRD v1.0 / 数值 v1.1 / 架构 v1.0 一致</footer>
+</div>
+</body>
+</html>
