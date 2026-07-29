@@ -93,7 +93,7 @@
     <table class="docinfo">
       <tr><td style="width:90px;border:none;background:none;font-weight:600">文档版本</td><td style="border:none;background:none">v1.0（草稿，待评审）</td></tr>
       <tr><td style="border:none;background:none;font-weight:600">日期</td><td style="border:none;background:none">2026-07-29</td></tr>
-      <tr><td style="border:none;background:none;font-weight:600">上游文档</td><td style="border:none;background:none">《PRD v1.0》《玩法数值设计 v1.1》《技术架构 v1.0》《服务端 API v1.0》《功能框架大纲 v0.1》</td></tr>
+      <tr><td style="border:none;background:none;font-weight:600">上游文档</td><td style="border:none;background:none">《PRD v1.0》《玩法数值设计 v1.2》《技术架构 v1.0》《服务端 API v1.0》《功能框架大纲 v0.1》</td></tr>
       <tr><td style="border:none;background:none;font-weight:600">下游文档</td><td style="border:none;background:none">《测试与验收文档》《上线与运营文档》</td></tr>
       <tr><td style="border:none;background:none;font-weight:600">目标读者</td><td style="border:none;background:none">UI/UX 设计、客户端（Cocos）、美术、产品、测试</td></tr>
     </table>
@@ -215,7 +215,7 @@
         <!-- 主视觉/入口卡 -->
         <rect x="12" y="64" width="296" height="150" rx="14" fill="#E6F1FB"/>
         <text x="28" y="92" font-size="13" font-weight="700" fill="#0C447C">弹珠机 · 即玩即走</text>
-        <text x="28" y="112" font-size="10" fill="#5F5E5A">投 5–99 颗 · 倍数 ×2~×20 · 落口中奖</text>
+        <text x="28" y="112" font-size="10" fill="#5F5E5A">投 5–99 颗 · 倍数 ×2/×4/×6/×8/×16/×32 · 落口中奖</text>
         <rect x="28" y="170" width="160" height="34" rx="17" fill="#185FA5"/>
         <text x="108" y="192" text-anchor="middle" font-size="13" font-weight="600" fill="#fff">开始游戏</text>
         <!-- 金刚区 -->
@@ -328,7 +328,7 @@
     </ul>
 
     <h3>4.7 概率公示（合规常驻）</h3>
-    <div class="card warn">入口常驻大厅金刚区 + 设置页；点击弹 Sheet 展示倍数档 ×2~×20 与各自出现概率（来自数值文档 §1.2 权重折算）。这是合规红线（PRD §9.1），不可移除或深藏。</div>
+    <div class="card warn">入口常驻大厅金刚区 + 设置页；点击弹 Sheet 展示倍数档 ×2/×4/×6/×8/×16/×32 与各自出现概率（来自数值文档 §1.2 权重折算）。这是合规红线（PRD §9.1），不可移除或深藏。</div>
 
     <h3>4.8 未成年 / 设置</h3>
     <ul>
@@ -388,7 +388,7 @@
     <h2 class="sec"><span class="num">7</span>图标与插画</h2>
     <ul>
       <li><b>图标风格</b>：线性 + 圆角（2px 描边、24×24 网格），语义色填充；关键图标：弹珠（金圆）、积分卡（紫卡）、领珠礼物、视频、商城袋、我的头像、概率公示(i)、签到日历。</li>
-      <li><b>插画</b>：大厅主视觉用扁平街机风插画（弹珠机轮廓 + 星光）；空态用轻量单色插画；庆祝用粒子/星光（命中全屏庆祝限高倍 ×15/×20，避免滥用）。</li>
+      <li><b>插画</b>：大厅主视觉用扁平街机风插画（弹珠机轮廓 + 星光）；空态用轻量单色插画；庆祝用粒子/星光（命中全屏庆祝限高倍 ×16/×32，避免滥用）。</li>
       <li><b>弹珠质感</b>：径向渐变 #FFF6D8→#F5A623，统一全端。</li>
     </ul>
   </section>
@@ -422,7 +422,7 @@
     <table>
       <tr><th>上游决策（已锁定）</th><th>本档落地</th><th>状态</th></tr>
       <tr><td>投珠 5–99 / 默认 5 / 预计得珠</td><td>§4.3 输入规范 + 实时展示</td><td>✅ 一致</td></tr>
-      <tr><td>倍数 ×2~×20 + 亮灯出口 12 方案</td><td>§4.3 大字 overlay + 亮灯 glow</td><td>✅ 一致</td></tr>
+      <tr><td>倍数 ×2/×4/×6/×8/×16/×32 + 亮灯出口 12 方案</td><td>§4.3 大字 overlay + 亮灯 glow</td><td>✅ 一致</td></tr>
       <tr><td>加注常驻按钮 + 实时预计奖励</td><td>§4.3 加注按钮 + HUD 高亮</td><td>✅ 一致</td></tr>
       <tr><td>拉杆蓄力/松手/取消</td><td>§5.1 动效规格</td><td>✅ 一致</td></tr>
       <tr><td>无结算弹窗 + 结果直显</td><td>§4.4 结果区 wireframe</td><td>✅ 一致</td></tr>

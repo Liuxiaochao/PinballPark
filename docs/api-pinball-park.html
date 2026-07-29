@@ -60,7 +60,7 @@
 
 <header class="top">
   <h1>弹珠乐园 · 服务端 API 设计文档</h1>
-  <div>版本 v1.0 &nbsp;·&nbsp; 2026-07-29 &nbsp;·&nbsp; 状态：初稿（与 PRD v1.0 / 数值设计 v1.1 / 架构 v1.0 一致）</div>
+  <div>版本 v1.0 &nbsp;·&nbsp; 2026-07-29 &nbsp;·&nbsp; 状态：初稿（与 PRD v1.0 / 数值设计 v1.2 / 架构 v1.0 一致）</div>
   <div style="margin-top:8px">
     <span class="tag go">Go 后端 (Gin/GORM)</span>
     <span class="tag">Cocos Creator 3.x 客户端</span>
@@ -216,7 +216,7 @@ Response: { <span class="k">"token"</span>: <span class="s">"eyJ..."</span>, <sp
   <pre>Request:  { <span class="k">"bet"</span>: 5 }                       <span class="c">// 5 ≤ bet ≤ 99，受余额约束</span>
 Response: {
   <span class="k">"roundId"</span>: <span class="s">"r-20260729-a1b2"</span>,
-  <span class="k">"multiplier"</span>: 8,                    <span class="c">// 本局单倍数（×2~×20 加权）</span>
+  <span class="k">"multiplier"</span>: 8,                    <span class="c">// 本局单倍数（×2/×4/×6/×8/×16/×32 加权）</span>
   <span class="k">"litExits"</span>: [3, 5, 7, 9],            <span class="c">// 亮灯出口（可中区），子集 of 1..12</span>
   <span class="k">"rtpApplied"</span>: 1.35,                  <span class="c">// 含新手保护系数（前5局1.5→递减）</span>
   <span class="k">"balance"</span>: 25                        <span class="c">// 扣 bet 后余额</span>
@@ -305,8 +305,8 @@ Response: {
   <pre>Request:  { <span class="k">"keys"</span>: [<span class="s">"rtp"</span>,<span class="s">"multiplierPool"</span>,<span class="s">"kTiers"</span>,<span class="s">"adFreq"</span>,<span class="s">"board"</span>]? }
 Response: {
   <span class="k">"rtp"</span>: 0.90,
-  <span class="k">"multiplierPool"</span>: [              <span class="c">// 倍数加权池，均倍 4.37</span>
-    {<span class="k">"m"</span>:2,<span class="k">"w"</span>:20},{<span class="k">"m"</span>:3,<span class="k">"w"</span>:16}, ..., {<span class="k">"m"</span>:20,<span class="k">"w"</span>:1}
+  <span class="k">"multiplierPool"</span>: [              <span class="c">// 倍数加权池，均倍 5.03（低倍高权重、×32 稀有）</span>
+    {<span class="k">"m"</span>:2,<span class="k">"w"</span>:30},{<span class="k">"m"</span>:4,<span class="k">"w"</span>:22},{<span class="k">"m"</span>:6,<span class="k">"w"</span>:14},{<span class="k">"m"</span>:8,<span class="k">"w"</span>:9},{<span class="k">"m"</span>:16,<span class="k">"w"</span>:3},{<span class="k">"m"</span>:32,<span class="k">"w"</span>:1.5}
   ],
   <span class="k">"kTiers"</span>: [5,20,50,80,120],       <span class="c">// 兑换所需卡数 K（兑换模块后续版本用）</span>
   <span class="k">"adFreq"</span>: { <span class="k">"claimBeans"</span>:6, <span class="k">"double"</span>:10, <span class="k">"sign"</span>:1, <span class="k">"highMultiplier"</span>:3, <span class="k">"dailyTotal"</span>:20 },
@@ -362,7 +362,7 @@ Response: {
   <h2 class="sec">10. 一致性与下游依赖</h2>
   <div class="card ok"><b>与上游文档一致：</b>
     <ul>
-      <li>四段事务、命中算法 <code>P(hit)=rtpApplied/multiplier</code>、卡规则 <code>R≥40→min(5,floor(R/40))</code>：对齐数值设计 v1.1。</li>
+      <li>四段事务、命中算法 <code>P(hit)=rtpApplied/multiplier</code>、卡规则 <code>R≥40→min(5,floor(R/40))</code>：对齐数值设计 v1.2。</li>
       <li>落点还原服务端定（launch 定 <code>targetExitId</code>）、物理溢出演出、出珠盒子容量 60：对齐 PRD 4.6/4.7/5.3。</li>
       <li>常驻领珠按钮、无结算弹窗、翻倍走 <code>ad/callback</code>：对齐 PRD 5.2/5.4。</li>
       <li>后端语言 Go（Gin/GORM）、签名 HMAC、数据模型 ER：对齐架构 v1.0。</li>
@@ -371,7 +371,7 @@ Response: {
   <p><b>下游文档：</b>《UI-UX 设计文档》（数值已定稿，可启动视觉与多端规范）、《测试与验收文档》（蒙特卡洛仿真回归、广告回调测试、并发压测）、《上线与运营文档》。</p>
 </section>
 
-<footer>弹珠乐园 · 服务端 API 设计文档 v1.0 · 2026-07-29 · 兑换模块（Exchange）留待后续版本补全 · 与 PRD v1.0 / 数值 v1.1 / 架构 v1.0 一致</footer>
+<footer>弹珠乐园 · 服务端 API 设计文档 v1.0 · 2026-07-29 · 兑换模块（Exchange）留待后续版本补全 · 与 PRD v1.0 / 数值 v1.2 / 架构 v1.0 一致</footer>
 </div>
 </body>
 </html>

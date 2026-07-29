@@ -101,6 +101,8 @@
     transition:transform .5s ease;
   }
   .screen.flat .board{ transform:rotate(30deg); }
+  .board.shake{animation:shake .25s ease;}
+  @keyframes shake{0%,100%{transform:rotateX(30deg)}25%{transform:rotateX(30deg) translateX(-3px)}75%{transform:rotateX(30deg) translateX(3px)}}
   .board::after{content:""; position:absolute; inset:0; border-radius:14px;
     background:linear-gradient(115deg, rgba(255,255,255,.05), transparent 40%);
     pointer-events:none;}
@@ -182,6 +184,8 @@
     width:26px; height:26px; border-radius:50%;
     background:radial-gradient(circle at 35% 30%,#fff,#c7d3e6 50%,#5a6f90);
     box-shadow:0 2px 5px rgba(0,0,0,.6), 0 0 8px rgba(57,224,255,.25);}
+  .shooter.pull{animation:shootpull .35s ease;}
+  @keyframes shootpull{0%{transform:translateX(-50%) translateY(0)}45%{transform:translateX(-50%) translateY(8px)}100%{transform:translateX(-50%) translateY(0)}}
 
   /* 出珠盒子（屏幕底部托盘，位于板内最下方，避开发射道） */
   .tray{position:absolute; left:18px; right:48px; top:424px; height:84px;
@@ -221,12 +225,19 @@
   @keyframes marq{to{--ang:360deg;}}
   @property --ang{syntax:'<angle>'; inherits:false; initial-value:0deg;}
 
-  .btn{pointer-events:auto; border:none; border-radius:14px; padding:14px 18px;
+  .btn{pointer-events:auto; position:relative; border:none; border-radius:14px; padding:14px 18px;
     font-size:15px; font-weight:800; cursor:pointer; letter-spacing:1px;
     box-shadow:0 6px 16px rgba(0,0,0,.45); transition:transform .08s ease, filter .15s ease;}
   .btn:active{transform:translateY(2px); filter:brightness(1.08);}
   .btn.launch{background:linear-gradient(180deg,#39E0FF,#1497c9); color:#04222e;}
   .btn.bet{background:linear-gradient(180deg,#FF4FD8,#b81f97); color:#fff;}
+  .btn.pulse{animation:btnpulse .3s ease;}
+  @keyframes btnpulse{0%{transform:scale(1)}50%{transform:scale(1.05)}100%{transform:scale(1)}}
+  .bet-pop{position:absolute; left:50%; top:-6px; transform:translateX(-50%);
+    font-family:"Courier New",ui-monospace,monospace; font-size:13px; font-weight:800;
+    color:#39E0FF; pointer-events:none; text-shadow:0 0 6px rgba(57,224,255,.7);
+    animation:betpop .9s ease forwards;}
+  @keyframes betpop{0%{opacity:0; transform:translateX(-50%) translateY(0)}25%{opacity:1}100%{opacity:0; transform:translateX(-50%) translateY(-28px)}}
   .controlbar{margin-top:14px; display:flex; gap:12px; padding:12px;
     border-radius:16px; background:linear-gradient(180deg,#0e2036,#0a1626);
     border:1px solid #2a4f86;
@@ -265,8 +276,7 @@
         <div class="paytable marquee-frame">
           <div class="pt-title">中奖倍率 WIN MULTIPLIER</div>
           <div class="pt-grid">
-            <span class="led">×2</span><span class="led">×3</span><span class="led">×4</span><span class="led">×5</span><span class="led">×6</span>
-            <span class="led">×8</span><span class="led">×10</span><span class="led on">×12</span><span class="led">×15</span><span class="led">×20</span>
+            <span class="led">×2</span><span class="led">×4</span><span class="led">×6</span><span class="led on">×8</span><span class="led">×16</span><span class="led">×32</span>
           </div>
         </div>
         <div class="exits">
@@ -285,14 +295,14 @@
       <div class="hud">
         <div class="hud-top">
           <div class="chip gold marquee-frame"><span class="lbl">珠子余额</span><span class="val">1286</span></div>
-          <div class="chip marquee-frame"><span class="lbl">剩余出珠</span><span class="val">5</span></div>
+          <div class="chip marquee-frame"><span class="lbl">奖励珠</span><span class="val">5</span></div>
         </div>
       </div>
     </div>
 
     <div class="controlbar">
-      <button class="btn bet">＋ 加注</button>
-      <button class="btn launch">↻ 拉杆发射</button>
+      <button class="btn bet" id="betBtn">＋ 加注</button>
+      <button class="btn launch" id="launchBtn">↻ 拉杆发射</button>
     </div>
   </div>
 
@@ -306,7 +316,7 @@
     <b>修正点 4 · 控制区移出画面：</b>「加注 / 拉杆发射」在机柜下方控制条，不遮挡游戏画面；发射道底部保留发射旋钮。<br>
     <b>修正点 5 · 出珠口贴近钉板 + 局部重排：</b>钉阵→倍率表→亮灯出口→出珠盒子自上而下依次排布，互不重叠；出口/托盘均避让右侧发射道（right:48 而非 18）。<br>
     <b>修正点 6 · 红色 LED 跑马灯：</b>顶部招牌与所有数字框改为<b>暗底红字红环</b>的机械数字 LED 跑马灯（非彩色霓虹）；侧边为红色流动灯柱。<br>
-    <b>修正点 7 · 完整倍率表：</b>出珠口上方板内显示<b>全部 10 档倍率</b>（×2~×20，取自数值设计文档 §1.2），当前局示例高亮 ×12（红 LED）。
+    <b>修正点 7 · 完整倍率表：</b>出珠口上方板内显示<b>全部 6 档倍率</b>（×2 / ×4 / ×6 / ×8 / ×16 / ×32，取自数值设计文档 §1.2 v1.2），当前局示例高亮 ×8（红 LED）。
   </div>
 
 <script>
@@ -347,6 +357,30 @@
   })();
   document.getElementById('toggle').addEventListener('click',()=>{
     document.getElementById('screen').classList.toggle('flat');
+  });
+
+  // 控制条交互模拟效果
+  const ballEl = document.querySelector('.ball');
+  const shooterEl = document.querySelector('.shooter');
+  const boardEl = document.getElementById('board');
+  const betBtn = document.getElementById('betBtn');
+  const launchBtn = document.getElementById('launchBtn');
+
+  // 拉杆发射：重新触发弹珠发射动画 + 发射旋钮回弹 + 板面震动
+  function fire(){
+    ballEl.style.animation='none';
+    void ballEl.offsetWidth;
+    ballEl.style.animation='launch-fall 3s cubic-bezier(.45,0,.55,1) infinite';
+    shooterEl.classList.remove('pull'); void shooterEl.offsetWidth; shooterEl.classList.add('pull');
+    boardEl.classList.remove('shake'); void boardEl.offsetWidth; boardEl.classList.add('shake');
+  }
+  launchBtn.addEventListener('click', fire);
+
+  // 加注：浮动 +1 注 提示 + 按钮脉冲
+  betBtn.addEventListener('click', ()=>{
+    const p=document.createElement('div'); p.className='bet-pop'; p.textContent='+1 注';
+    betBtn.appendChild(p); setTimeout(()=>p.remove(), 900);
+    betBtn.classList.remove('pulse'); void betBtn.offsetWidth; betBtn.classList.add('pulse');
   });
 </script>
 </body>

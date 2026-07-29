@@ -19,7 +19,8 @@
 import random
 
 # 倍数分布 (倍数, 权重) —— 低倍率高权重, 高倍率为稀有 jackpot
-MULT_DIST = [(2, 30), (3, 22), (4, 16), (5, 11), (6, 8), (8, 5), (10, 4), (12, 2), (15, 1.5), (20, 1.0)]
+# v1.2 起调整为 6 档: 2 / 4 / 6 / 8 / 16 / 32 (32 为稀有超级 jackpot)
+MULT_DIST = [(2, 30), (4, 22), (6, 14), (8, 9), (16, 3), (32, 1.5)]
 TOTAL_W = sum(w for _, w in MULT_DIST)
 WEIGHTED_AVG_M = sum(m * w for m, w in MULT_DIST) / TOTAL_W
 
@@ -45,6 +46,7 @@ def simulate_day(rtp, bet, p_double, eCPM,
     cards = 0
     videos = 0
     games = 0
+    card_trig = 0
     while games < max_games:
         # 珠子不足则看领珠视频 (每日上限)
         if beads < 5:
@@ -69,20 +71,22 @@ def simulate_day(rtp, bet, p_double, eCPM,
             # 新发卡规则: 仅当奖励达到阈值才按颗数发卡
             if reward >= CARD_THRESHOLD:
                 cards += min(CARD_CAP, reward // CARD_THRESHOLD)
+                card_trig += 1
         # 未命中: 投入沉没
     ad_rev = videos * eCPM
-    return games, videos, beads, cards, ad_rev
+    return games, videos, beads, cards, ad_rev, card_trig
 
 
 def avg_over(n_days, *args, **kw):
-    tot = [0.0, 0.0, 0.0, 0.0, 0.0]
+    tot = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
     for i in range(n_days):
-        g, v, b, c, r = simulate_day(*args, seed=1000 + i, **kw)
+        g, v, b, c, r, t = simulate_day(*args, seed=1000 + i, **kw)
         tot[0] += g
         tot[1] += v
         tot[2] += b
         tot[3] += c
         tot[4] += r
+        tot[5] += t
     return [x / n_days for x in tot]
 
 
@@ -96,10 +100,10 @@ def main():
     bet = 20
     pd = 0.70
     # 重度(压力测试, 300局) / 轻度(休闲, 60局)
-    gh, vh, bh, ch, rh = avg_over(20000, rtp, bet, pd, eCPM, max_games=300)
-    gl, vl, bl, cl, rl = avg_over(20000, rtp, bet, pd, eCPM, max_games=60)
-    print(f"重度玩家: 游戏 {gh:.1f}/日 视频 {vh:.1f}/日 广告¥{rh:.2f}/日 卡{ch:.2f}/日  A/C={rh/ch:.3f}")
-    print(f"轻度玩家: 游戏 {gl:.1f}/日 视频 {vl:.1f}/日 广告¥{rl:.2f}/日 卡{cl:.2f}/日  A/C={rl/cl:.3f}")
+    gh, vh, bh, ch, rh, th = avg_over(20000, rtp, bet, pd, eCPM, max_games=300)
+    gl, vl, bl, cl, rl, tl = avg_over(20000, rtp, bet, pd, eCPM, max_games=60)
+    print(f"重度玩家: 游戏 {gh:.1f}/日 视频 {vh:.1f}/日 广告¥{rh:.2f}/日 卡{ch:.1f}/日 发卡触发{th:.1f}/日 A/C={rh/ch:.3f}")
+    print(f"轻度玩家: 游戏 {gl:.1f}/日 视频 {vl:.1f}/日 广告¥{rl:.2f}/日 卡{cl:.1f}/日 发卡触发{tl:.1f}/日 A/C={rl/cl:.3f}")
     print()
     print(f"{'K(兑换所需卡)':>14}{'重度可持续单价¥':>16}{'轻度可持续单价¥':>16}{'重度比值(x1.2)':>16}")
     for K in [3, 5, 8, 10, 15, 20, 30, 50]:

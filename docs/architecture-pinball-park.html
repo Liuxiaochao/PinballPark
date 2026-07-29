@@ -101,7 +101,7 @@
     <table class="docinfo">
       <tr><td style="width:90px;border:none;background:none;font-weight:600">文档版本</td><td style="border:none;background:none">v1.0（草稿，待评审）</td></tr>
       <tr><td style="border:none;background:none;font-weight:600">日期</td><td style="border:none;background:none">2026-07-29</td></tr>
-      <tr><td style="border:none;background:none;font-weight:600">上游文档</td><td style="border:none;background:none">《PRD v1.0》《玩法数值设计文档 v1.1》《功能框架文档大纲 v0.1》</td></tr>
+      <tr><td style="border:none;background:none;font-weight:600">上游文档</td><td style="border:none;background:none">《PRD v1.0》《玩法数值设计文档 v1.2》《功能框架文档大纲 v0.1》</td></tr>
       <tr><td style="border:none;background:none;font-weight:600">下游文档</td><td style="border:none;background:none">《服务端 API 设计文档》《UI-UX 设计文档》《测试与验收文档》《上线与运营文档》</td></tr>
       <tr><td style="border:none;background:none;font-weight:600">目标读者</td><td style="border:none;background:none">客户端、服务端、运维、测试、架构评审</td></tr>
     </table>
@@ -290,7 +290,7 @@
       <li><b>权威计数与物理珠解耦</b>：HUD 显示的奖励数 = 服务端下发的 N（权威）；物理珠只负责"视觉掉落实感"。即使溢出珠滚落消失，<b>入账以 N 为准，盒子永不丢失应得奖励</b>。</li>
     </ul>
     <h3>6.3 性能约束（关键）</h3>
-    <div class="card warn"><b>N 可能高达 1980（99×20），禁止生成 N 个物理刚体。</b>实现策略：
+    <div class="card warn"><b>N 可能高达 3168（99×32），禁止生成 N 个物理刚体。</b>实现策略：
       <ul>
         <li>对象池：盒内至多存活 <code>CAP(60)</code> 颗 + 溢出若干（建议 ≤ 20）真实珠；超出部分以"代表珠 + 数字滚动"替代演出。</li>
         <li>下落节奏分级：N 小则单颗快落；N 大则连续喷落并加速，且超过视觉上限后直接以数字累加收尾，避免长演出拖时长。</li>
