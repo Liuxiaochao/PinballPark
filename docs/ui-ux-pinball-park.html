@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>弹珠乐园 · UI-UX 设计文档</title>
+<style>
+  :root {
+    --blue: #185FA5; --blue-l: #E6F1FB; --blue-d: #0C447C; --blue-b: #2E7FD6;
+    --teal: #0F6E56; --teal-l: #E1F5EE;
+    --amber: #854F0B; --amber-l: #FAEEDA;
+    --red: #A32D2D; --red-l: #FCEBEB; --red-b: #E5484D;
+    --purple: #534AB7; --purple-l: #EEEDFE;
+    --gold: #F5A623; --gold-l: #FEF3DD; --gold-d: #B9760A;
+    --text: #2C2C2A; --muted: #5F5E5A; --border: #E3E1D9; --bg: #FAFAF7;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; color: var(--text); background: var(--bg); line-height: 1.75; }
+  .layout { display: flex; max-width: 1300px; margin: 0 auto; }
+  nav { width: 250px; flex-shrink: 0; position: sticky; top: 0; height: 100vh; overflow-y: auto; padding: 32px 14px; border-right: 1px solid var(--border); background: #fff; }
+  nav h2 { font-size: 13px; color: var(--muted); font-weight: 500; margin-bottom: 12px; letter-spacing: 1px; }
+  nav a { display: block; padding: 6px 10px; font-size: 12.5px; color: var(--text); text-decoration: none; border-radius: 6px; margin-bottom: 2px; }
+  nav a:hover { background: var(--blue-l); color: var(--blue); }
+  nav .grp { font-size: 11px; color: var(--muted); margin: 14px 0 4px; letter-spacing: .5px; }
+  main { flex: 1; padding: 40px 52px 120px; min-width: 0; }
+  h1 { font-size: 26px; font-weight: 600; margin-bottom: 6px; }
+  .subtitle { color: var(--muted); font-size: 14px; margin-bottom: 20px; }
+  .meta { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 28px; }
+  .tag { font-size: 12px; padding: 3px 10px; border-radius: 999px; background: var(--blue-l); color: var(--blue-d); }
+  section { margin-bottom: 46px; scroll-margin-top: 20px; }
+  h2.sec { font-size: 20px; font-weight: 600; padding-bottom: 8px; border-bottom: 2px solid var(--blue); margin-bottom: 14px; }
+  h2.sec .num { color: var(--blue); margin-right: 8px; }
+  h3 { font-size: 16px; font-weight: 600; margin: 22px 0 8px; }
+  h4 { font-size: 14px; font-weight: 600; margin: 14px 0 6px; color: var(--blue-d); }
+  p { margin-bottom: 10px; font-size: 14px; }
+  ul, ol { margin: 0 0 12px 22px; font-size: 14px; }
+  li { margin-bottom: 4px; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0 16px; font-size: 13px; background: #fff; }
+  th { background: var(--blue-l); color: var(--blue-d); font-weight: 600; text-align: left; padding: 8px 12px; border: 1px solid var(--border); }
+  td { padding: 8px 12px; border: 1px solid var(--border); vertical-align: top; }
+  .card { background: #fff; border: 1px solid var(--border); border-left: 4px solid var(--blue); border-radius: 8px; padding: 14px 18px; margin: 12px 0; font-size: 14px; }
+  .card.warn { border-left-color: var(--red); background: var(--red-l); }
+  .card.ok { border-left-color: var(--teal); background: var(--teal-l); }
+  .card.amber { border-left-color: var(--gold); background: var(--gold-l); }
+  .card.purple { border-left-color: var(--purple); background: var(--purple-l); }
+  .card b { font-weight: 600; }
+  .flow { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 12px 0; }
+  .step { background: var(--blue-l); color: var(--blue-d); border: 1px solid #B5D4F4; border-radius: 8px; padding: 8px 12px; font-size: 13px; text-align: center; }
+  .step.hl { background: var(--purple-l); color: var(--purple); border-color: #CECBF6; }
+  .step.ok { background: var(--teal-l); color: var(--teal); border-color: #B8E0CE; }
+  .arrow { color: var(--muted); font-size: 14px; }
+  code { background: #F1EFE8; padding: 1px 6px; border-radius: 4px; font-size: 12.5px; font-family: "SF Mono", Menlo, monospace; }
+  footer { color: var(--muted); font-size: 12px; border-top: 1px solid var(--border); padding-top: 16px; }
+  .docinfo { font-size: 13px; color: var(--muted); }
+  .docinfo td { font-size: 13px; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+  svg { display: block; margin: 14px auto; max-width: 100%; }
+  .sw { display: inline-block; width: 18px; height: 18px; border-radius: 4px; vertical-align: middle; margin-right: 8px; border: 1px solid rgba(0,0,0,.1); }
+  .wf { background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 18px; margin: 14px 0; }
+  .wf .cap { font-size: 12px; color: var(--muted); margin-top: 6px; text-align: center; }
+  .note { font-size: 12px; color: var(--muted); }
+  @media (max-width: 980px) { nav { display: none; } .grid2, .grid3 { grid-template-columns: 1fr; } main { padding: 24px; } }
+</style>
+</head>
+<body>
+<div class="layout">
+<nav>
+  <h2>目录</h2>
+  <a href="#s0">文档信息</a>
+  <div class="grp">一 · 总则</div>
+  <a href="#s1">1. 设计目标与原则</a>
+  <a href="#s2">2. 设计令牌 Tokens</a>
+  <a href="#s3">3. 多端适配策略</a>
+  <div class="grp">二 · 页面规范</div>
+  <a href="#s4">4. 页面设计规范</a>
+  <a href="#s5">5. 核心动效规格</a>
+  <div class="grp">三 · 体系</div>
+  <a href="#s6">6. 组件库</a>
+  <a href="#s7">7. 图标与插画</a>
+  <a href="#s8">8. 无障碍与合规</a>
+  <a href="#s9">9. 资源交付清单</a>
+  <a href="#s10">10. 一致性与下游</a>
+</nav>
+<main>
+  <h1>弹珠乐园 · UI-UX 设计文档</h1>
+  <p class="subtitle">对标实体"弹珠乐园"游戏机的线上多端休闲游戏 —— 第五份阶段文档（UI-UX v1.0）</p>
+  <div class="meta">
+    <span class="tag">微信小游戏优先</span><span class="tag">Cocos Creator 3.x</span><span class="tag">纯免费 + 激励视频</span><span class="tag">物理为表·结果可控</span><span class="tag">暗色游戏舞台 + 浅色应用壳</span>
+  </div>
+
+  <section id="s0">
+    <table class="docinfo">
+      <tr><td style="width:90px;border:none;background:none;font-weight:600">文档版本</td><td style="border:none;background:none">v1.0（草稿，待评审）</td></tr>
+      <tr><td style="border:none;background:none;font-weight:600">日期</td><td style="border:none;background:none">2026-07-29</td></tr>
+      <tr><td style="border:none;background:none;font-weight:600">上游文档</td><td style="border:none;background:none">《PRD v1.0》《玩法数值设计 v1.1》《技术架构 v1.0》《服务端 API v1.0》《功能框架大纲 v0.1》</td></tr>
+      <tr><td style="border:none;background:none;font-weight:600">下游文档</td><td style="border:none;background:none">《测试与验收文档》《上线与运营文档》</td></tr>
+      <tr><td style="border:none;background:none;font-weight:600">目标读者</td><td style="border:none;background:none">UI/UX 设计、客户端（Cocos）、美术、产品、测试</td></tr>
+    </table>
+    <div class="card"><b>本档定位：</b>PRD §5.3/§5.4/§4.6/§4.7 已锁定的全部"功能交互决策"（投珠数/倍数/奖励/剩余展示、30°板面、拉杆、加注、无结算弹窗、出珠盒子、按钮层级甲）一律<b>不改动、不重议</b>，本档只补其空缺的<b>视觉与动效语言</b>：设计令牌、配色、字体、间距、动效时长、页面布局 wireframe、组件规范、多端适配。所有数值（RTP/倍数/K/容量 60/发卡门槛 40）源自上游，本档只读展示。</div>
+  </section>
+
+  <section id="s1">
+    <h2 class="sec"><span class="num">1</span>设计目标与原则</h2>
+    <h3>1.1 设计基调</h3>
+    <p><b>"街机厅里的弹珠机"</b> —— 温暖、明亮、有手感的休闲街机风。整体走<b>浅色舒适应用壳 + 沉浸式暗色游戏舞台</b>的双层结构：大厅/商城/我的用浅色降低长时间浏览疲劳（契合休闲解压定位），进入游戏局内时板面落入深蓝渐变"机器腔体"舞台，让钉板、亮灯出口与弹珠高对比跳脱。色彩以蓝（品牌信任）为主、金（弹珠/中奖）为强调、绿（命中庆祝）与紫（积分卡）为辅助语义色。</p>
+    <h3>1.2 五大原则（承接铁律与产品目标）</h3>
+    <table>
+      <tr><th style="width:24%">原则</th><th>落地要求</th></tr>
+      <tr><td><b>① 结果可信、不可伪造</b></td><td>HUD/倍数/亮灯出口只<b>展示</b>服务端下发的权威数据；任何"中奖特效"不得早于 <code>/game/launch</code> 返回出现，杜绝客户端暗示可控结果（呼应架构铁律一）。</td></tr>
+      <tr><td><b>② 即时反馈</b></td><td>每次投珠、拉杆、落口、掉珠、出卡、领珠、翻倍都有对应微动效 + 数字滚动，爽感连续不空窗（北极星指标依赖）。</td></tr>
+      <tr><td><b>③ 性能优先</b></td><td>首屏 &lt; 3s、移动端演出 ≥ 30fps；极端奖励（N 高达 1980）禁止生成全部物理刚体，走对象池 + 数字累加（架构 §6.3）。动效不得阻塞主线程。</td></tr>
+      <tr><td><b>④ 多端一致、一次开发</b></td><td>Cocos 一套代码出三端，UI 用相对单位 + 安全区适配，平台差异（导航栏/广告样式）收敛到适配层，视觉规范三端统一。</td></tr>
+      <tr><td><b>⑤ 克制合规</b></td><td>不出现"花钱必中"暗示；概率公示入口常驻；未成年提示明显；沉没明确告知（"本局投入已沉没"）。</td></tr>
+    </table>
+  </section>
+
+  <section id="s2">
+    <h2 class="sec"><span class="num">2</span>设计令牌 Design Tokens</h2>
+    <p class="note">所有令牌以 CSS 变量 / Cocos 主题表双形式落地，便于三端复用与暗色切换。以下为默认（浅色应用壳 + 暗色游戏舞台）。</p>
+    <h3>2.1 色彩</h3>
+    <div class="grid3">
+      <div class="card" style="border-left-color:var(--blue)"><b>品牌主色 Brand</b><br><span class="sw" style="background:#185FA5"></span>#185FA5 主<br><span class="sw" style="background:#2E7FD6"></span>#2E7FD6 交互态<br><span class="sw" style="background:#0C447C"></span>#0C447C 深/按下</div>
+      <div class="card" style="border-left-color:var(--gold)"><b>强调/中奖 Gold</b><br><span class="sw" style="background:#F5A623"></span>#F5A623 金<br><span class="sw" style="background:#FEF3DD"></span>#FEF3DD 浅底<br><span class="sw" style="background:#B9760A"></span>#B9760A 深字</div>
+      <div class="card" style="border-left-color:var(--teal)"><b>命中/成功 Teal</b><br><span class="sw" style="background:#0F9D58"></span>#0F9D58 命中<br><span class="sw" style="background:#E1F5EE"></span>#E1F5EE 浅底</div>
+      <div class="card" style="border-left-color:var(--purple)"><b>积分卡 Purple</b><br><span class="sw" style="background:#6C5CE7"></span>#6C5CE7 卡<br><span class="sw" style="background:#EEEDFE"></span>#EEEDFE 浅底</div>
+      <div class="card warn"><b>沉没/警示 Red</b><br><span class="sw" style="background:#E5484D"></span>#E5484D 沉没<br><span class="sw" style="background:#FCEBEB"></span>#FCEBEB 浅底<br><span class="note">克制：仅未命中提示/错误</span></div>
+      <div class="card" style="border-left-color:var(--muted)"><b>中性 Neutral</b><br><span class="sw" style="background:#2C2C2A"></span>#2C2C2A 文字<br><span class="sw" style="background:#5F5E5A"></span>#5F5E5A 次要<br><span class="sw" style="background:#E3E1D9"></span>#E3E1D9 描边</div>
+    </div>
+    <h4>游戏舞台（暗色，仅局内板面区域）</h4>
+    <table>
+      <tr><th>令牌</th><th>值</th><th>用途</th></tr>
+      <tr><td><code>--stage-bg</code></td><td>线性渐变 #0E1726 → #16243B</td><td>板面腔体背景</td></tr>
+      <tr><td><code>--stage-pin</code></td><td>#3A4A66（暗）/ #5A7099（亮）</td><td>钉阵金属钉</td></tr>
+      <tr><td><code>--stage-wall</code></td><td>#243450</td><td>通道墙/盒壁</td></tr>
+      <tr><td><code>--lit-on</code></td><td>#FFD66B（亮灯出口高亮）</td><td>亮灯出口发光</td></tr>
+      <tr><td><code>--lit-off</code></td><td>#2A3650（暗口置灰）</td><td>未亮/暗口</td></tr>
+      <tr><td><code>--ball</code></td><td>径向渐变 #FFF6D8 → #F5A623</td><td>弹珠（金光质感）</td></tr>
+    </table>
+    <h3>2.2 字体 Typography</h3>
+    <table>
+      <tr><th>用途</th><th>字体</th><th>字号/字重</th><th>说明</th></tr>
+      <tr><td>大数字（倍数/奖励/余额）</td><td>PingFang SC / DIN 风格数字</td><td>28–44px / 700</td><td>等宽数字 <code>font-variant-numeric: tabular-nums</code>，防滚动抖动</td></tr>
+      <tr><td>正文 / 按钮</td><td>PingFang SC</td><td>14–16px / 500–600</td><td>常规</td></tr>
+      <tr><td>辅助 / 标签</td><td>PingFang SC</td><td>11–12px / 400</td><td>次要信息</td></tr>
+      <tr><td>标题</td><td>PingFang SC</td><td>18–22px / 700</td><td>页面标题</td></tr>
+    </table>
+    <h3>2.3 间距 / 圆角 / 阴影</h3>
+    <ul>
+      <li><b>间距基准 4px</b>：xs4 / sm8 / md12 / lg16 / xl24 / xxl32。布局栅格用 8 的倍数。</li>
+      <li><b>圆角</b>：按钮/卡片 <code>12px</code>；小标签/芯片 <code>999px</code>；弹层 Sheet 顶部 <code>16px</code>。</li>
+      <li><b>阴影（浅色壳）</b>：卡片 <code>0 1px 3px rgba(0,0,0,.06)</code>；浮起按钮 <code>0 6px 16px rgba(24,95,165,.24)</code>。<b>克制</b>：避免重投影"布丁感"，靠描边 + 浅底色分层。</li>
+    </ul>
+    <h3>2.4 动效时长与缓动 Motion</h3>
+    <table>
+      <tr><th>动作</th><th>时长</th><th>缓动曲线</th></tr>
+      <tr><td>按钮态/Toast/数字滚动</td><td>160–220ms</td><td><code>ease-out</code></td></tr>
+      <tr><td>页面切换 / Sheet 弹层</td><td>260–320ms</td><td><code>cubic-bezier(.22,.61,.36,1)</code></td></tr>
+      <tr><td>亮灯出口点亮</td><td>200ms</td><td><code>ease-in-out</code> 带 glow 脉冲</td></tr>
+      <tr><td>出珠掉落（单颗）</td><td>物理步驱动</td><td>真实 Box2D，非脚本补间</td></tr>
+      <tr><td>积分卡出卡</td><td>420ms</td><td><code>cubic-bezier(.34,1.56,.64,1)</code>（回弹）</td></tr>
+      <tr><td>拉杆蓄力环</td><td>跟随手指</td><td>线性填充，松手触发发射</td></tr>
+    </table>
+    <h3>2.5 层级 Z-index</h3>
+    <p><code>游戏舞台(0)</code> → <code>板面层(10)</code> → <code>HUD/文字 overlay(20, 不随板旋转)</code> → <code>操作按钮(30)</code> → <code>Toast/频控提示(80)</code> → <code>Sheet 弹层/概率公示(90)</code> → <code>广告 SDK 浮层(100, 平台接管)</code>。</p>
+  </section>
+
+  <section id="s3">
+    <h2 class="sec"><span class="num">3</span>多端适配策略</h2>
+    <table>
+      <tr><th style="width:18%">维度</th><th>微信小游戏（首发）</th><th>iOS / Android App（二期）</th><th>H5（传播）</th></tr>
+      <tr><td>导航栏</td><td>微信原生胶囊（右上），自绘底部 Tab</td><td>原生导航 / 系统手势条</td><td>浏览器地址栏 + 自绘</td></tr>
+      <tr><td>安全区</td><td>顶部避让胶囊；底部 <code>env(safe-area-inset-bottom)</code></td><td>刘海/灵动岛 + Home 指示条避让</td><td>视口 meta + 同上</td></tr>
+      <tr><td>广告</td><td>微信流量主激励视频（全屏接管）</td><td>穿山甲/聚合（全屏接管）</td><td>可选，轻量引导下载 App</td></tr>
+      <tr><td>登录</td><td>微信授权一键</td><td>手机号 + 微信 UnionID 打通</td><td>游客/扫码</td></tr>
+      <tr><td>横竖屏</td><td colspan="3"><b>默认竖屏</b>；板面 30° 在竖屏下呈左下/右下倾斜（顺时针），无需横屏（见 4.3）</td></tr>
+    </table>
+    <div class="card amber"><b>性能分级（同一套 UI，按设备降级）：</b>
+      <ul style="margin-top:6px">
+        <li><b>高配</b>：钉阵 60 钉、出珠盒子全粒子阴影、亮灯 glow 全开。</li>
+        <li><b>中配</b>：钉阵 45 钉、盒子阴影降采样、glow 减半。</li>
+        <li><b>低配</b>：钉阵 30 钉、关闭盒外阴影、溢出珠用占位 sprite + 数字滚动替代（仍走物理但减刚体数）。</li>
+      </ul>
+    分级由 Cocos 启动时按 GPU/内存探测，不影响交互与数值（仅演出精度）。</div>
+  </section>
+
+  <section id="s4">
+    <h2 class="sec"><span class="num">4</span>页面设计规范（含线框）</h2>
+    <p class="note">线框为布局示意（非高保真），标注元素与上游决策对应关系。所有"数字展示"遵循 PRD §5.3 信息展示规格。</p>
+
+    <h3>4.1 启动 / 登录</h3>
+    <div class="wf">
+      <svg viewBox="0 0 320 240" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'PingFang SC',sans-serif">
+        <rect x="0" y="0" width="320" height="240" rx="16" fill="#E6F1FB"/>
+        <circle cx="160" cy="78" r="34" fill="none" stroke="#185FA5" stroke-width="3"/>
+        <text x="160" y="84" text-anchor="middle" font-size="20" font-weight="700" fill="#185FA5">弹</text>
+        <text x="160" y="132" text-anchor="middle" font-size="15" font-weight="700" fill="#2C2C2A">弹珠乐园</text>
+        <text x="160" y="152" text-anchor="middle" font-size="10" fill="#5F5E5A">拉杆弹珠 · 看广告攒珠 · 积分兑好礼</text>
+        <rect x="50" y="176" width="220" height="38" rx="19" fill="#185FA5"/>
+        <text x="160" y="200" text-anchor="middle" font-size="13" font-weight="600" fill="#fff">微信授权登录</text>
+        <text x="160" y="228" text-anchor="middle" font-size="9" fill="#5F5E5A">登录即赠 30 颗弹珠 · 已阅读《隐私协议》</text>
+      </svg>
+      <div class="cap">登录即发 30 颗（API §登录即发，open 不再发）；隐私协议勾选强制。</div>
+    </div>
+
+    <h3>4.2 大厅 Lobby</h3>
+    <div class="wf">
+      <svg viewBox="0 0 320 420" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'PingFang SC',sans-serif">
+        <rect x="0" y="0" width="320" height="420" rx="16" fill="#FAFAF7"/>
+        <!-- 余额条 -->
+        <rect x="12" y="12" width="296" height="40" rx="10" fill="#fff" stroke="#E3E1D9"/>
+        <circle cx="34" cy="32" r="10" fill="#F5A623"/><text x="50" y="36" font-size="12" font-weight="700" fill="#2C2C2A">1,286</text>
+        <circle cx="150" cy="32" r="10" fill="#6C5CE7"/><text x="166" y="36" font-size="12" font-weight="700" fill="#2C2C2A">42 卡</text>
+        <text x="290" y="36" text-anchor="end" font-size="9" fill="#5F5E5A">我的 ›</text>
+        <!-- 主视觉/入口卡 -->
+        <rect x="12" y="64" width="296" height="150" rx="14" fill="#E6F1FB"/>
+        <text x="28" y="92" font-size="13" font-weight="700" fill="#0C447C">弹珠机 · 即玩即走</text>
+        <text x="28" y="112" font-size="10" fill="#5F5E5A">投 5–99 颗 · 倍数 ×2~×20 · 落口中奖</text>
+        <rect x="28" y="170" width="160" height="34" rx="17" fill="#185FA5"/>
+        <text x="108" y="192" text-anchor="middle" font-size="13" font-weight="600" fill="#fff">开始游戏</text>
+        <!-- 金刚区 -->
+        <g font-size="10" fill="#2C2C2A" text-anchor="middle">
+          <rect x="24" y="232" width="60" height="60" rx="12" fill="#fff" stroke="#E3E1D9"/><text x="54" y="284">每日任务</text>
+          <rect x="100" y="232" width="60" height="60" rx="12" fill="#fff" stroke="#E3E1D9"/><text x="130" y="284">签到</text>
+          <rect x="176" y="232" width="60" height="60" rx="12" fill="#fff" stroke="#E3E1D9"/><text x="206" y="284">商城</text>
+          <rect x="252" y="232" width="56" height="60" rx="12" fill="#FEF3DD" stroke="#F5A623"/><text x="280" y="284">概率公示</text>
+        </g>
+        <!-- 常驻领珠按钮 -->
+        <rect x="12" y="316" width="296" height="44" rx="22" fill="#FEF3DD" stroke="#F5A623"/>
+        <text x="160" y="343" text-anchor="middle" font-size="13" font-weight="700" fill="#B9760A">🎁 领珠 +88（今日剩 4/6）</text>
+        <text x="160" y="408" text-anchor="middle" font-size="9" fill="#5F5E5A">底部 Tab：大厅 · 商城 · 我的</text>
+      </svg>
+      <div class="cap">顶部常驻"弹珠/积分"余额条；主按钮"开始游戏"；金刚区含概率公示常驻入口；底部常驻"领珠 +88 / 今日剩 N/6"按钮（达上限置灰"明日再来"）。</div>
+    </div>
+
+    <h3>4.3 游戏局内 Game（核心）</h3>
+    <div class="card ok"><b>图层关系（来自 PRD §5.3 / 架构 §3 / §4）：</b>板面（钉板+亮灯出口+球）在<b>局部坐标物理仿真</b>，渲染整体 <b>30° Z 轴旋转</b>显示；HUD 文字与拉杆/加注按钮属于<b>屏幕正向独立图层，不随板旋转</b>；倍数数字用屏幕正向 overlay 叠加保证可读。</div>
+    <div class="wf">
+      <svg viewBox="0 0 340 460" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'PingFang SC',sans-serif">
+        <rect x="0" y="0" width="340" height="460" rx="16" fill="#0E1726"/>
+        <!-- 顶部 HUD overlay（不旋转） -->
+        <text x="16" y="26" font-size="11" fill="#9FB2CC">本局投入：5 颗</text>
+        <text x="324" y="26" text-anchor="end" font-size="11" fill="#FFD66B">弹珠：1,281</text>
+        <rect x="96" y="40" width="148" height="34" rx="17" fill="#185FA5"/>
+        <text x="170" y="62" text-anchor="middle" font-size="15" font-weight="700" fill="#fff">本局 ×8</text>
+
+        <!-- 30° 板面（平行四边形，顺时针旋转示意） -->
+        <g transform="rotate(18 170 260)">
+          <rect x="70" y="120" width="200" height="280" rx="10" fill="#16243B" stroke="#243450"/>
+          <!-- 弹簧杆 -->
+          <rect x="158" y="128" width="24" height="20" rx="4" fill="#3A4A66"/>
+          <!-- 钉阵（示意） -->
+          <g fill="#5A7099">
+            <circle cx="100" cy="170" r="3"/><circle cx="140" cy="170" r="3"/><circle cx="180" cy="170" r="3"/><circle cx="220" cy="170" r="3"/>
+            <circle cx="120" cy="200" r="3"/><circle cx="160" cy="200" r="3"/><circle cx="200" cy="200" r="3"/>
+            <circle cx="100" cy="230" r="3"/><circle cx="140" cy="230" r="3"/><circle cx="180" cy="230" r="3"/><circle cx="220" cy="230" r="3"/>
+          </g>
+          <!-- 亮灯出口（高亮）+ 暗口（置灰） -->
+          <g>
+            <rect x="96" y="372" width="22" height="16" rx="3" fill="#FFD66B"/>
+            <rect x="124" y="372" width="22" height="16" rx="3" fill="#2A3650"/>
+            <rect x="152" y="372" width="22" height="16" rx="3" fill="#FFD66B"/>
+            <rect x="180" y="372" width="22" height="16" rx="3" fill="#2A3650"/>
+            <rect x="208" y="372" width="22" height="16" rx="3" fill="#FFD66B"/>
+          </g>
+          <!-- 球 -->
+          <circle cx="160" cy="250" r="7" fill="url(#g)"/>
+          <defs><radialGradient id="g" cx="40%" cy="35%"><stop offset="0%" stop-color="#FFF6D8"/><stop offset="100%" stop-color="#F5A623"/></radialGradient></defs>
+        </g>
+
+        <!-- 出珠盒子（板底容器，随板）示意放在 lower-left -->
+        <rect x="20" y="396" width="96" height="44" rx="8" fill="#16243B" stroke="#243450"/>
+        <text x="68" y="423" text-anchor="middle" font-size="10" fill="#9FB2CC">出珠盒子 0/60</text>
+
+        <!-- 操作层（不旋转） -->
+        <rect x="210" y="300" width="110" height="40" rx="20" fill="#FEF3DD" stroke="#F5A623"/>
+        <text x="265" y="325" text-anchor="middle" font-size="11" font-weight="700" fill="#B9760A">+ 再投珠加注</text>
+        <rect x="210" y="350" width="110" height="48" rx="24" fill="#185FA5"/>
+        <text x="265" y="379" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">按住拉杆</text>
+        <text x="265" y="392" text-anchor="middle" font-size="8" fill="#9FB2CC">蓄力松手发射·可取消</text>
+      </svg>
+      <div class="cap">板面 30° 倾斜（此处示意 18°，最终定 30° 顺时针）；顶部 HUD 与底部"加注/拉杆"为屏幕正向独立图层；亮灯出口高亮、暗口置灰；出珠盒子随板位于底部承接口。</div>
+    </div>
+    <ul>
+      <li><b>投珠输入</b>：默认 5，±步进 / 滑块 5–99，"最大"快捷；实时显示"命中预计得珠 = 投入 × 倍数"（PRD §5.3）。</li>
+      <li><b>倍数大字</b>：板顶"本局 ×8"屏幕正向 overlay；亮灯出口仅高亮"可中区"，不重复标倍数（PRD §5.3）。</li>
+      <li><b>拉杆</b>：按压蓄力、松手发射、移出命中区/进取消区松手即取消，不扣珠（PRD §5.3）。蓄力仅演出、不影响落点（架构 §5）。</li>
+      <li><b>加注</b>：常驻醒目"再投珠加注"按钮（弹珠图标 + 实时"预计奖励"），点开追加，受余额与 ≤99 约束；加注后 HUD"本局投入"→"有效投入"并高亮跳动（PRD §5.3/§4.4）。</li>
+    </ul>
+
+    <h3>4.4 结果展示区 Result（无结算弹窗）</h3>
+    <div class="card ok"><b>沿用 PRD 决策：</b>一局结束、球落定后<b>不弹结算弹窗</b>，结果直接显示在结果区。命中："获得 N 颗弹珠 + M 张积分卡"伴积分卡出卡动画；未命中："本局投入 X 颗已沉没"。同区常驻"再来一局 / 看视频 ×2（限频）/ 去商城"与"领珠"按钮。按钮层级采用<b>方案甲</b>（主按钮=看视频 ×2）。</div>
+    <div class="wf">
+      <svg viewBox="0 0 320 300" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'PingFang SC',sans-serif">
+        <rect x="0" y="0" width="320" height="300" rx="16" fill="#FAFAF7"/>
+        <text x="160" y="34" text-anchor="middle" font-size="15" font-weight="700" fill="#0F9D58">🎉 命中！获得 40 颗弹珠</text>
+        <!-- 出珠盒子（满溢示意） -->
+        <rect x="30" y="54" width="120" height="70" rx="10" fill="#16243B" stroke="#243450"/>
+        <g fill="url(#g2)"><circle cx="50" cy="110" r="6"/><circle cx="66" cy="112" r="6"/><circle cx="82" cy="110" r="6"/><circle cx="98" cy="112" r="6"/><circle cx="114" cy="110" r="6"/><circle cx="58" cy="96" r="6"/><circle cx="74" cy="98" r="6"/><circle cx="90" cy="96" r="6"/><circle cx="106" cy="98" r="6"/></g>
+        <defs><radialGradient id="g2" cx="40%" cy="35%"><stop offset="0%" stop-color="#FFF6D8"/><stop offset="100%" stop-color="#F5A623"/></radialGradient></defs>
+        <text x="90" y="142" text-anchor="middle" font-size="9" fill="#5F5E5A">出珠盒子 60/60 · 溢出中</text>
+        <!-- 积分卡 -->
+        <rect x="170" y="54" width="120" height="70" rx="10" fill="#EEEDFE" stroke="#6C5CE7"/>
+        <text x="230" y="86" text-anchor="middle" font-size="13" font-weight="700" fill="#534AB7">+1 积分卡</text>
+        <text x="230" y="106" text-anchor="middle" font-size="9" fill="#5F5E5A">R≥40 触发 · 共 43 卡</text>
+        <!-- 按钮层级 方案甲 -->
+        <rect x="20" y="150" width="280" height="46" rx="23" fill="#185FA5"/>
+        <text x="160" y="178" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">📺 看视频 ×2（今日剩 7/10）</text>
+        <rect x="20" y="206" width="135" height="42" rx="21" fill="#fff" stroke="#185FA5"/>
+        <text x="87" y="232" text-anchor="middle" font-size="13" font-weight="600" fill="#185FA5">再来一局</text>
+        <rect x="165" y="206" width="135" height="42" rx="21" fill="#fff" stroke="#6C5CE7"/>
+        <text x="232" y="232" text-anchor="middle" font-size="13" font-weight="600" fill="#6C5CE7">去商城</text>
+        <text x="160" y="288" text-anchor="middle" font-size="9" fill="#5F5E5A">未命中时仅显示"再来一局/去商城"，无 ×2 按钮 · 领珠常驻</text>
+      </svg>
+      <div class="cap">命中：出珠盒子逐颗掉落至 N（容量 60，超出物理溢出），积分卡回弹出卡动画；主按钮"看视频 ×2"最大最亮（方案甲）。未命中：无 ×2、明确沉没提示。</div>
+    </div>
+
+    <h3>4.5 商城 Mall</h3>
+    <ul>
+      <li>顶部 Tab 按兑换所需卡数 <b>K 分层</b>：虚拟(5) / 小实物(20) / 中实物(50) / 实物(80) / 高实物(120)（数值文档 §4.1）。</li>
+      <li>商品卡显示"所需 K 张卡"、积分价（=K×10）、"是否够兑"实时态；缺货/下架清晰。</li>
+      <li>兑换 → 风控 → 扣卡 → 第三方下单 → 订单状态；"我的订单"展示状态与（实物）物流。</li>
+    </ul>
+
+    <h3>4.6 我的 / 订单 Profile</h3>
+    <ul>
+      <li>积分明细（卡数 / 累计积分）、订单状态机（created→…→done/failed）、概率公示入口、设置（含未成年模式开关）、退出。</li>
+    </ul>
+
+    <h3>4.7 概率公示（合规常驻）</h3>
+    <div class="card warn">入口常驻大厅金刚区 + 设置页；点击弹 Sheet 展示倍数档 ×2~×20 与各自出现概率（来自数值文档 §1.2 权重折算）。这是合规红线（PRD §9.1），不可移除或深藏。</div>
+
+    <h3>4.8 未成年 / 设置</h3>
+    <ul>
+      <li>首次进入弹未成年消费/时长提示；设置可开启"青少年模式"（限时长、隐藏商城高价值档）。</li>
+    </ul>
+  </section>
+
+  <section id="s5">
+    <h2 class="sec"><span class="num">5</span>核心交互动效规格</h2>
+    <h4>5.1 拉杆蓄力</h4>
+    <ul>
+      <li>手指按下：弹簧杆压缩（scaleY 0.8→1.0 随蓄力），蓄力环 0→100% 线性填充（跟随手指位移或按住时长）。</li>
+      <li>松手：发射，弹珠从杆口以初速（区间内抖动）弹出，杆回弹微动。</li>
+      <li>取消（移出命中区/进取消区松手）：杆回弹、无发射、无扣珠、回到 BET_SET（架构 §3.2）。<b>不触发任何中奖演出</b>。</li>
+    </ul>
+    <h4>5.2 亮灯出口刷新</h4>
+    <ul>
+      <li>开局拿到 <code>litExits</code> 后，对应出口 200ms glow 脉冲点亮（#FFD66B），暗口保持 #2A3650 置灰；点亮带轻微"通电"音效（可选）。</li>
+    </ul>
+    <h4>5.3 出珠盒子掉落 + 物理溢出</h4>
+    <div class="card"><b>严格遵循架构 §6：</b>命中后珠子从落定亮灯出口<b>逐颗掉落入盒</b>，每颗为真实 Box2D 刚体（与板面同物理世界、局部竖直重力），盒计数 +1 至 N；满 60（CAP）后继续生成的珠从盒沿<b>真实溢出滚落消散</b>（非脚本）。<b>权威计数 = 服务端 N，与物理珠解耦</b>；N 大（≤1980）仅生成有限物理珠（对象池 60+溢出≤20）+ 数字滚动收尾，防掉帧。看视频 ×2：N→2N，补播额外 N 颗走同样逻辑。下落节奏按 N 分级（小则快落、大则喷落加速）。</div>
+    <h4>5.4 积分卡出卡</h4>
+    <ul>
+      <li>R≥40 命中后，积分卡从结果区右侧"弹卡口"<b>回弹飞出</b>（420ms <code>cubic-bezier(.34,1.56,.64,1)</code>），伴随 +1 数字滚动；多张则连发（封顶 5）。</li>
+    </ul>
+    <h4>5.5 看视频 ×2 翻转</h4>
+    <ul>
+      <li>点主按钮 → 全屏广告（平台接管，Z=100）→ 服务端 <code>/ad/callback</code> 验真成功返回 → 奖励数数字滚动翻转 N→2N、出珠盒子补播额外 N 颗、积分卡（若有）不重复发（仅首次结算发卡）。失败时回退 N 并 Toast"未获得翻倍"。</li>
+    </ul>
+    <h4>5.6 常驻领珠按钮</h4>
+    <ul>
+      <li>点"领珠 +88" → 广告 → 验真 → 余额数字滚动 +88、按钮"今日剩 N/6"递减；达 6 次置灰"今日已达上限，明天再来"，不触发视频（API 频控）。</li>
+    </ul>
+    <h4>5.7 通用反馈</h4>
+    <ul>
+      <li>Toast：160–220ms 淡入，2s 自动消失，位于 Z=80。</li>
+      <li>数字滚动：tabular-nums，缓动 220ms，避免抖动。</li>
+      <li>按钮态：默认 → 按下（#0C447C/scale .97）→ 禁用（置灰 + 文案说明）。</li>
+    </ul>
+  </section>
+
+  <section id="s6">
+    <h2 class="sec"><span class="num">6</span>组件库 Component Spec</h2>
+    <table>
+      <tr><th style="width:20%">组件</th><th>规范</th></tr>
+      <tr><td><b>主/次按钮</b></td><td>主：实底 #185FA5 白字、高度 46、圆角 23、浮起阴影；次：白底描边 #185FA5 蓝字；三级：纯文字。方案甲主按钮用于"看视频 ×2"。禁用态置灰 #C9C7C0 + 说明文案。</td></tr>
+      <tr><td><b>步进 / 滑块</b></td><td>投珠数：±按钮 + 居中大数字（tabular-nums）+ "最大"；范围 5–99。实时"预计得珠"跟随。</td></tr>
+      <tr><td><b>芯片 Chip</b></td><td>圆角 999px，用于"今日剩 N/6""命中 ×8""K=80"等状态标签；语义色底。</td></tr>
+      <tr><td><b>分段 Tab</b></td><td>商城 K 分层切换；底部 indicator 滑入 220ms。</td></tr>
+      <tr><td><b>Sheet 弹层</b></td><td>底部上滑（260–320ms），遮罩点击关闭；用于概率公示、加注输入、订单详情。圆角顶部 16。</td></tr>
+      <tr><td><b>进度/计数</b></td><td>出珠盒子计数、领珠次数、雷达式蓄力环，统一用 CSS/Sprite 驱动，不阻塞物理。</td></tr>
+      <tr><td><b>空态 / 骨架</b></td><td>商城无兑换记录、订单空态用插画占位；首屏资源懒加载用骨架屏防白屏（首屏 &lt;3s）。</td></tr>
+    </table>
+  </section>
+
+  <section id="s7">
+    <h2 class="sec"><span class="num">7</span>图标与插画</h2>
+    <ul>
+      <li><b>图标风格</b>：线性 + 圆角（2px 描边、24×24 网格），语义色填充；关键图标：弹珠（金圆）、积分卡（紫卡）、领珠礼物、视频、商城袋、我的头像、概率公示(i)、签到日历。</li>
+      <li><b>插画</b>：大厅主视觉用扁平街机风插画（弹珠机轮廓 + 星光）；空态用轻量单色插画；庆祝用粒子/星光（命中全屏庆祝限高倍 ×15/×20，避免滥用）。</li>
+      <li><b>弹珠质感</b>：径向渐变 #FFF6D8→#F5A623，统一全端。</li>
+    </ul>
+  </section>
+
+  <section id="s8">
+    <h2 class="sec"><span class="num">8</span>无障碍与合规</h2>
+    <ul>
+      <li><b>对比度</b>：正文 ≥ 4.5:1；亮灯出口高亮与暗口置灰对比明显，防色盲误读（出口加形状/位置区分，不只靠颜色）。</li>
+      <li><b>动效偏好</b>：尊重系统"减少动态效果"开关，关闭非必要粒子/回弹。</li>
+      <li><b>合规常驻</b>：概率公示入口不可移除；未成年提示显著；沉没明确文案；不暗示"付费必中"。</li>
+      <li><b>触控热区</b>：主操作 ≥ 44×44pt，拉杆/加注按钮足够大防误触。</li>
+    </ul>
+  </section>
+
+  <section id="s9">
+    <h2 class="sec"><span class="num">9</span>资源交付清单（美术/切图）</h2>
+    <table>
+      <tr><th>资源</th><th>规格</th><th>备注</th></tr>
+      <tr><td>设计令牌表</td><td>JSON / Cocos 主题表</td><td>色/字/间距/动效变量，双端同步</td></tr>
+      <tr><td>大厅/商城/我的/订单</td><td>@1x/@2x/@3x + 深色舞台版</td><td>切图 + 标注</td></tr>
+      <tr><td>游戏舞台</td><td>板面底纹/钉/通道墙/盒壁/弹簧杆/亮灯 glow 帧</td><td>9-slice + 序列帧</td></tr>
+      <tr><td>弹珠 sprite</td><td>径向渐变 + 旋转高光帧</td><td>统一质感</td></tr>
+      <tr><td>图标集</td><td>SVG 线性 24 网格 + 导出 PNG</td><td>语义色</td></tr>
+      <tr><td>动效 demo</td><td>拉杆/出卡/掉落/×2 翻转动图或 Lottie</td><td>供客户端对齐</td></tr>
+      <tr><td>多端标注</td><td>安全区/导航差异说明</td><td>三端</td></tr>
+    </table>
+  </section>
+
+  <section id="s10">
+    <h2 class="sec"><span class="num">10</span>与上游一致性核对 + 下游依赖</h2>
+    <table>
+      <tr><th>上游决策（已锁定）</th><th>本档落地</th><th>状态</th></tr>
+      <tr><td>投珠 5–99 / 默认 5 / 预计得珠</td><td>§4.3 输入规范 + 实时展示</td><td>✅ 一致</td></tr>
+      <tr><td>倍数 ×2~×20 + 亮灯出口 12 方案</td><td>§4.3 大字 overlay + 亮灯 glow</td><td>✅ 一致</td></tr>
+      <tr><td>加注常驻按钮 + 实时预计奖励</td><td>§4.3 加注按钮 + HUD 高亮</td><td>✅ 一致</td></tr>
+      <tr><td>拉杆蓄力/松手/取消</td><td>§5.1 动效规格</td><td>✅ 一致</td></tr>
+      <tr><td>无结算弹窗 + 结果直显</td><td>§4.4 结果区 wireframe</td><td>✅ 一致</td></tr>
+      <tr><td>出珠盒子容量 60 + 物理溢出</td><td>§5.3 掉落/溢出动效（架构 §6）</td><td>✅ 一致</td></tr>
+      <tr><td>积分卡 R≥40 出卡动画</td><td>§5.4 出卡回弹</td><td>✅ 一致</td></tr>
+      <tr><td>30° Z 轴板面 + HUD 不旋转</td><td>§4.3 图层关系 + 线框</td><td>✅ 一致</td></tr>
+      <tr><td>按钮层级方案甲（主=×2）</td><td>§4.4 主按钮最大最亮</td><td>✅ 一致</td></tr>
+      <tr><td>常驻领珠 +88 / 每日 6 / 达限置灰</td><td>§4.2 大厅 + §5.6</td><td>✅ 一致</td></tr>
+      <tr><td>概率公示常驻</td><td>§4.7 合规常驻入口</td><td>✅ 一致</td></tr>
+      <tr><td>商城 K 分层（5/20/50/80/120）</td><td>§4.5 Tab 分层</td><td>✅ 一致</td></tr>
+      <tr><td>暗口隔离沉没通道</td><td>§4.3 暗口置灰 + §4.4 沉没提示</td><td>✅ 一致</td></tr>
+    </table>
+    <div class="card"><b>下游依赖：</b>《测试与验收文档》—— 动效性能（≥30fps、N=1980 不掉帧）、多端安全区、×2 翻转时序、出珠盒子计数与权威 N 一致性；《上线与运营文档》—— 首屏分包/资源懒加载、广告样式三端对齐。Exchange 模块 UI 待后续版本补全（与 API 一致留待）。</div>
+  </section>
+
+  <footer>弹珠乐园 · UI-UX 设计文档 v1.0 草稿 · 2026-07-29 · 状态：待设计/产品评审</footer>
+</main>
+</div>
+</body>
+</html>
