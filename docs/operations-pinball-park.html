@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>弹珠乐园 · 上线与运营文档 v1.0</title>
+<style>
+  :root{ --bg:#f6f7f9; --ink:#1c1f23; --muted:#5f6368; --line:#e2e5ea;
+    --blue:#185FA5; --ok:#0F7a3d; --okbg:#e7f6ec; --warn:#9a5b00; --warnbg:#fff4e0;
+    --bad:#c0392b; --badbg:#fdecea; --code:#24292e; }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:15px/1.7 -apple-system,"PingFang SC","Microsoft YaHei",system-ui,sans-serif;}
+  .wrap{max-width:980px;margin:0 auto;padding:32px 22px 80px;}
+  h1{font-size:25px;margin:0 0 6px}
+  h2.sec{font-size:20px;margin:38px 0 12px;padding-bottom:8px;border-bottom:2px solid var(--blue);}
+  h3{font-size:16px;margin:22px 0 8px;color:var(--blue)}
+  .meta{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+    font-size:13px;color:var(--muted);margin:14px 0 22px;}
+  .meta b{color:var(--ink)}
+  p{margin:8px 0}
+  table{border-collapse:collapse;width:100%;margin:10px 0;font-size:13.5px;background:#fff;}
+  th,td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top;}
+  th{background:#eef2f7;font-weight:700}
+  tr:nth-child(even) td{background:#fafbfc}
+  .card{border-radius:10px;padding:12px 14px;margin:12px 0;font-size:14px;border:1px solid;}
+  .ok{border-color:#bfe6cd;background:var(--okbg);color:#0c5130}
+  .warn{border-color:#f0d9a8;background:var(--warnbg);color:#6b4300}
+  .bad{border-color:#f1b5ad;background:var(--badbg);color:#8a261c}
+  code{background:#eef1f4;padding:1px 5px;border-radius:4px;font:13px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--code)}
+  ul{margin:8px 0;padding-left:22px} li{margin:4px 0}
+  footer{margin-top:50px;font-size:12px;color:var(--muted);border-top:1px solid var(--line);padding-top:14px;}
+  .num{display:inline-block;min-width:26px;color:var(--blue);font-weight:800}
+  .tag{display:inline-block;font-size:11px;font-weight:700;padding:1px 7px;border-radius:99px;background:#e8eef6;color:var(--blue);margin-right:4px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>弹珠乐园 · 上线与运营文档</h1>
+<div class="meta">
+  版本 <b>v1.0</b> · 日期 2026-07-29 · 状态：初稿（设计期文档，待研发/运营评审）<br>
+  上游：《PRD v1.0》《玩法数值设计 v1.2》《技术架构 v1.0》《服务端 API v1.0》《UI-UX v1.0》《测试与验收 v1.0》《功能框架大纲 v0.1》<br>
+  本文目标：定义发布策略、运维监控、经济运营、风险应急、合规客服与数据指标，确保"公平可控、经济可持续、合规可审计"上线。<br>
+  <b>范围说明：</b>Exchange 兑换模块的履约/库存/订单运营留待该模块实现时补全（与 API/UI-UX/测试一致，属后续版本）。
+</div>
+
+<h2 class="sec"><span class="num">1</span>发布策略</h2>
+<table>
+  <tr><th>维度</th><th>方案</th><th>说明</th></tr>
+  <tr><td>平台</td><td>微信小游戏优先 + 原生 App（Cocos 一套代码）+ H5 兜底</td><td>小游戏为首发主阵地；App 走应用商店审核</td></tr>
+  <tr><td>灰度</td><td>1% → 10% → 50% → 100%，每档观察 ≥24h</td><td>按设备/地域分层；监控 RTP、A/C、崩溃率、广告回调成功率</td></tr>
+  <tr><td>审核</td><td>版号/类目 + 概率公示 + 未成年 + 虚拟道具明示</td><td>小游戏类目合规前置；概率公示文案取自数值 §1.2</td></tr>
+  <tr><td>回滚</td><td>配置开关 + 版本热回退</td><td>经济参数（RTP/权重/K/eCPM）支持热更新，不下线；客户端可强更/降级</td></tr>
+  <tr><td>发布门禁</td><td>测试验收 §11 全 P0 通过 + 经济生命线回归 + 对账差异=0</td><td>任一不满足不得放量</td></tr>
+</table>
+
+<h2 class="sec"><span class="num">2</span>运维与部署</h2>
+<ul>
+  <li><b>服务</b>：Go（Gin/chi）+ GORM/sqlx；MySQL（Append-Only 账本 <code>bean_ledger</code>/<code>point_ledger</code>）+ Redis（会话/<code>game_lock</code>/日计数/频控）；容器化、多可用区、无单点。</li>
+  <li><b>参数外部化</b>：RTP（含新手保护曲线）、倍率权重、K 分层、广告 eCPM、频控上限全部配置化，支持<b>热更新</b>；调整后须经经济回归（数值 §3 / 测试 NUM-09）再下发。</li>
+  <li><b>对账</b>：每日 <code>bean_ledger</code> + <code>point_ledger</code> 与余额快照对账，差异 &gt;0 即告警并人工介入（测试 §10）。</li>
+  <li><b>容灾</b>：<code>game_lock</code> TTL 30min 自动释放并回滚（open_refund），防崩溃死锁（API §3 / 测试 FUN-09）。</li>
+</ul>
+
+<h2 class="sec"><span class="num">3</span>监控与告警</h2>
+<table>
+  <tr><th>指标</th><th>阈值 / 动作</th><th>来源</th></tr>
+  <tr><td>实时 RTP 偏离</td><td>&gt; ±3% 告警，&gt; ±5% 自动熔断降权</td><td>局内漏斗 (测试 §8)</td></tr>
+  <tr><td>game_lock 堆积</td><td>异常堆积告警（可能死锁/慢事务）</td><td>Redis 监控</td></tr>
+  <tr><td>广告回调失败率</td><td>server-to-server 验真失败率 &gt;1% 告警</td><td>adModule 日志</td></tr>
+  <tr><td>异常大额奖励</td><td>单局奖励 &gt; 阈值审计（防刷奖）</td><td>launch 审计日志</td></tr>
+  <tr><td>对账差异</td><td>差异 ≠ 0 即阻断放量</td><td>每日对账任务</td></tr>
+  <tr><td>崩溃 / ANR</td><td>中端机 &lt;0.5%，演出帧率 &lt;25fps 告警</td><td>性能看板 (测试 §4)</td></tr>
+</table>
+<div class="card ok">三大看板（广告 / 局内 / 兑换漏斗）须完整可见，对齐 PRD §11 与测试 §8。所有"价值事件"可回溯至具体 roundId 与账本流水。</div>
+
+<h2 class="sec"><span class="num">4</span>经济运营（核心）</h2>
+<p>目标：守住<b>经济生命线 <code>广告收益 ≥ 积分成本 × 1.2</code></b>（数值 v1.2：K=80 时重度/轻度均 1.38×）。运营动作优先级：<b>先调 K 与广告 eCPM，再考虑抬发卡门槛</b>（用户偏好"体验优先"，卡要易触达）。</p>
+<table>
+  <tr><th>杠杆</th><th>作用</th><th>调节纪律</th></tr>
+  <tr><td>K 分层（5/20/50/80/120）</td><td>直接改积分卡"含金量"，保生命线</td><td>eCPM 走弱时优先降 K，不抬 40 门槛</td></tr>
+  <tr><td>广告 eCPM / scene</td><td>提升广告侧收入（sign / high_multiplier 触发点优化）</td><td>A/B 优化触发时机与填充率</td></tr>
+  <tr><td>倍率权重</td><td>微调均倍与手感</td><td>改动必跑 NUM 回归（测试 §3）</td></tr>
+  <tr><td>新手保护曲线</td><td>前 5 局 RTP 1.5 递减至 0.90 留存</td><td>稳态不允许长期偏离 0.90</td></tr>
+  <tr><td>免费珠池</td><td>登录 30 + 领珠 88×6 = 558/日，控日活成本</td><td>领珠每日 ≤6 次强频控</td></tr>
+</table>
+<div class="card warn">任何经济参数变更必须：① 经 <code>docs/sim/economy_sim.py</code> 重跑确认生命线 ≥1.2×；② 经灰度观察真实 A/C；③ 对账无误后再全量。禁止凭直觉调参。</div>
+
+<h2 class="sec"><span class="num">5</span>活动与增长</h2>
+<ul>
+  <li><b>日常</b>：登录发珠、激励视频领珠（88/次 ×6）、高倍挑战场（×16/×32 专场解锁）。</li>
+  <li><b>赛季 / 活动</b>：限时倍率加成、连胜奖励、节日主题机台皮肤（纯表现，不影响 RTP）。</li>
+  <li><b>防沉迷</b>：未成年时段限制 + 频次约束；广告与领珠对未成年差异化处理（合规 §7）。</li>
+  <li><b>社交（后续）</b>：排行榜、好友赠珠——需重新评估经济模型，不在首发范围。</li>
+</ul>
+
+<h2 class="sec"><span class="num">6</span>风险与应急</h2>
+<table>
+  <tr><th>风险</th><th>迹象</th><th>应急预案</th></tr>
+  <tr><td>RTP 偏离</td><td>实时 RTP 偏离 &gt;±3%</td><td>定位权重配置 → 热修复 → 回滚至基线 0.90</td></tr>
+  <tr><td>刷奖攻击</td><td>单用户异常高频局 / 异常大额</td><td>风控限流 + 审计 + 人工冻结；命中仅服务端权威（测试 SEC-03/04/08）</td></tr>
+  <tr><td>生命线破防</td><td>A/C &lt; 1.2× 持续</td><td>先降 K → 再优化 eCPM → 极端情形抬门槛，按 §4 纪律</td></tr>
+  <tr><td>服务宕机</td><td>接口 5xx 飙升</td><td>多可用区切换；game_lock TTL 保资产不丢；恢复后断线重连重放</td></tr>
+  <tr><td>数据不一致</td><td>对账差异 ≠0</td><td>暂停放量；按账本流水补差；定位双写失败点</td></tr>
+  <tr><td>广告回调异常</td><td>发奖失败率突增</td><td>平台侧排查 + 客户端补发兜底（以 server verify 为准）</td></tr>
+</table>
+<div class="card bad">价值安全红线（同测试 §5）：弹珠/积分卡/广告发奖的权威值<b>只来自服务端</b>。任何客户端篡改、伪造回调、并发重放均不得改变入账结果，违者按 P0 处置。</div>
+
+<h2 class="sec"><span class="num">7</span>合规与客服</h2>
+<table>
+  <tr><th>项</th><th>要求</th><th>落点</th></tr>
+  <tr><td>概率公示</td><td>常驻可查 6 档倍率及各自概率</td><td>大厅金刚区 + 设置页（CMP-01）</td></tr>
+  <tr><td>未成年</td><td>防沉迷提示 + 时段/消费限制</td><td>启动页 + 设置（CMP-02）</td></tr>
+  <tr><td>虚拟道具明示</td><td>弹珠/卡标注不可兑现金</td><td>商城/活动文案（CMP-05）</td></tr>
+  <tr><td>隐私</td><td>隐私政策可达；deviceSecret 安全存储</td><td>隐私页 + 客户端安全区（CMP-04）</td></tr>
+  <tr><td>客诉补发</td><td>卡未到账/领珠异常 → 对账定位 → 补发</td><td>工单 → 账本回溯 → 运营补发（幂等）</td></tr>
+</table>
+
+<h2 class="sec"><span class="num">8</span>数据指标</h2>
+<table>
+  <tr><th>层级</th><th>指标</th><th>说明</th></tr>
+  <tr><td>北极星</td><td>DAU / 次留 / 7留 / ARPDAU / LTV</td><td>衡量产品健康度</td></tr>
+  <tr><td>玩法</td><td>真实 RTP / 均倍 / 单局时长 / 局数·人·日</td><td>对齐数值目标</td></tr>
+  <tr><td>经济</td><td>A/C 比值 / 广告 ARPU / 发卡速率 / 兑换率</td><td>生命线监控核心</td></tr>
+  <tr><td>漏斗</td><td>广告·局内·兑换 三段转化</td><td>见 §3 看板</td></tr>
+</table>
+
+<h2 class="sec"><span class="num">9</span>迭代路线</h2>
+<ul>
+  <li><b>短期（首发后）</b>：Exchange 兑换模块履约（商城库存/订单状态机/风控），补测试 §9 #6 用例。</li>
+  <li><b>中期</b>：A/B 实验平台接入经济杠杆；多机台主题；赛季系统。</li>
+  <li><b>长期</b>：社交（排行榜/赠珠）需重估经济模型；跨端账号体系深化。</li>
+</ul>
+
+<h2 class="sec"><span class="num">10</span>一致性核对</h2>
+<table>
+  <tr><th>上游决策</th><th>本文落点</th><th>状态</th></tr>
+  <tr><td>RTP 0.90 + 新手保护曲线</td><td>§4 杠杆表 / §6 风险</td><td>✅ 一致</td></tr>
+  <tr><td>经济生命线 A/C≥1.2×（K=80 1.38×）</td><td>§4 核心 / §6 破防应急</td><td>✅ 一致</td></tr>
+  <tr><td>倍率 6 档 / 发卡 R≥40 / K 分层</td><td>§4 杠杆纪律</td><td>✅ 一致</td></tr>
+  <tr><td>免费珠 558/日 + 领珠≤6 次频控</td><td>§4 / §5 / §7</td><td>✅ 一致</td></tr>
+  <tr><td>game_lock TTL 30min 防死锁</td><td>§2 容灾 / §6 宕机</td><td>✅ 一致</td></tr>
+  <tr><td>价值权威仅服务端 / 广告回调验真</td><td>§6 红线 / §7 补发</td><td>✅ 一致</td></tr>
+  <tr><td>三大漏斗埋点</td><td>§3 监控 / §8 指标</td><td>✅ 一致</td></tr>
+  <tr><td>Exchange 兑换留后续版本</td><td>§0 / §9 短期</td><td>⏳ 待补</td></tr>
+</table>
+
+<footer>弹珠乐园 · 上线与运营文档 v1.0 · 2026-07-29 · 与 PRD v1.0 / 数值 v1.2 / 架构 v1.0 / API v1.0 / UI-UX v1.0 / 测试验收 v1.0 一致 · Exchange 运营待补</footer>
+</div>
+</body>
+</html>
