@@ -127,23 +127,24 @@
   .lane::after{content:""; position:absolute; top:-2px; left:-10px; width:18px; height:8px;
     border-radius:4px; background:var(--lit); box-shadow:0 0 10px 2px var(--lit); opacity:.85;}
 
-  /* 倍率表（完整倍率，红 LED，位于出珠口上方、板内） */
-  .paytable{position:absolute; left:18px; right:48px; top:282px; height:64px; z-index:3;
+  /* 倍率表（完整倍率，红 LED，板内紧凑单行条，位于出珠口上方） */
+  .paytable{position:absolute; left:18px; right:48px; top:284px; height:32px; z-index:3;
+    display:flex; align-items:center; gap:8px;
     background:var(--led-bg); border:1px solid var(--led-border); border-radius:8px;
-    padding:5px 8px; box-shadow:inset 0 0 12px rgba(255,59,48,.22), 0 0 8px rgba(255,59,48,.15);}
+    padding:0 10px; box-shadow:inset 0 0 10px rgba(255,59,48,.2), 0 0 6px rgba(255,59,48,.12);}
   .paytable .pt-title{font-family:"Courier New",ui-monospace,monospace;
-    font-size:9px; letter-spacing:3px; color:var(--led-soft); margin-bottom:3px;
+    font-size:8px; letter-spacing:2px; color:var(--led-soft); flex:0 0 auto;
     text-shadow:0 0 5px rgba(255,59,48,.5);}
-  .paytable .pt-grid{display:flex; flex-wrap:wrap; gap:4px 6px;}
+  .paytable .pt-grid{display:flex; flex-wrap:nowrap; gap:4px 7px; flex:1; justify-content:center;}
   .led{font-family:"Courier New",ui-monospace,monospace; font-size:12px; font-weight:800;
-    color:var(--led); padding:1px 5px; border-radius:4px;
+    line-height:1.4; color:var(--led); padding:1px 5px; border-radius:4px;
     border:1px solid transparent;
     text-shadow:0 0 6px rgba(255,59,48,.8), 0 0 12px rgba(255,59,48,.35);}
   .led.on{color:#fff; background:rgba(255,59,48,.18); border-color:var(--led);
     box-shadow:0 0 8px rgba(255,59,48,.6);}
 
   /* 底部亮灯出口 */
-  .exits{position:absolute; left:18px; right:48px; top:360px; height:46px;
+  .exits{position:absolute; left:18px; right:48px; top:330px; height:44px;
     display:flex; gap:6px; justify-content:center; align-items:flex-end;}
   .exit{width:34px; height:30px; border-radius:6px 6px 4px 4px;
     background:linear-gradient(180deg,#16263f,#0c1828); border:1px solid #2b4a78;
@@ -188,7 +189,7 @@
   @keyframes shootpull{0%{transform:translateX(-50%) translateY(0)}45%{transform:translateX(-50%) translateY(8px)}100%{transform:translateX(-50%) translateY(0)}}
 
   /* 出珠盒子（屏幕底部托盘，位于板内最下方，避开发射道） */
-  .tray{position:absolute; left:18px; right:48px; top:424px; height:84px;
+  .tray{position:absolute; left:18px; right:48px; top:396px; height:92px;
     border-radius:8px 8px 10px 10px;
     background:linear-gradient(180deg, rgba(57,224,255,.06), rgba(57,224,255,.02));
     border:1px solid #2c4f82; overflow:hidden;
@@ -316,7 +317,7 @@
     <b>修正点 4 · 控制区移出画面：</b>「加注 / 拉杆发射」在机柜下方控制条，不遮挡游戏画面；发射道底部保留发射旋钮。<br>
     <b>修正点 5 · 出珠口贴近钉板 + 局部重排：</b>钉阵→倍率表→亮灯出口→出珠盒子自上而下依次排布，互不重叠；出口/托盘均避让右侧发射道（right:48 而非 18）。<br>
     <b>修正点 6 · 红色 LED 跑马灯：</b>顶部招牌与所有数字框改为<b>暗底红字红环</b>的机械数字 LED 跑马灯（非彩色霓虹）；侧边为红色流动灯柱。<br>
-    <b>修正点 7 · 完整倍率表：</b>出珠口上方板内显示<b>全部 6 档倍率</b>（×2 / ×4 / ×6 / ×8 / ×16 / ×32，取自数值设计文档 §1.2 v1.2），当前局示例高亮 ×8（红 LED）。
+    <b>修正点 7 · 完整倍率表（板内紧凑单行条）：</b>出珠口上方板内显示<b>全部 6 档倍率</b>（×2 / ×4 / ×6 / ×8 / ×16 / ×32，取自数值设计文档 §1.2 v1.2），标题＋倍率横排居中、高 32px 不再是大红框；当前局示例高亮 ×8（红 LED）。
   </div>
 
 <script>
