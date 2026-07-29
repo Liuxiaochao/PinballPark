@@ -142,15 +142,11 @@
     100% {transform:translate(64px,432px)}
   }
 
-  /* 弹簧发射杆 */
-  .plunger{position:absolute; right:14px; top:120px; width:20px; height:150px;
-    border-radius:12px;
-    background:linear-gradient(90deg,#3a4a66,#8aa0c4,#3a4a66);
-    box-shadow:inset 0 0 6px rgba(0,0,0,.6), 0 0 8px rgba(57,224,255,.25);}
-  .plunger::before{content:""; position:absolute; left:50%; top:-14px; transform:translateX(-50%);
+  /* 发射道底部发射旋钮（画面内仅保留发射器本体） */
+  .shooter{position:absolute; left:50%; bottom:-2px; transform:translateX(-50%);
     width:26px; height:26px; border-radius:50%;
     background:radial-gradient(circle at 35% 30%,#fff,#c7d3e6 50%,#5a6f90);
-    box-shadow:0 2px 4px rgba(0,0,0,.5);}
+    box-shadow:0 2px 5px rgba(0,0,0,.6), 0 0 8px rgba(57,224,255,.25);}
 
   /* 出珠盒子（屏幕底部托盘） */
   .tray{position:absolute; left:24px; right:24px; bottom:14px; height:42px;
@@ -176,13 +172,18 @@
   .mult{background:linear-gradient(180deg,#3a2c08,#7a5a10); color:var(--lit);
     border:1px solid var(--lit); border-radius:12px; padding:6px 12px;
     font-size:18px; font-weight:900; box-shadow:0 0 16px rgba(255,214,107,.5);}
-  .hud-btns{position:absolute; bottom:64px; left:0; right:0; display:flex;
-    justify-content:center; gap:12px;}
-  .btn{pointer-events:auto; border:none; border-radius:14px; padding:12px 22px;
+  .btn{pointer-events:auto; border:none; border-radius:14px; padding:14px 18px;
     font-size:15px; font-weight:800; cursor:pointer; letter-spacing:1px;
-    box-shadow:0 6px 16px rgba(0,0,0,.45);}
+    box-shadow:0 6px 16px rgba(0,0,0,.45); transition:transform .08s ease, filter .15s ease;}
+  .btn:active{transform:translateY(2px); filter:brightness(1.08);}
   .btn.launch{background:linear-gradient(180deg,#39E0FF,#1497c9); color:#04222e;}
   .btn.bet{background:linear-gradient(180deg,#FF4FD8,#b81f97); color:#fff;}
+  /* 机柜下方专用控制条：加注 / 拉杆发射，不再覆盖游戏画面 */
+  .controlbar{margin-top:14px; display:flex; gap:12px; padding:12px;
+    border-radius:16px; background:linear-gradient(180deg,#0e2036,#0a1626);
+    border:1px solid #2a4f86;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.08), 0 8px 20px rgba(0,0,0,.4);}
+  .controlbar .btn{flex:1;}
 
   /* 控制条 */
   .controls{margin-top:16px; display:flex; gap:10px; align-items:center;}
@@ -207,7 +208,7 @@
     <div class="screen" id="screen">
       <div class="board" id="board">
         <div class="field" id="field"></div>
-        <div class="lane"></div>
+        <div class="lane"><div class="shooter"></div></div>
         <div class="exits">
           <div class="exit sink"></div>
           <div class="exit lit"></div>
@@ -219,7 +220,6 @@
         </div>
         <div class="ball"></div>
       </div>
-      <div class="plunger"></div>
       <div class="tray" id="tray"><span class="cnt">×42</span></div>
 
       <div class="hud">
@@ -228,11 +228,12 @@
           <div class="mult">×12</div>
           <div class="chip"><span class="lbl">剩余出珠</span>5</div>
         </div>
-        <div class="hud-btns">
-          <button class="btn bet">加注</button>
-          <button class="btn launch">拉杆发射</button>
-        </div>
       </div>
+    </div>
+
+    <div class="controlbar">
+      <button class="btn bet">＋ 加注</button>
+      <button class="btn launch">↻ 拉杆发射</button>
     </div>
   </div>
 
@@ -242,8 +243,9 @@
   <div class="legend">
     <b>修正点 1 · 机台质感：</b>不再是灰线框。外框为金属机柜＋顶部霓虹跑马灯招牌，板面有纵深光影、金色立体钉阵、发光奖槽（亮灯出口）与沉没暗口、右侧弹簧发射杆、底部出珠托盘——老虎机/柏青哥机台观感。<br>
     <b>修正点 2 · 30° 倾斜：</b>默认是<b>机台向后仰 30° 的真实透视倾斜</b>（CSS <code>perspective + rotateX(30deg)</code>），板面有纵深、球沿后仰面板"下坡"滚动，符合真实机台。点上方按钮可切回旧方案（平面 2D 旋转成平行四边形）对比——那就是之前"丑且不对"的样子。<br>
-    HUD（余额/倍数/剩余/按钮）始终为屏幕正向独立图层，<b>不随板倾斜</b>，保证文字可读。<br>
-    <b>修正点 3 · 弹射轨道：</b>右侧新增竖向<b>发射道</b>（顶部亮灯入口连到钉板右上），弹珠自底部弹起、沿道升至顶端、转入钉板后穿钉下落——对应真实柏青哥"先上膛再落入钉阵"的轨道。钉板整体已上移，下方留白给发射道与出口。
+    HUD（余额/倍数/剩余）始终为屏幕正向独立图层，<b>不随板倾斜</b>，保证文字可读。<br>
+    <b>修正点 3 · 弹射轨道：</b>右侧新增竖向<b>发射道</b>（顶部亮灯入口连到钉板右上），弹珠自底部弹起、沿道升至顶端、转入钉板后穿钉下落——对应真实柏青哥"先上膛再落入钉阵"的轨道。钉板整体已上移，下方留白给发射道与出口。<br>
+    <b>修正点 4 · 控制区移出画面：</b>「加注 / 拉杆发射」不再浮在游戏画面上方遮挡出口与出珠盒子，改放到<b>机柜下方的专用控制条</b>；发射道底部保留发射旋钮（画面内的发射器本体），与下方拉杆发射按钮呼应。
   </div>
 
 <script>
