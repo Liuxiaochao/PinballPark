@@ -173,7 +173,7 @@
       <tr><td>安全区</td><td>顶部避让胶囊；底部 <code>env(safe-area-inset-bottom)</code></td><td>刘海/灵动岛 + Home 指示条避让</td><td>视口 meta + 同上</td></tr>
       <tr><td>广告</td><td>微信流量主激励视频（全屏接管）</td><td>穿山甲/聚合（全屏接管）</td><td>可选，轻量引导下载 App</td></tr>
       <tr><td>登录</td><td>微信授权一键</td><td>手机号 + 微信 UnionID 打通</td><td>游客/扫码</td></tr>
-      <tr><td>横竖屏</td><td colspan="3"><b>默认竖屏</b>；板面 30° 在竖屏下呈左下/右下倾斜（顺时针），无需横屏（见 4.3）</td></tr>
+      <tr><td>横竖屏</td><td colspan="3"><b>默认竖屏</b>；板面采用机台后仰 30° 透视倾斜（机台纵深感），无需横屏（见 4.3）</td></tr>
     </table>
     <div class="card amber"><b>性能分级（同一套 UI，按设备降级）：</b>
       <ul style="margin-top:6px">
@@ -234,7 +234,7 @@
     </div>
 
     <h3>4.3 游戏局内 Game（核心）</h3>
-    <div class="card ok"><b>图层关系（来自 PRD §5.3 / 架构 §3 / §4）：</b>板面（钉板+亮灯出口+球）在<b>局部坐标物理仿真</b>，渲染整体 <b>30° Z 轴旋转</b>显示；HUD 文字与拉杆/加注按钮属于<b>屏幕正向独立图层，不随板旋转</b>；倍数数字用屏幕正向 overlay 叠加保证可读。</div>
+    <div class="card ok"><b>图层关系（来自 PRD §5.3 / 架构 §3 / §4）：</b>板面（钉板+亮灯出口+球）在<b>板面局部坐标做 2D 物理仿真</b>，渲染时施加 <b>机台后仰 30° 的真实透视倾斜（perspective + rotateX(30°)）</b>——板面有纵深、球沿后仰面板"下坡"滚动，符合真实柏青哥/老虎机机台观感（非平面 2D 旋转）；HUD 文字与拉杆/加注按钮属于<b>屏幕正向独立图层，不随板倾斜</b>；倍数数字用屏幕正向 overlay 叠加保证可读。<b>权威视觉稿见 <a href="ui-game-machine-mockup.html">ui-game-machine-mockup.html</a>（含机柜质感与倾斜对比开关）。</b></div>
     <div class="wf">
       <svg viewBox="0 0 340 460" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'PingFang SC',sans-serif">
         <rect x="0" y="0" width="340" height="460" rx="16" fill="#0E1726"/>
@@ -279,7 +279,7 @@
         <text x="265" y="379" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">按住拉杆</text>
         <text x="265" y="392" text-anchor="middle" font-size="8" fill="#9FB2CC">蓄力松手发射·可取消</text>
       </svg>
-      <div class="cap">板面 30° 倾斜（此处示意 18°，最终定 30° 顺时针）；顶部 HUD 与底部"加注/拉杆"为屏幕正向独立图层；亮灯出口高亮、暗口置灰；出珠盒子随板位于底部承接口。</div>
+      <div class="cap">板面 30° <b>透视倾斜</b>（机台后仰，真实机台观感；下图为平面示意，权威渲染见 <a href="ui-game-machine-mockup.html">机台视觉稿</a>）；顶部 HUD 与底部"加注/拉杆"为屏幕正向独立图层，不随板倾斜；亮灯出口高亮、暗口置灰；出珠盒子位于底部承接口。</div>
     </div>
     <ul>
       <li><b>投珠输入</b>：默认 5，±步进 / 滑块 5–99，"最大"快捷；实时显示"命中预计得珠 = 投入 × 倍数"（PRD §5.3）。</li>
@@ -428,7 +428,7 @@
       <tr><td>无结算弹窗 + 结果直显</td><td>§4.4 结果区 wireframe</td><td>✅ 一致</td></tr>
       <tr><td>出珠盒子容量 60 + 物理溢出</td><td>§5.3 掉落/溢出动效（架构 §6）</td><td>✅ 一致</td></tr>
       <tr><td>积分卡 R≥40 出卡动画</td><td>§5.4 出卡回弹</td><td>✅ 一致</td></tr>
-      <tr><td>30° Z 轴板面 + HUD 不旋转</td><td>§4.3 图层关系 + 线框</td><td>✅ 一致</td></tr>
+      <tr><td>30° 透视倾斜板面（机台后仰）+ HUD 不旋转</td><td>§4.3 图层关系 + 机台视觉稿</td><td>✅ 一致</td></tr>
       <tr><td>按钮层级方案甲（主=×2）</td><td>§4.4 主按钮最大最亮</td><td>✅ 一致</td></tr>
       <tr><td>常驻领珠 +88 / 每日 6 / 达限置灰</td><td>§4.2 大厅 + §5.6</td><td>✅ 一致</td></tr>
       <tr><td>概率公示常驻</td><td>§4.7 合规常驻入口</td><td>✅ 一致</td></tr>

@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>弹珠乐园 · 机台视觉稿（透视倾斜 30° + 老虎机质感）</title>
+<style>
+  :root{
+    --gold:#F5C518; --gold-2:#E8B339; --gold-deep:#9A6B12;
+    --cab:#0b1e3a; --cab-2:#102a4c; --cab-edge:#1d3b66;
+    --neon-cyan:#39E0FF; --neon-mag:#FF4FD8; --lit:#FFD66B;
+    --sink:#22304d; --good:#0F9D58; --bad:#E5484D;
+    --ink:#eaf2ff;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; min-height:100vh; display:flex; flex-direction:column; align-items:center;
+    background:
+      radial-gradient(1200px 600px at 50% -10%, #1a2b4d 0%, #0a1120 55%, #05080f 100%);
+    color:var(--ink); font-family:"PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+    padding:28px 16px 40px;
+  }
+  h1{font-size:20px; letter-spacing:2px; margin:0 0 4px; font-weight:800;
+     background:linear-gradient(90deg,var(--gold),#fff7d6,var(--gold));
+     -webkit-background-clip:text; background-clip:text; color:transparent;}
+  .sub{font-size:12px; opacity:.6; margin-bottom:18px;}
+
+  /* ===== 机台外框（老虎机/柏青哥机柜） ===== */
+  .cabinet{
+    width:430px; padding:18px 18px 22px; border-radius:26px; position:relative;
+    background:linear-gradient(180deg,#13294d,#0a1830 70%);
+    border:2px solid #2a4f86;
+    box-shadow:
+      0 0 0 6px #07101f,
+      0 24px 60px rgba(0,0,0,.6),
+      inset 0 2px 0 rgba(255,255,255,.12),
+      inset 0 -10px 30px rgba(0,0,0,.5);
+  }
+  /* 顶部跑马灯招牌 */
+  .marquee{
+    position:relative; border-radius:16px; padding:14px 18px; margin-bottom:14px;
+    background:linear-gradient(180deg,#1c0f2e,#0e0820);
+    border:1px solid #3a2a5e;
+    box-shadow:inset 0 0 22px rgba(255,79,216,.25), inset 0 0 4px rgba(57,224,255,.4);
+    text-align:center;
+  }
+  .marquee .title{
+    font-size:24px; font-weight:900; letter-spacing:4px;
+    background:linear-gradient(90deg,var(--neon-cyan),#fff,var(--neon-mag));
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+    text-shadow:0 0 18px rgba(57,224,255,.35);
+  }
+  .marquee .sub2{font-size:10px; letter-spacing:6px; color:#9fb6d8; margin-top:3px;}
+  .bulbs{position:absolute; inset:6px; border-radius:12px; pointer-events:none;}
+  .bulb{position:absolute; width:7px; height:7px; border-radius:50%;
+    background:var(--gold); box-shadow:0 0 8px 2px var(--gold);
+    animation:chase 1.4s linear infinite;}
+  @keyframes chase{0%,100%{opacity:1}50%{opacity:.25}}
+
+  /* ===== 屏幕透视区 ===== */
+  .screen{
+    position:relative; height:560px; border-radius:14px; overflow:hidden;
+    perspective:1100px; perspective-origin:50% 35%;
+    background:radial-gradient(120% 90% at 50% 0%, #14233f 0%, #0a1424 60%, #060c17 100%);
+    border:1px solid #20406f;
+    box-shadow:inset 0 0 40px rgba(0,0,0,.7), inset 0 0 0 2px rgba(57,224,255,.06);
+  }
+  /* 板面：向后仰 30° 的真实透视倾斜 */
+  .board{
+    position:absolute; left:50%; top:34px; width:344px; height:520px;
+    margin-left:-172px; transform-origin:center bottom;
+    transform:rotateX(30deg);
+    background:
+      radial-gradient(80% 60% at 50% 12%, rgba(57,224,255,.10), transparent 60%),
+      linear-gradient(180deg,#0e2036,#0a1726 70%, #081120);
+    border:1px solid #2b4a78; border-radius:14px;
+    box-shadow:inset 0 0 30px rgba(0,0,0,.6);
+    transition:transform .5s ease;
+  }
+  /* 平面旋转（旧方案，演示对比用） */
+  .screen.flat .board{ transform:rotate(30deg); }
+
+  /* 钉阵 */
+  .field{position:absolute; inset:70px 26px 150px; display:flex; flex-direction:column;
+    justify-content:space-between;}
+  .row{display:flex; justify-content:space-around;}
+  .row.offset{padding-left:26px; padding-right:0;}
+  .peg{width:15px; height:15px; border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, #fff6cf, var(--gold) 45%, var(--gold-deep) 100%);
+    box-shadow:0 1px 2px rgba(0,0,0,.55), 0 0 6px rgba(245,197,24,.35);
+    flex:0 0 auto;}
+  /* 钉子在倾斜板上的投影感 */
+  .board::after{content:""; position:absolute; inset:0; border-radius:14px;
+    background:linear-gradient(115deg, rgba(255,255,255,.05), transparent 40%);
+    pointer-events:none;}
+
+  /* 底部出口 */
+  .exits{position:absolute; left:18px; right:18px; bottom:64px; height:64px;
+    display:flex; gap:8px; justify-content:center; align-items:flex-end;}
+  .exit{width:34px; height:30px; border-radius:6px 6px 4px 4px;
+    background:linear-gradient(180deg,#16263f,#0c1828); border:1px solid #2b4a78;
+    position:relative; box-shadow:inset 0 4px 8px rgba(0,0,0,.6);}
+  .exit.lit{
+    background:linear-gradient(180deg,#3a2c08,#7a5a10);
+    border-color:var(--lit);
+    box-shadow:0 0 14px 2px rgba(255,214,107,.7), inset 0 0 10px rgba(255,214,107,.5);}
+  .exit.lit::after{content:""; position:absolute; left:50%; top:-7px; width:6px; height:6px;
+    transform:translateX(-50%); border-radius:50%; background:var(--lit);
+    box-shadow:0 0 8px 2px var(--lit);}
+  .exit.sink{background:linear-gradient(180deg,#0b1422,#05090f);
+    border-color:#1a2740; box-shadow:inset 0 6px 10px rgba(0,0,0,.8);}
+  .exit.sink::after{content:""; position:absolute; left:50%; top:40%; width:8px; height:8px;
+    transform:translate(-50%,-50%); border-radius:50%;
+    background:radial-gradient(circle,#000,#11203a);}
+
+  /* 弹珠 */
+  .ball{position:absolute; left:50%; top:0; width:18px; height:18px; margin-left:-9px;
+    border-radius:50%;
+    background:radial-gradient(circle at 34% 30%, #ffffff, #d9b14a 40%, #8a5e12 100%);
+    box-shadow:0 2px 4px rgba(0,0,0,.5), 0 0 8px rgba(245,197,24,.4);
+    animation:drop 2.6s cubic-bezier(.4,0,.7,1) infinite;}
+  @keyframes drop{
+    0%{top:6px; transform:translateX(0)}
+    18%{transform:translateX(-22px)}
+    34%{transform:translateX(14px)}
+    52%{transform:translateX(-10px)}
+    70%{transform:translateX(8px)}
+    86%{top:430px; transform:translateX(2px)}
+    100%{top:430px; opacity:.85}
+  }
+
+  /* 弹簧发射杆 */
+  .plunger{position:absolute; right:14px; top:120px; width:20px; height:150px;
+    border-radius:12px;
+    background:linear-gradient(90deg,#3a4a66,#8aa0c4,#3a4a66);
+    box-shadow:inset 0 0 6px rgba(0,0,0,.6), 0 0 8px rgba(57,224,255,.25);}
+  .plunger::before{content:""; position:absolute; left:50%; top:-14px; transform:translateX(-50%);
+    width:26px; height:26px; border-radius:50%;
+    background:radial-gradient(circle at 35% 30%,#fff,#c7d3e6 50%,#5a6f90);
+    box-shadow:0 2px 4px rgba(0,0,0,.5);}
+
+  /* 出珠盒子（屏幕底部托盘） */
+  .tray{position:absolute; left:24px; right:24px; bottom:14px; height:42px;
+    border-radius:8px 8px 10px 10px;
+    background:linear-gradient(180deg, rgba(57,224,255,.06), rgba(57,224,255,.02));
+    border:1px solid #2c4f82; overflow:hidden;
+    box-shadow:inset 0 6px 14px rgba(0,0,0,.55);}
+  .tray .tball{position:absolute; bottom:6px; width:9px; height:9px; border-radius:50%;
+    background:radial-gradient(circle at 35% 30%,#fff,#d9b14a 45%,#8a5e12);
+    box-shadow:0 1px 2px rgba(0,0,0,.5);}
+  .tray .cnt{position:absolute; right:8px; top:50%; transform:translateY(-50%);
+    font-size:11px; color:var(--neon-cyan); font-weight:700;}
+
+  /* ===== HUD（不随板倾斜，屏幕正向独立图层） ===== */
+  .hud{position:absolute; inset:0; pointer-events:none;}
+  .hud-top{position:absolute; top:10px; left:12px; right:12px; display:flex;
+    justify-content:space-between; align-items:flex-start;}
+  .chip{background:rgba(7,16,31,.78); border:1px solid #2c4f82; border-radius:10px;
+    padding:6px 10px; font-size:12px; font-weight:700; backdrop-filter:blur(4px);
+    box-shadow:0 2px 8px rgba(0,0,0,.4);}
+  .chip .lbl{font-size:9px; opacity:.6; font-weight:500; display:block;}
+  .chip.gold{color:var(--gold); border-color:rgba(245,197,24,.5);}
+  .mult{background:linear-gradient(180deg,#3a2c08,#7a5a10); color:var(--lit);
+    border:1px solid var(--lit); border-radius:12px; padding:6px 12px;
+    font-size:18px; font-weight:900; box-shadow:0 0 16px rgba(255,214,107,.5);}
+  .hud-btns{position:absolute; bottom:64px; left:0; right:0; display:flex;
+    justify-content:center; gap:12px;}
+  .btn{pointer-events:auto; border:none; border-radius:14px; padding:12px 22px;
+    font-size:15px; font-weight:800; cursor:pointer; letter-spacing:1px;
+    box-shadow:0 6px 16px rgba(0,0,0,.45);}
+  .btn.launch{background:linear-gradient(180deg,#39E0FF,#1497c9); color:#04222e;}
+  .btn.bet{background:linear-gradient(180deg,#FF4FD8,#b81f97); color:#fff;}
+
+  /* 控制条 */
+  .controls{margin-top:16px; display:flex; gap:10px; align-items:center;}
+  .toggle{background:#13294d; color:var(--ink); border:1px solid #2c4f82;
+    border-radius:10px; padding:8px 14px; font-size:13px; cursor:pointer;}
+  .toggle:hover{border-color:var(--neon-cyan);}
+  .legend{font-size:11px; opacity:.7; line-height:1.6; max-width:430px; margin-top:10px;}
+  .legend b{color:var(--gold);}
+</style>
+</head>
+<body>
+  <h1>弹珠乐园 · 机台视觉稿</h1>
+  <div class="sub">透视倾斜 30°（机台后仰）＋ 老虎机/柏青哥机柜质感 · 非线框 · 可直接预览</div>
+
+  <div class="cabinet">
+    <div class="marquee">
+      <div class="title">PINBALL PARK</div>
+      <div class="sub2">弹 珠 乐 园</div>
+      <div class="bulbs" id="bulbs"></div>
+    </div>
+
+    <div class="screen" id="screen">
+      <div class="board" id="board">
+        <div class="field" id="field"></div>
+        <div class="exits">
+          <div class="exit sink"></div>
+          <div class="exit lit"></div>
+          <div class="exit sink"></div>
+          <div class="exit lit"></div>
+          <div class="exit sink"></div>
+          <div class="exit lit"></div>
+          <div class="exit sink"></div>
+        </div>
+        <div class="ball"></div>
+      </div>
+      <div class="plunger"></div>
+      <div class="tray" id="tray"><span class="cnt">×42</span></div>
+
+      <div class="hud">
+        <div class="hud-top">
+          <div class="chip gold"><span class="lbl">珠子余额</span>1,286</div>
+          <div class="mult">×12</div>
+          <div class="chip"><span class="lbl">剩余出珠</span>5</div>
+        </div>
+        <div class="hud-btns">
+          <button class="btn bet">加注</button>
+          <button class="btn launch">拉杆发射</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button class="toggle" id="toggle">切换：透视倾斜 ⟷ 平面旋转（旧方案）</button>
+  </div>
+  <div class="legend">
+    <b>修正点 1 · 机台质感：</b>不再是灰线框。外框为金属机柜＋顶部霓虹跑马灯招牌，板面有纵深光影、金色立体钉阵、发光奖槽（亮灯出口）与沉没暗口、右侧弹簧发射杆、底部出珠托盘——老虎机/柏青哥机台观感。<br>
+    <b>修正点 2 · 30° 倾斜：</b>默认是<b>机台向后仰 30° 的真实透视倾斜</b>（CSS <code>perspective + rotateX(30deg)</code>），板面有纵深、球沿后仰面板"下坡"滚动，符合真实机台。点上方按钮可切回旧方案（平面 2D 旋转成平行四边形）对比——那就是之前"丑且不对"的样子。<br>
+    HUD（余额/倍数/剩余/按钮）始终为屏幕正向独立图层，<b>不随板倾斜</b>，保证文字可读。
+  </div>
+
+<script>
+  // 生成跑马灯灯泡
+  (function(){
+    const b=document.getElementById('bulbs'); const r=6, rect=14;
+    const W=398,H=68; const n=40;
+    for(let i=0;i<n;i++){
+      const t=i/(n-1);
+      let x,y;
+      if(t<0.25){x=r+(W-2*r)*(t/0.25); y=r;}
+      else if(t<0.5){x=W-r; y=r+(H-2*r)*((t-0.25)/0.25);}
+      else if(t<0.75){x=W-r-(W-2*r)*((t-0.5)/0.25); y=H-r;}
+      else{x=r; y=H-r-(H-2*r)*((t-0.75)/0.25);}
+      const d=document.createElement('div'); d.className='bulb';
+      d.style.left=(x-3.5)+'px'; d.style.top=(y-3.5)+'px';
+      d.style.animationDelay=(i*0.06)+'s';
+      b.appendChild(d);
+    }
+  })();
+  // 生成钉阵
+  (function(){
+    const f=document.getElementById('field');
+    const rows=6;
+    for(let i=0;i<rows;i++){
+      const row=document.createElement('div');
+      row.className='row'+(i%2? ' offset':'');
+      const count=7-(i%2);
+      for(let j=0;j<count;j++){
+        const p=document.createElement('div'); p.className='peg';
+        row.appendChild(p);
+      }
+      f.appendChild(row);
+    }
+  })();
+  // 出珠托盘里的珠子
+  (function(){
+    const t=document.getElementById('tray');
+    for(let i=0;i<10;i++){
+      const b=document.createElement('div'); b.className='tball';
+      b.style.left=(8+i*9)+'px';
+      t.insertBefore(b,t.querySelector('.cnt'));
+    }
+  })();
+  // 切换倾斜模式
+  document.getElementById('toggle').addEventListener('click',()=>{
+    document.getElementById('screen').classList.toggle('flat');
+  });
+</script>
+</body>
+</html>
