@@ -56,7 +56,7 @@
     <tr><th>命中率(RTP=0.9)</th><td>45%</td><td>30%</td><td>22.5%</td><td>18%</td><td>15%</td><td>11.3%</td><td>9%</td><td>7.5%</td><td>6%</td><td>4.5%</td></tr>
   </table>
 
-  <h3>1.3 积分卡换算与兑换（v1.1 新规则）<span class="tag">需改 PRD</span></h3>
+  <h3>1.3 积分卡换算与兑换（v1.1 新规则）<span class="tag">已回填 PRD</span></h3>
   <p>v1.0 曾建议"阈值 300 颗=1 张"以压低产卡、保经济。但用户反馈：300 下重度玩家仅 2.6 张/日、轻度 0.6 张/日，<b>卡几乎触达不到</b>，体验差。v1.1 改为"卡易拿、奖品按 K 张换"的双向设计：</p>
   <div class="card green">
     <b>① 发卡规则（易触达）：</b>单局命中奖励珠 <code>R</code>，<b>仅当 R ≥ 40（可配置门槛）</b>才发卡；卡数 = <code>min(5, floor(R / 40))</code>；R &lt; 40 则 0 张。<br>
@@ -152,8 +152,8 @@
     <tr><td class="l">目标 RTP</td><td>85~95%（待定）</td><td><b>0.90</b></td><td>确认</td></tr>
     <tr><td class="l">倍数档</td><td>×2~×20（待定分布）</td><td><b>×2~×20 加权(均4.37)</b></td><td>确认</td></tr>
     <tr><td class="l">命中率模型</td><td>—</td><td><b>P(hit)=RTP/M</b></td><td>新增</td></tr>
-    <tr><td class="l">积分卡发卡</td><td>30→1 / 60→2 / 上限5</td><td><b>R≥40 才发卡；min(5, floor(R/40))</b></td><td><span class="tag">改 PRD</span></td></tr>
-    <tr><td class="l">兑换所需卡 K</td><td>（未定）</td><td><b>5/20/50/80/120 分层</b></td><td><span class="tag">改 PRD</span></td></tr>
+      <tr><td class="l">积分卡发卡</td><td class="strike">30→1 / 60→2 / 上限5</td><td><b>R≥40 才发卡；min(5, floor(R/40))</b></td><td><span class="tag">已回填 PRD</span></td></tr>
+      <tr><td class="l">兑换所需卡 K</td><td>（未定）</td><td><b>5/20/50/80/120 分层</b></td><td><span class="tag">已回填 PRD</span></td></tr>
     <tr><td class="l">每日免费珠</td><td>558（已定）</td><td>558（不变）</td><td>—</td></tr>
     <tr><td class="l">领珠视频</td><td>88 颗×6 次（已定）</td><td>88×6（不变）</td><td>—</td></tr>
     <tr><td class="l">出珠盒子容量</td><td>待定</td><td><b>60 颗</b>（显示用，见 §6）</td><td>新增</td></tr>
