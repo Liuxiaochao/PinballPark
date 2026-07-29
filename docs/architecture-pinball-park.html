@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>弹珠乐园 · 技术架构设计文档</title>
+<style>
+  :root {
+    --blue: #185FA5; --blue-l: #E6F1FB; --blue-d: #0C447C;
+    --teal: #0F6E56; --teal-l: #E1F5EE;
+    --amber: #854F0B; --amber-l: #FAEEDA;
+    --red: #A32D2D; --red-l: #FCEBEB;
+    --purple: #534AB7; --purple-l: #EEEDFE;
+    --text: #2C2C2A; --muted: #5F5E5A; --border: #E3E1D9; --bg: #FAFAF7;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; color: var(--text); background: var(--bg); line-height: 1.75; }
+  .layout { display: flex; max-width: 1240px; margin: 0 auto; }
+  nav { width: 250px; flex-shrink: 0; position: sticky; top: 0; height: 100vh; overflow-y: auto; padding: 32px 14px; border-right: 1px solid var(--border); background: #fff; }
+  nav h2 { font-size: 13px; color: var(--muted); font-weight: 500; margin-bottom: 12px; letter-spacing: 1px; }
+  nav a { display: block; padding: 6px 10px; font-size: 12.5px; color: var(--text); text-decoration: none; border-radius: 6px; margin-bottom: 2px; }
+  nav a:hover { background: var(--blue-l); color: var(--blue); }
+  nav .grp { font-size: 11px; color: var(--muted); margin: 14px 0 4px; letter-spacing: .5px; }
+  main { flex: 1; padding: 40px 52px 100px; min-width: 0; }
+  h1 { font-size: 26px; font-weight: 600; margin-bottom: 6px; }
+  .subtitle { color: var(--muted); font-size: 14px; margin-bottom: 20px; }
+  .meta { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 28px; }
+  .tag { font-size: 12px; padding: 3px 10px; border-radius: 999px; background: var(--blue-l); color: var(--blue-d); }
+  section { margin-bottom: 44px; scroll-margin-top: 20px; }
+  h2.sec { font-size: 20px; font-weight: 600; padding-bottom: 8px; border-bottom: 2px solid var(--blue); margin-bottom: 14px; }
+  h2.sec .num { color: var(--blue); margin-right: 8px; }
+  h3 { font-size: 16px; font-weight: 600; margin: 22px 0 8px; }
+  h4 { font-size: 14px; font-weight: 600; margin: 14px 0 6px; color: var(--blue-d); }
+  p { margin-bottom: 10px; font-size: 14px; }
+  ul, ol { margin: 0 0 12px 22px; font-size: 14px; }
+  li { margin-bottom: 4px; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0 16px; font-size: 13px; background: #fff; }
+  th { background: var(--blue-l); color: var(--blue-d); font-weight: 600; text-align: left; padding: 8px 12px; border: 1px solid var(--border); }
+  td { padding: 8px 12px; border: 1px solid var(--border); vertical-align: top; }
+  .card { background: #fff; border: 1px solid var(--border); border-left: 4px solid var(--blue); border-radius: 8px; padding: 14px 18px; margin: 12px 0; font-size: 14px; }
+  .card.warn { border-left-color: var(--red); background: var(--red-l); }
+  .card.ok { border-left-color: var(--teal); background: var(--teal-l); }
+  .card.amber { border-left-color: #BA7517; background: var(--amber-l); }
+  .card b { font-weight: 600; }
+  .flow { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 12px 0; }
+  .step { background: var(--blue-l); color: var(--blue-d); border: 1px solid #B5D4F4; border-radius: 8px; padding: 8px 12px; font-size: 13px; text-align: center; }
+  .step.hl { background: var(--purple-l); color: var(--purple); border-color: #CECBF6; }
+  .step.ok { background: var(--teal-l); color: var(--teal); border-color: #B8E0CE; }
+  .step.warn { background: var(--red-l); color: var(--red); border-color: #E6B5B5; }
+  .arrow { color: var(--muted); font-size: 14px; }
+  code { background: #F1EFE8; padding: 1px 6px; border-radius: 4px; font-size: 12.5px; font-family: "SF Mono", Menlo, monospace; }
+  pre { background: #1f2430; color: #e6e6e6; padding: 14px 16px; border-radius: 8px; font-size: 12.5px; line-height: 1.55; overflow-x: auto; margin: 12px 0; font-family: "SF Mono", Menlo, monospace; }
+  pre .c { color: #8aa0b4; }
+  pre .k { color: #c792ea; }
+  pre .s { color: #c3e88d; }
+  footer { color: var(--muted); font-size: 12px; border-top: 1px solid var(--border); padding-top: 16px; }
+  .docinfo { font-size: 13px; color: var(--muted); }
+  .docinfo td { font-size: 13px; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  svg { display: block; margin: 14px auto; max-width: 100%; }
+  @media (max-width: 980px) { nav { display: none; } .grid2 { grid-template-columns: 1fr; } main { padding: 24px; } }
+</style>
+</head>
+<body>
+<div class="layout">
+<nav>
+  <h2>目录</h2>
+  <a href="#s0">文档信息</a>
+  <div class="grp">一 · 总览</div>
+  <a href="#s1">1. 设计目标与原则</a>
+  <a href="#s2">2. 总体架构</a>
+  <div class="grp">二 · 客户端</div>
+  <a href="#s3">3. 客户端架构</a>
+  <a href="#s4">4. 物理仿真子系统</a>
+  <a href="#s5">5. 落点还原：客户端实现</a>
+  <a href="#s6">6. 出珠盒子物理溢出</a>
+  <a href="#s7">7. 广告适配层与网络</a>
+  <div class="grp">三 · 服务端</div>
+  <a href="#s8">8. 服务端模块划分</a>
+  <a href="#s9">9. 核心判定（落点还原服务端）</a>
+  <a href="#s10">10. 资产账本与并发</a>
+  <a href="#s11">11. 兑换 / 广告 / 风控</a>
+  <div class="grp">四 · 数据与部署</div>
+  <a href="#s12">12. 数据模型（ER）</a>
+  <a href="#s13">13. 关键接口概览</a>
+  <a href="#s14">14. 安全与风控技术</a>
+  <a href="#s15">15. 部署拓扑</a>
+  <a href="#s16">16. 性能与非功能</a>
+  <a href="#s17">17. 技术选型与依赖</a>
+  <a href="#s18">18. 风险与技术债</a>
+  <a href="#s19">19. 下游依赖</a>
+</nav>
+<main>
+  <h1>弹珠乐园 · 技术架构设计文档</h1>
+  <p class="subtitle">对标实体"弹珠乐园"游戏机的多端休闲游戏 —— 第三份阶段文档（技术架构 v1.0）</p>
+  <div class="meta">
+    <span class="tag">Cocos Creator 3.x</span><span class="tag">NestJS</span><span class="tag">MySQL + Redis</span><span class="tag">物理为表·结果可控</span><span class="tag">多端隔离</span>
+  </div>
+
+  <section id="s0">
+    <table class="docinfo">
+      <tr><td style="width:90px;border:none;background:none;font-weight:600">文档版本</td><td style="border:none;background:none">v1.0（草稿，待评审）</td></tr>
+      <tr><td style="border:none;background:none;font-weight:600">日期</td><td style="border:none;background:none">2026-07-29</td></tr>
+      <tr><td style="border:none;background:none;font-weight:600">上游文档</td><td style="border:none;background:none">《PRD v1.0》《玩法数值设计文档 v1.1》《功能框架文档大纲 v0.1》</td></tr>
+      <tr><td style="border:none;background:none;font-weight:600">下游文档</td><td style="border:none;background:none">《服务端 API 设计文档》《UI-UX 设计文档》《测试与验收文档》《上线与运营文档》</td></tr>
+      <tr><td style="border:none;background:none;font-weight:600">目标读者</td><td style="border:none;background:none">客户端、服务端、运维、测试、架构评审</td></tr>
+    </table>
+    <div class="card"><b>本档定位：</b>承接 PRD「做什么」与数值文档「多少」，解决「怎么做」。重点落地两处硬工程问题：<b>① 4.6 落点还原的服务端判定接口</b>（结果可控、物理一致）；<b>② 4.7 + 5.3 出珠盒子与物理溢出</b>的实现。除已确认决策外，本档对"实现机制"给出推荐方案与备选，落地团队可在范围内微调。</div>
+  </section>
+
+  <section id="s1">
+    <h2 class="sec"><span class="num">1</span>设计目标与原则</h2>
+    <h3>1.1 核心原则（继承自 PRD 两条铁律）</h3>
+    <div class="card warn"><b>铁律一：所有价值判定在服务端。</b>投珠开局、倍数与出口抽取、命中判定、奖励发放、积分入账全部由服务端决定并落库。客户端仅做物理演出（收到 targetExitId 后引导球落入目标出口）。</div>
+    <div class="card warn"><b>铁律二：激励视频发奖必须走服务端回调验证。</b>广告平台 server verify 通过后才发奖，杜绝客户端伪造"已看完"。</div>
+    <h3>1.2 架构原则</h3>
+    <ul>
+      <li><b>多端同构、平台隔离</b>：Cocos Creator 一套代码发小游戏/App/H5；广告、登录、支付等平台差异收敛到适配层，游戏逻辑层不感知平台。</li>
+      <li><b>物理为表、结果可控</b>：客户端物理引擎只负责真实手感演出；结果（命中、落点、奖励）服务端先定，引导力只是把球"扶"进已定出口。</li>
+      <li><b>账本强一致、演出可重连</b>：弹珠/积分入账以服务端为准、事务内完成；客户端演出失败/掉线，服务端结果仍可补发（结算幂等）。</li>
+      <li><b>配置驱动、可灰度</b>：RTP、倍数池、K 阈值、广告频控全部后台可配，支持按用户分群 A/B（如新手保护曲线）。</li>
+      <li><b>演进优先</b>：服务端先单体分模块（NestJS modules），量大再拆微服务；接口与存储设计预留迁移路径。</li>
+    </ul>
+  </section>
+
+  <section id="s2">
+    <h2 class="sec"><span class="num">2</span>总体架构</h2>
+    <p>自顶向下分五层：<b>客户端 → API 网关/接入层 → 后端应用（NestJS 模块）→ 存储（MySQL/Redis）→ 第三方（广告/兑奖/统计）</b>。两条铁律的约束力体现在"价值判定"全部收敛在后端应用层，客户端不持有任何产生价值的随机源。</p>
+    <svg viewBox="0 0 680 360" xmlns="http://www.w3.org/svg" font-family="-apple-system,'PingFang SC',sans-serif">
+      <defs>
+        <marker id="ar" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#5F5E5A"/></marker>
+      </defs>
+      <rect x="14" y="20" width="150" height="320" rx="10" fill="#EEEDFE" stroke="#534AB7"/>
+      <text x="89" y="40" text-anchor="middle" font-size="13" font-weight="700" fill="#534AB7">客户端 (Cocos Creator)</text>
+      <text x="89" y="66" text-anchor="middle" font-size="11" fill="#2C2C2A">游戏逻辑 / 场景</text>
+      <text x="89" y="84" text-anchor="middle" font-size="11" fill="#2C2C2A">物理仿真子系统</text>
+      <text x="89" y="102" text-anchor="middle" font-size="11" fill="#2C2C2A">渲染(30°旋转)</text>
+      <text x="89" y="120" text-anchor="middle" font-size="11" fill="#2C2C2A">HUD/按钮图层</text>
+      <text x="89" y="146" text-anchor="middle" font-size="11" fill="#2C2C2A">广告适配层</text>
+      <text x="89" y="164" text-anchor="middle" font-size="11" fill="#2C2C2A">网络/鉴权</text>
+      <text x="89" y="196" text-anchor="middle" font-size="10" fill="#A32D2D">只做物理演出</text>
+      <text x="89" y="210" text-anchor="middle" font-size="10" fill="#A32D2D">不判定结果</text>
+
+      <rect x="190" y="20" width="130" height="320" rx="10" fill="#fff" stroke="#185FA5"/>
+      <text x="255" y="40" text-anchor="middle" font-size="13" font-weight="700" fill="#185FA5">接入层</text>
+      <text x="255" y="66" text-anchor="middle" font-size="11" fill="#2C2C2A">API 网关</text>
+      <text x="255" y="84" text-anchor="middle" font-size="11" fill="#2C2C2A">鉴权 / 签名</text>
+      <text x="255" y="102" text-anchor="middle" font-size="11" fill="#2C2C2A">限流 / 防重放</text>
+      <text x="255" y="120" text-anchor="middle" font-size="11" fill="#2C2C2A">小游戏 & App</text>
+      <text x="255" y="138" text-anchor="middle" font-size="11" fill="#2C2C2A">独立域名</text>
+      <text x="255" y="170" text-anchor="middle" font-size="11" fill="#2C2C2A">广告回调</text>
+      <text x="255" y="188" text-anchor="middle" font-size="11" fill="#2C2C2A">验签入口</text>
+
+      <rect x="344" y="20" width="170" height="320" rx="10" fill="#E6F1FB" stroke="#185FA5"/>
+      <text x="429" y="40" text-anchor="middle" font-size="13" font-weight="700" fill="#0C447C">后端应用 (NestJS)</text>
+      <text x="429" y="66" text-anchor="middle" font-size="11" fill="#2C2C2A">Auth / 账号</text>
+      <text x="429" y="84" text-anchor="middle" font-size="11" fill="#2C2C2A">Game 核心判定</text>
+      <text x="429" y="102" text-anchor="middle" font-size="11" fill="#0C447C" font-weight="700">Asset 资产账本</text>
+      <text x="429" y="120" text-anchor="middle" font-size="11" fill="#2C2C2A">Exchange 兑换</text>
+      <text x="429" y="138" text-anchor="middle" font-size="11" fill="#2C2C2A">Ad 回调验证</text>
+      <text x="429" y="156" text-anchor="middle" font-size="11" fill="#2C2C2A">Risk 风控</text>
+      <text x="429" y="174" text-anchor="middle" font-size="11" fill="#2C2C2A">Admin 运营/配置</text>
+      <text x="429" y="200" text-anchor="middle" font-size="10" fill="#0F6E56">★价值判定在此</text>
+      <text x="429" y="214" text-anchor="middle" font-size="10" fill="#0F6E56">★强一致账本</text>
+
+      <rect x="538" y="20" width="130" height="150" rx="10" fill="#E1F5EE" stroke="#0F6E56"/>
+      <text x="603" y="40" text-anchor="middle" font-size="13" font-weight="700" fill="#0F6E56">存储</text>
+      <text x="603" y="66" text-anchor="middle" font-size="11" fill="#2C2C2A">MySQL 账本</text>
+      <text x="603" y="84" text-anchor="middle" font-size="11" fill="#2C2C2A">/ 订单 / 流水</text>
+      <text x="603" y="112" text-anchor="middle" font-size="11" fill="#2C2C2A">Redis 会话</text>
+      <text x="603" y="130" text-anchor="middle" font-size="11" fill="#2C2C2A">/ 限流 / 日计数</text>
+
+      <rect x="538" y="190" width="130" height="150" rx="10" fill="#FAEEDA" stroke="#BA7517"/>
+      <text x="603" y="210" text-anchor="middle" font-size="13" font-weight="700" fill="#854F0B">第三方</text>
+      <text x="603" y="236" text-anchor="middle" font-size="11" fill="#2C2C2A">广告平台</text>
+      <text x="603" y="254" text-anchor="middle" font-size="11" fill="#2C2C2A">兑奖平台</text>
+      <text x="603" y="272" text-anchor="middle" font-size="11" fill="#2C2C2A">统计埋点</text>
+      <text x="603" y="296" text-anchor="middle" font-size="11" fill="#2C2C2A">实名/支付</text>
+
+      <line x1="164" y1="180" x2="190" y2="180" stroke="#5F5E5A" marker-end="url(#ar)"/>
+      <line x1="320" y1="180" x2="344" y2="180" stroke="#5F5E5A" marker-end="url(#ar)"/>
+      <line x1="514" y1="95" x2="538" y2="95" stroke="#5F5E5A" marker-end="url(#ar)"/>
+      <line x1="514" y1="265" x2="538" y2="265" stroke="#5F5E5A" marker-end="url(#ar)"/>
+    </svg>
+    <div class="card"><b>多端与接入层：</b>微信小游戏与 App 共用同一后端，但走独立接入域名/证书；广告回调由广告平台主动推送到服务端（不依赖客户端回传），天然防伪造。H5 仅作分享传播，价值链路同构。</div>
+  </section>
+
+  <section id="s3">
+    <h2 class="sec"><span class="num">3</span>客户端架构</h2>
+    <h3>3.1 模块划分</h3>
+    <table>
+      <tr><th style="width:26%">模块</th><th>职责</th><th>与铁律关系</th></tr>
+      <tr><td>GameLogic / 场景管理</td><td>大厅/游戏/结算/商城场景切换；单局状态机</td><td>不持有随机源；只调服务端接口</td></tr>
+      <tr><td>PhysicsSystem（物理仿真子系统）</td><td>Box2D 世界、钉板/通道/出口几何、两阶段仿真、引导力、出珠盒子溢出（详见 §4–§6）</td><td>纯演出；落点来自 <code>targetExitId</code></td></tr>
+      <tr><td>BoardRenderer / HUD 图层</td><td>板面 30° 旋转渲染；屏幕正向 HUD/按钮独立图层</td><td>不影响结果</td></tr>
+      <tr><td>VideoAdAdapter（广告适配层）</td><td>统一激励视频接口；微信流量主/穿山甲/测试 Mock 切换</td><td>回调转发给服务端验真</td></tr>
+      <tr><td>NetClient（网络/鉴权）</td><td>接口请求、token 管理、请求签名、幂等 nonce</td><td>铁律二载体</td></tr>
+      <tr><td>Config / 缓存</td><td>拉取后台配置（RTP/K/倍数池展示用）</td><td>只读展示</td></tr>
+    </table>
+    <h3>3.2 单局客户端状态机</h3>
+    <p class="flow">
+      <span class="step">IDLE</span><span class="arrow">→</span>
+      <span class="step">AWAIT_OPEN<br>(开服务端开局)</span><span class="arrow">→</span>
+      <span class="step">BET_SET<br>(可加注)</span><span class="arrow">→</span>
+      <span class="step">AWAIT_LAUNCH<br>(开拉杆判定)</span><span class="arrow">→</span>
+      <span class="step">SIMULATING<br>(物理演出+引导)</span><span class="arrow">→</span>
+      <span class="step">AWAIT_SETTLE<br>(开结算入账)</span><span class="arrow">→</span>
+      <span class="step">RESULT_SHOWN</span>
+    </p>
+    <div class="card ok">状态机任何一步拿到服务端返回失败时，均可据服务端权威状态重放/回滚（如 AWAIT_SETTLE 超时，重查局状态后补发演出与入账）。客户端本地不缓存"已中奖"结论。</div>
+  </section>
+
+  <section id="s4">
+    <h2 class="sec"><span class="num">4</span>物理仿真子系统（落点还原 + 30° 倾斜）</h2>
+    <p>本子系统是"物理为表、结果可控"的技术核心，需同时满足 <b>4.6（两阶段仿真、结果受控、物理一致）</b> 与 <b>4.7（板面 30° 倾斜）</b>。设计目标是：<b>物理在板面局部坐标跑，渲染整体旋转 30°</b>，使引导力退化为局部 X 轴修正。</p>
+    <h3>4.1 坐标系与重力</h3>
+    <ul>
+      <li><b>物理世界（局部坐标）</b>：板面轴对齐；重力 <code>g_local = (0, -g)</code>；钉阵、通道墙、出口、出珠盒子均在轴对齐局部坐标定义（易于编排与离线验证）。</li>
+      <li><b>渲染层</b>：对"板面 + 球"整体施加 <b>30° Z 轴旋转矩阵</b>显示。局部竖直下落 → 视觉沿倾斜板"下坡"滚动，与真实倾斜板受重力分量漂移观感一致（4.7 已确认）。</li>
+      <li><b>漂移方向</b>：默认顺时针 30°（视觉向右下漂）；纯渲染参数，物理侧不改重力向量，美术阶段可微调旋转角。</li>
+    </ul>
+    <h3>4.2 两阶段仿真（对应 4.6）</h3>
+    <svg viewBox="0 0 680 280" xmlns="http://www.w3.org/svg" font-family="-apple-system,'PingFang SC',sans-serif">
+      <defs><marker id="ar2" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#5F5E5A"/></marker></defs>
+      <rect x="20" y="20" width="300" height="240" rx="8" fill="#fff" stroke="#185FA5"/>
+      <text x="170" y="40" text-anchor="middle" font-size="13" font-weight="700" fill="#185FA5">阶段① 自由碰撞区（真物理）</text>
+      <circle cx="170" cy="60" r="7" fill="#A32D2D"/>
+      <line x1="170" y1="67" x2="120" y2="120" stroke="#5F5E5A" stroke-width="2" marker-end="url(#ar2)"/>
+      <circle cx="120" cy="130" r="6" fill="#888"/>
+      <circle cx="155" cy="160" r="6" fill="#888"/>
+      <circle cx="135" cy="190" r="6" fill="#888"/>
+      <line x1="120" y1="136" x2="150" y2="175" stroke="#5F5E5A" stroke-width="2" marker-end="url(#ar2)"/>
+      <text x="170" y="240" text-anchor="middle" font-size="10" fill="#5F5E5A">弹簧杆发射 + 钉板随机弹跳</text>
+      <text x="170" y="255" text-anchor="middle" font-size="10" fill="#5F5E5A">真实 Box2D，不可预测</text>
+
+      <line x1="320" y1="140" x2="360" y2="140" stroke="#A32D2D" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#ar2)"/>
+      <text x="340" y="128" text-anchor="middle" font-size="10" fill="#A32D2D">路由控制线</text>
+
+      <rect x="360" y="20" width="300" height="240" rx="8" fill="#E1F5EE" stroke="#0F6E56"/>
+      <text x="510" y="40" text-anchor="middle" font-size="13" font-weight="700" fill="#0F6E56">阶段② 引导路由区（有界引导）</text>
+      <path d="M420,140 L470,210 L470,250 M600,140 L550,210 L550,250" fill="none" stroke="#0F6E56" stroke-width="2"/>
+      <rect x="455" y="240" width="110" height="20" rx="4" fill="#fff" stroke="#0F6E56"/>
+      <text x="510" y="254" text-anchor="middle" font-size="10" fill="#0F6E56">真实通道墙</text>
+      <circle cx="430" cy="150" r="7" fill="#A32D2D"/>
+      <path d="M437,150 Q500,175 510,235" fill="none" stroke="#534AB7" stroke-width="2" stroke-dasharray="4 3" marker-end="url(#ar2)"/>
+      <text x="490" y="165" text-anchor="middle" font-size="9" fill="#534AB7">局部X引导力</text>
+      <text x="510" y="230" text-anchor="middle" font-size="10" fill="#5F5E5A">送入 targetExitId</text>
+      <text x="510" y="278" text-anchor="middle" font-size="10" fill="#5F5E5A">命中→亮灯出口；未中→暗口沉没</text>
+    </svg>
+    <ul>
+      <li><b>阶段① 自由碰撞区</b>：弹簧杆发射 + 钉板钉阵真实 Box2D 弹跳（含"+30° 渲染"观感）。此段结果不可预测，提供手感与参与感（4.6 阶段①）。</li>
+      <li><b>阶段② 引导路由区</b>：球过"路由控制线"后，下方通道由<b>真实静态墙体</b>构成（碰撞真实）；在通道入口施加<b>有界横向引导力（= 局部 X 修正）</b>，把球送入服务端指定的 <code>targetExitId</code> 通道。引导幅度限制在"自然弹跳方差包络"内，观察者无法区分于真实混沌（4.6 物理一致性结论）。</li>
+      <li><b>暗口通道</b>：未命中时 <code>targetExitId</code> 指向暗口（沉没通道），与出珠盒子几何隔离（呼应 5.3 暗口设计），避免"掉珠却没奖"的困惑。</li>
+    </ul>
+    <h3>4.3 引导力控制器（GuideForceController）</h3>
+    <ul>
+      <li>输入：<code>targetExitId</code>（局部坐标 x 目标）、球当前位置。</li>
+      <li>每物理步施加朝向目标 x 的力，幅度随距目标距离衰减（PD 控制器）；当球进入目标通道开口后撤力，由真实墙体接管。</li>
+      <li><b>禁用项</b>：瞬移、直接 setPosition、反物理加速、穿透墙体——违反 4.6 物理一致性。所有位移均经由对真实几何的碰撞。</li>
+      <li>备选（4.6 备选方案）：若改用"发射参数偏置法"，此处改为离线求解器查表，引导力设为 0；首发实现有界引导即可。</li>
+    </ul>
+    <div class="card amber"><b>性能边界：</b>自由碰撞区钉数控制在移动端可实时仿真范围（建议钉阵 ≤ 60 钉、子步频 ≥ 60Hz）；路由区墙体为静态，开销极低。物理步与渲染分离（fixed timestep）。</div>
+  </section>
+
+  <section id="s5">
+    <h2 class="sec"><span class="num">5</span>落点还原：客户端实现要点</h2>
+    <p>客户端在 <b>AWAIT_LAUNCH</b> 收到服务端返回的 <code>targetExitId</code> 与"是否命中"后开始物理演出。关键工程点：</p>
+    <ul>
+      <li><b>时序</b>：开局仅下发倍数 + 亮灯出口（供展示）；<code>targetExitId</code> 必须在<b>拉杆请求</b>返回拿到，仿真开始前施加引导力（4.6 时序配合已确认）。</li>
+      <li><b>拉杆力度仅演出</b>：蓄力值（0~1）影响发射初速区间抖动，<b>不传参与结果</b>；服务端结果在拉杆请求时已定，故"蓄力大就更容易中"是错觉，符合"运气游戏"定位（4.6 拉杆边界）。</li>
+      <li><b>取消</b>：蓄力中取消（手指移出命中区/进取消区松手）→ 不发起拉杆请求、不扣珠、回到 BET_SET（PRD 5.3 拉杆操作）。</li>
+      <li><b>落定检测</b>：球进入目标通道并低于控制线即判"落定"，触发结算演出（无弹窗，结果直显 5.3）。</li>
+      <li><b>断线重连</b>：若 SIMULATING 中掉线，重连后向服务端查询本局状态；服务端返回权威结果，客户端据结果"快进"到对应演出帧或补发入账（账本幂等，见 §10）。</li>
+    </ul>
+    <div class="card warn"><b>反外挂要点：</b>因为落点由服务端定、客户端改不了 <code>targetExitId</code>，任何"物理外挂/自动瞄准"都只改变演出观感、拿不到更多奖励——这是服务端定结果的天然反作弊红利（呼应 PRD 9.2）。</div>
+  </section>
+
+  <section id="s6">
+    <h2 class="sec"><span class="num">6</span>出珠盒子区域与物理溢出（实现 5.3）</h2>
+    <p>命中后奖励珠 <code>N = 有效投入 × 倍数</code> 以"逐颗掉落入出珠盒子"演出；超过容量上限 60 的部分由<b>物理引擎驱动溢出滚落</b>（5.3 已确认）。实现约束：</p>
+    <h3>6.1 出珠盒子几何</h3>
+    <ul>
+      <li>盒子为板面底部的<b>静态刚体围栏</b>（左/右/底墙），位于局部坐标，随板面 30° 渲染。</li>
+      <li>容量上限 <code>CAP = 60</code>（纯显示参数，数值文档 §6）。落入盒子的珠为<b>真实动态刚体</b>，碰撞盒壁、可在盒内堆叠。</li>
+    </ul>
+    <h3>6.2 溢出物理实现</h3>
+    <ul>
+      <li>盒子满（计数 ≥ 60）后继续生成的珠，从盒沿溢出为真实 Box2D 刚体，沿盒壁滚落消散（<b>非脚本补间</b>，5.3 溢出物理驱动已确认）。溢出珠与盒内珠同处一个物理世界。</li>
+      <li><b>权威计数与物理珠解耦</b>：HUD 显示的奖励数 = 服务端下发的 N（权威）；物理珠只负责"视觉掉落实感"。即使溢出珠滚落消失，<b>入账以 N 为准，盒子永不丢失应得奖励</b>。</li>
+    </ul>
+    <h3>6.3 性能约束（关键）</h3>
+    <div class="card warn"><b>N 可能高达 1980（99×20），禁止生成 N 个物理刚体。</b>实现策略：
+      <ul>
+        <li>对象池：盒内至多存活 <code>CAP(60)</code> 颗 + 溢出若干（建议 ≤ 20）真实珠；超出部分以"代表珠 + 数字滚动"替代演出。</li>
+        <li>下落节奏分级：N 小则单颗快落；N 大则连续喷落并加速，且超过视觉上限后直接以数字累加收尾，避免长演出拖时长。</li>
+        <li>看视频翻倍：命中后点 ×2，N→2N，补播额外 N 颗（同样走 CAP 与溢出逻辑），数字累加至 2N。</li>
+      </ul>
+    </div>
+    <h3>6.4 暗口通道（未命中）</h3>
+    <ul>
+      <li>未命中球进入与盒子<b>隔离的沉没通道</b>（另一组静态围栏），落底后消散；结果区显示"本局投入 X 颗已沉没"。亮灯出口与暗口几何分属不同通道，杜绝误读。</li>
+    </ul>
+  </section>
+
+  <section id="s7">
+    <h2 class="sec"><span class="num">7</span>广告适配层与网络</h2>
+    <h3>7.1 VideoAdAdapter（适配层接口）</h3>
+    <pre><span class="k">interface</span> VideoAdAdapter {
+  load(): Promise&lt;<span class="k">void</span>&gt;
+  show(): Promise&lt;AdResult&gt;   <span class="c">// AdResult = { completed: boolean, thirdTransId: string }</span>
+}
+<span class="c">// 实现：WechatAdAdapter（微信流量主）/ ChuanShanJiaAdapter（穿山甲）/ MockAdapter（测试）</span>
+<span class="c">// 游戏逻辑只调 show()，不感知平台；回调由服务端验证，客户端不信任本地 completed</span></pre>
+    <ul>
+      <li>小游戏端用微信流量主激励视频；App 端用穿山甲/聚合广告 SDK；游戏逻辑层不感知具体平台（PRD 6.2）。</li>
+      <li>广告完播后，客户端把 <code>thirdTransId</code> 回传服务端，由服务端去广告平台 server verify；验证通过才发奖（铁律二）。</li>
+    </ul>
+    <h3>7.2 NetClient 鉴权与签名</h3>
+    <ul>
+      <li>登录后持有服务端下发的 <code>token</code>（Redis 会话）；所有写接口带 <code>token</code> + <code>nonce</code> + <code>timestamp</code> + <code>sign</code>。</li>
+      <li><code>sign = HMAC(deviceSecret, token+nonce+timestamp+body)</code>，防篡改与重放（§14）。</li>
+    </ul>
+  </section>
+
+  <section id="s8">
+    <h2 class="sec"><span class="num">8</span>服务端架构（NestJS 模块）</h2>
+    <p>后端以 NestJS 单体起步，按业务域分 module；价值判定与账本集中在 Game/Asset 模块，保证铁律一。模块间通过服务调用，不跨库直连。</p>
+    <table>
+      <tr><th style="width:24%">Module</th><th>核心职责</th><th>对外接口（概览）</th></tr>
+      <tr><td>AuthModule</td><td>微信/手机号登录、跨端统一 uid、游客兜底、token 签发</td><td>login / token/refresh</td></tr>
+      <tr><td><b>GameModule</b></td><td><b>开局 / 加注锁 / 拉杆判定 / 结算入账 / 翻倍</b>——核心价值判定</td><td>open / bet / launch / settle / double</td></tr>
+      <tr><td>AssetModule</td><td>弹珠账本、积分账本、流水；事务与幂等</td><td>内部服务 + 查询</td></tr>
+      <tr><td>ExchangeModule</td><td>商城列表、兑换下单、风控后扣卡、第三方履约、订单状态机</td><td>list / create / status</td></tr>
+      <tr><td>AdModule</td><td>广告场景频控、回调验真、发奖</td><td>reward / callback</td></tr>
+      <tr><td>RiskModule</td><td>设备指纹、行为画像、频控、黑名单、兑换实名校验</td><td>内部 + 决策</td></tr>
+      <tr><td>ConfigModule</td><td>RTP/倍数池/K/频控 动态配置、A/B 分群</td><td>get / set（admin）</td></tr>
+      <tr><td>AdminModule</td><td>运营后台：配置、订单、风控名单、数据看板、经济闸门</td><td>后台 API</td></tr>
+    </table>
+    <div class="card ok">Game/Asset 模块是安全边界：所有"产生价值"的逻辑（判定、发奖、扣减）必须落在此二模块且经事务；其它模块（如商城展示）只读或经 Game/Asset 代理写。</div>
+  </section>
+
+  <section id="s9">
+    <h2 class="sec"><span class="num">9</span>核心判定：落点还原服务端实现（重点）</h2>
+    <p>这是 4.6 的落地。一局分四次调用，价值在 <code>launch</code> 一次定死，<code>settle</code> 仅入账。</p>
+    <h3>9.1 四次调用与事务边界</h3>
+    <pre><span class="c">// ① open：锁定初始投入</span>
+POST /game/open  { bet }  → { roundId, multiplier, litExits[], rtpApplied }
+  <span class="c">// 事务：校验余额≥bet；扣 bet 入 bean_ledger(锁定)；写 game_rounds(status=bet_locked)</span>
+
+<span class="c">// ② bet（加注，可选）：追加锁定（PRD 4.4）</span>
+POST /game/bet   { roundId, addBet }  → { effectiveBet, estReward }
+  <span class="c">// 事务：校验余额≥addBet 且 effectiveBet≤99；扣 addBet；更新 effective_bet</span>
+
+<span class="c">// ③ launch：服务端定结果（铁律一核心）</span>
+POST /game/launch { roundId, chargePower }  → { hit, targetExitId, rewardBeans, cards }
+  <span class="c">// 事务：幂等(同round仅一次)；取本局multiplier/litExits</span>
+  <span class="c">//   P(hit)=rtpApplied / multiplier ；用安全随机源(含盈亏池/新手曲线)</span>
+  <span class="c">//   命中→从litExits按权重选targetExitId；rewardBeans=effectiveBet*multiplier</span>
+  <span class="c">//   未中→从暗口集选targetExitId；rewardBeans=0</span>
+  <span class="c">//   cards = hit && rewardBeans≥40 ? min(5, floor(rewardBeans/40)) : 0</span>
+  <span class="c">//   写game_rounds(status=launched, hit,targetExitId,rewardBeans,cards)；不发放</span>
+  <span class="c">//   chargePower 仅记录(演出用)，不参与任何判定</span>
+
+<span class="c">// ④ settle：演出结束入账</span>
+POST /game/settle { roundId }  → { beans, cards, balance }
+  <span class="c">// 事务：幂等(同round仅一次)；若hit则+rewardBeans入账、+cards入积分账本</span>
+  <span class="c">//   写 status=settled；返回最新余额。失败重连可重查重放。</span></pre>
+    <h3>9.2 命中判定算法（RTP 反解）</h3>
+    <ul>
+      <li>单局期望返还率恒定：<code>P(hit) = rtpApplied / multiplier</code>。无论倍数多大，单局期望返还 = 投入 × rtpApplied（数值文档 §2）。</li>
+      <li><code>rtpApplied</code> 取：基础 RTP 0.90 × 新手保护系数（前 5 局 1.50→线性递减→第 16 局 0.90）× 盈亏池修正（个体/全局池防止极端偏差）。</li>
+      <li><b>安全随机源</b>：服务端用密码学安全随机（如 <code>crypto.randomBytes</code> 派生的 [0,1)），不依赖客户端或时间可被预测的种子。</li>
+      <li>亮灯出口权重：命中时 <code>targetExitId</code> 在亮灯出口集合内按低倍→高倍出口权重递减抽取（高倍出口稀有，对应 4.3 12 出口方案）。</li>
+    </ul>
+    <h3>9.3 翻倍（看视频 ×2）</h3>
+    <ul>
+      <li>命中后点"看视频 ×2" → 播广告 → 平台回调 <code>/ad/callback</code> 验真 → 内部将本局 <code>rewardBeans ×= 2、doubled=true</code>（仅限 hit 且未翻倍过，幂等）。</li>
+      <li>客户端补播额外 N 颗（§6.3）；<code>settle</code> 时入翻倍后的值。若翻倍在 settle 之后才回调，则补一次入账事务（同 roundId 幂等累加）。</li>
+    </ul>
+    <div class="card"><b>为什么奖励不在 launch 直接入账？</b> 若 launch 即入账、客户端演出崩溃，账面已加但玩家没看到——体验与对账皆乱。改为 launch 只"定结果"、settle 才"入账"，服务端全程掌握权威状态，客户端仅消费演出。断线可重连补发，账本零误差。</div>
+  </section>
+
+  <section id="s10">
+    <h2 class="sec"><span class="num">10</span>资产账本与并发安全</h2>
+    <h3>10.1 账本模型（强一致）</h3>
+    <ul>
+      <li><b>弹珠账本 bean_ledger</b>：每笔变动 Append-Only，含 <code>type(open_lock/bet_add/settle_win)</code>、<code>delta</code>、<code>balance_after</code>、<code>ref_round</code>。</li>
+      <li><b>积分账本 point_ledger</b>：积分卡入账（settle）/ 兑换扣减（exchange）。不可逆流（珠→积分单向，PRD 4.5）。</li>
+      <li>余额 = 账本末态余额，不另存易失字段；关键读走事务或 Redis 缓存（带失效）。</li>
+    </ul>
+    <h3>10.2 并发与幂等</h3>
+    <table>
+      <tr><th>风险</th><th>对策</th></tr>
+      <tr><td>同一局重复 launch/settle</td><td>game_rounds 行级锁 + 状态机；重复请求返回首次结果（幂等）</td></tr>
+      <tr><td>并发开局超投（余额为负）</td><td>open/bet 扣减走 <code>UPDATE ... SET beans=beans-delta WHERE beans≥delta</code> 原子条件 + 行锁；不足则拒绝</td></tr>
+      <tr><td>加注与拉杆竞态</td><td>bet 与 launch 串行化于同一 roundId 锁；launch 以"已锁定 effectiveBet"为准，不接受客户端传参覆盖</td></tr>
+      <tr><td>广告回调重放/伪造</td><td>thirdTransId 唯一索引去重 + server verify（铁律二）</td></tr>
+      <tr><td>兑换并发</td><td>扣卡事务 + 订单状态机（created→…→done/failed），失败补偿退卡</td></tr>
+    </table>
+    <div class="card ok">单用户同一时刻仅允许一局进行中（Redis <code>game_lock:{uid}</code>），从协议层面杜绝"一局没结算又开下一局"的并发扣减漏洞。</div>
+  </section>
+
+  <section id="s11">
+    <h2 class="sec"><span class="num">11</span>兑换 / 广告 / 风控（服务端）</h2>
+    <h3>11.1 兑换（ExchangeModule）</h3>
+    <ul>
+      <li>下单流程：风控校验（实名/设备/限额/黑名单）→ 扣积分卡（事务）→ 调第三方兑奖平台 API → 写订单 → 履约回调更新状态。</li>
+      <li>订单状态机：<code>created → risk_checked → deducted → fulfilling → done / failed(退卡)</code>（PRD 7.2）。失败补偿必须幂等（第三方回调可能多次）。</li>
+      <li>兑换所需卡数 K 分层（5/20/50/80/120）由 ConfigModule 下发，服务端为唯一校验方（铁律一：价值判定在服务端）。</li>
+    </ul>
+    <h3>11.2 广告（AdModule）</h3>
+    <ul>
+      <li>场景频控：领珠每日 6 次、翻倍每局 1/每日 10、签到 1、高倍 3、单日总 20（PRD 6.1/6.2），Redis 每日计数 + 过期。</li>
+      <li>发奖：领珠 +88（或翻倍奖励）仅在 <code>/ad/callback</code> server verify 通过后由 AdModule 调 AssetModule 入账。</li>
+    </ul>
+    <h3>11.3 风控（RiskModule）</h3>
+    <ul>
+      <li>设备指纹（小游戏 OT/App IDFA 脱敏）+ 账号行为画像；同设备多账号、异常兑换频率进黑名单/人工队列。</li>
+      <li>经济闸门（PRD 6.5）：实时算 <code>人均观看×eCPM ÷ 人均积分成本</code>，低于 1.2 自动/人工收紧（降 RTP / 升 K）。</li>
+    </ul>
+  </section>
+
+  <section id="s12">
+    <h2 class="sec"><span class="num">12</span>数据模型（ER 概览）</h2>
+    <h3>12.1 MySQL 核心表</h3>
+    <table>
+      <tr><th>表</th><th>关键字段</th><th>说明</th></tr>
+      <tr><td>users</td><td>uid, openid, union_id, phone, device_fp, status, risk_level, created_at</td><td>跨端统一账号</td></tr>
+      <tr><td>user_assets</td><td>uid, beans, cards, points, ad_times_today, last_ad_date, …</td><td>余额快照（源于账本）</td></tr>
+      <tr><td>game_rounds</td><td>id, uid, status, bet, effective_bet, multiplier, lit_exits(JSON), target_exit_id, hit, reward_beans, cards, rtp_applied, doubled, created_at, settled_at</td><td>单局权威结果（落点还原核心）</td></tr>
+      <tr><td>bean_ledger</td><td>id, uid, type, delta, ref_round, balance_after, created_at</td><td>弹珠流水（强一致）</td></tr>
+      <tr><td>point_ledger</td><td>id, uid, type, delta, ref_round/ref_order, balance_after, created_at</td><td>积分流水</td></tr>
+      <tr><td>exchange_orders</td><td>id, uid, item_id, cost_cards, status, third_order_id, tracking_no, created_at, updated_at</td><td>兑换订单状态机</td></tr>
+      <tr><td>ad_rewards</td><td>id, uid, scene, third_trans_id(唯一), beans, created_at</td><td>广告发奖去重</td></tr>
+      <tr><td>config_kv</td><td>key, value(JSON), updated_at</td><td>RTP/倍数池/K/频控</td></tr>
+    </table>
+    <h3>12.2 Redis 关键键</h3>
+    <table>
+      <tr><th>Key</th><th>用途</th></tr>
+      <tr><td><code>session:{token}</code></td><td>uid 映射，登录态</td></tr>
+      <tr><td><code>game_lock:{uid}</code></td><td>并发防一局未结算又开局</td></tr>
+      <tr><td><code>daily:{uid}:{date}</code></td><td>Hash：ad_times / beans_ad / doubles（每日计数，TTL 到次日）</td></tr>
+      <tr><td><code>risk:dev:{deviceFp}</code></td><td>设备行为计数/黑名单标记</td></tr>
+      <tr><td><code>rate:ad:{uid}:{scene}</code></td><td>广告场景频控计数</td></tr>
+    </table>
+  </section>
+
+  <section id="s13">
+    <h2 class="sec"><span class="num">13</span>关键接口概览（详见 API 文档）</h2>
+    <table>
+      <tr><th>接口</th><th>方法</th><th>价值判定</th><th>幂等</th></tr>
+      <tr><td>/auth/login</td><td>POST</td><td>—</td><td>token 可刷新</td></tr>
+      <tr><td>/game/open</td><td>POST</td><td>锁投入、抽倍数/亮灯出口</td><td>roundId 唯一</td></tr>
+      <tr><td>/game/bet</td><td>POST</td><td>追加锁投入</td><td>roundId 串行</td></tr>
+      <tr><td><b>/game/launch</b></td><td>POST</td><td><b>★定命中/落点/奖励/卡</b></td><td>同 round 一次</td></tr>
+      <tr><td>/game/settle</td><td>POST</td><td>★入账（弹珠+卡）</td><td>同 round 一次</td></tr>
+      <tr><td>/ad/reward</td><td>POST</td><td>领珠发奖前置</td><td>—</td></tr>
+      <tr><td>/ad/callback</td><td>POST</td><td>★server verify 后发奖</td><td>thirdTransId 唯一</td></tr>
+      <tr><td>/exchange/create</td><td>POST</td><td>扣卡+下单</td><td>订单状态机</td></tr>
+    </table>
+    <div class="card">完整请求/响应 schema、错误码、签名规范在《服务端 API 设计文档》。本档只定义"哪些接口承载价值判定、如何保证幂等"。</div>
+  </section>
+
+  <section id="s14">
+    <h2 class="sec"><span class="num">14</span>安全与风控技术实现</h2>
+    <ul>
+      <li><b>传输与鉴权</b>：全站 HTTPS；token 短期有效 + refresh；敏感写接口需 sign。</li>
+      <li><b>防重放</b>：<code>nonce</code> 单次有效（Redis 短 TTL 去重）+ <code>timestamp</code> 窗口校验（±5min）。</li>
+      <li><b>防篡改</b>：<code>sign = HMAC(deviceSecret, token+nonce+timestamp+body)</code>，服务端重算比对。</li>
+      <li><b>防外挂</b>：结果服务端定（§9），客户端改 local 文件/内存无效；引导力不可被客户端改写 <code>targetExitId</code>。</li>
+      <li><b>防刷</b>：广告 thirdTransId 唯一索引；同设备多账号识别；兑换前实名/手机号校验。</li>
+      <li><b>审计</b>：所有账本/订单 Append-Only，可追溯；运营后台可查任意 uid 全流水。</li>
+    </ul>
+  </section>
+
+  <section id="s15">
+    <h2 class="sec"><span class="num">15</span>部署拓扑</h2>
+    <ul>
+      <li><b>后端</b>：NestJS 容器化（Docker）+ K8s/轻量云；多副本无状态，状态在 MySQL/Redis。小游戏与 App 接入层独立 Ingress/域名，共用后端服务。</li>
+      <li><b>存储</b>：MySQL 主从（读写分离，账本强一致走主库）；Redis 哨兵/集群（会话/限流/日计数）。</li>
+      <li><b>第三方</b>：广告回调接收端需公网可达且验签；兑奖平台 API 走内网/专线或加签 HTTPS。</li>
+      <li><b>客户端构建</b>：Cocos Creator 一处构建多 target（微信小游戏包 / App 原生工程 / H5），CI 出包。</li>
+    </ul>
+  </section>
+
+  <section id="s16">
+    <h2 class="sec"><span class="num">16</span>性能与非功能</h2>
+    <table>
+      <tr><th>维度</th><th>目标（与 PRD §10 对齐）</th><th>架构对策</th></tr>
+      <tr><td>首屏</td><td>小游戏 &lt; 3s</td><td>分包加载、物理资源懒加载</td></tr>
+      <tr><td>单局结算</td><td>&lt; 500ms</td><td>launch/settle 单事务、索引优化</td></tr>
+      <tr><td>服务端 P99</td><td>&lt; 200ms</td><td>无状态水平扩展、Redis 缓存</td></tr>
+      <tr><td>并发</td><td>首发 1k 在线 / 峰值 5k QPS</td><td>多副本 + 连接池；压测回填（测试文档）</td></tr>
+      <tr><td>物理帧率</td><td>移动端 ≥ 30fps（演出）</td><td>钉数上限、对象池（§4.3/§6.3）</td></tr>
+      <tr><td>可观测</td><td>接口/广告/兑换流水+告警</td><td>埋点上报 + 看板（§8 运营）</td></tr>
+    </table>
+  </section>
+
+  <section id="s17">
+    <h2 class="sec"><span class="num">17</span>技术选型与依赖</h2>
+    <table>
+      <tr><th>层</th><th>选型</th><th>说明</th></tr>
+      <tr><td>客户端引擎</td><td>Cocos Creator 3.x + Box2D（内置 2D 物理）</td><td>一套代码多端；物理为表</td></tr>
+      <tr><td>服务端框架</td><td>NestJS（Node.js 18+）+ TypeScript</td><td>模块清晰、DI、可演进微服务</td></tr>
+      <tr><td>ORM</td><td>Prisma 或 TypeORM</td><td>账本事务安全；迁移管理</td></tr>
+      <tr><td>数据库</td><td>MySQL 8</td><td>强一致账本</td></tr>
+      <tr><td>缓存/限流</td><td>Redis 7</td><td>会话/日计数/锁</td></tr>
+      <tr><td>广告 SDK</td><td>微信流量主 / 穿山甲（聚合可选）</td><td>适配层隔离</td></tr>
+      <tr><td>兑奖</td><td>第三方兑奖平台 API</td><td>无库存压力</td></tr>
+    </table>
+  </section>
+
+  <section id="s18">
+    <h2 class="sec"><span class="num">18</span>风险与技术债</h2>
+    <ul>
+      <li><b>引导力穿帮风险</b>：引导幅度若超自然方差包络，老玩家可能察觉"球被吸走"。对策：离线标定引导力上限 + QA 抽样回放；备选发射参数偏置法（§4.3）。</li>
+      <li><b>物理溢出演出成本</b>：极端 N（1980）需对象池与节奏分级兜底，否则低端机掉帧（§6.3）。</li>
+      <li><b>RTP 配置错误</b>：误配 RTP/K 可能瞬间击穿经济模型。对策：配置变更审批 + 经济闸门自动熔断（§11.3）。</li>
+      <li><b>跨端账号</b>：小游戏 openid 与 App 手机号需 union_id/手机号绑定打通，二期重点（PRD 12 M5）。</li>
+      <li><b>技术债</b>：单体起步，Game/Asset 若膨胀再拆微服务；引导力算法、物理参数需 M1 原型实测调参。</li>
+    </ul>
+  </section>
+
+  <section id="s19">
+    <h2 class="sec"><span class="num">19</span>下游依赖与里程碑</h2>
+    <div class="card"><b>本档已闭合的问题：</b>4.6 落点还原的服务端判定接口（open/bet/launch/settle 四段事务与算法）、4.7 物理倾斜实现（局部坐标 + 30° 渲染 + 引导力局部 X）、5.3 出珠盒子物理溢出与性能约束、4.4 加注服务端锁、9.2 防外挂。</div>
+    <ul>
+      <li><b>下游</b>：《服务端 API 设计文档》—— 把 §9/§13 的接口写成完整 schema/错误码/签名规范；《UI-UX 设计文档》—— 数值已定稿，可启动视觉与多端规范；《测试与验收文档》—— 数值蒙特卡洛仿真回归、广告回调测试、并发压测；《上线与运营文档》。</li>
+      <li><b>里程碑衔接</b>：M1 原型应优先验证 §4 物理手感 + §6 溢出演出；M2 联调验证 §9 四段事务与重连；M3 完成 §7/§11 广告与兑换。</li>
+    </ul>
+  </section>
+
+  <footer>弹珠乐园 · 技术架构设计文档 v1.0 草稿 · 2026-07-29 · 状态：待技术/架构评审</footer>
+</main>
+</div>
+</body>
+</html>
