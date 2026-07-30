@@ -38,6 +38,20 @@ PinballPark/
 
 原则：现有 HTML 文档只读不改格式，作为「源头规范」；新增的机器友好层全部用 Markdown。
 
+### 2.1 `docs/INDEX.md` 字段定义
+
+每份文档一行，表格字段：
+
+| 字段 | 说明 |
+|---|---|
+| 文档 | 相对路径（可点击链接） |
+| 层级 | 源头规范（HTML）/ 功能卡 / 测试 / 流程 |
+| 状态 | active / draft / deprecated |
+| 一句话用途 | 什么问题来查这份文档 |
+| 最近更新 | YYYY-MM-DD |
+
+INDEX.md 顶部另设「**下一可用功能编号**」字段（如 `next: F-009`），作为 F-xxx 编号的唯一登记处，防止编号冲突。
+
 ## 3. 规范层 — `AGENTS.md`
 
 AI 接手的第一入口，控制在约 150 行内，包含：
@@ -49,12 +63,14 @@ AI 接手的第一入口，控制在约 150 行内，包含：
    - 数值类改动必须先跑 `tests/numeric/` 通过
    - 发现文档间矛盾 → 触发 doc-sync SKILL，先修文档再干活
 4. **文档分层规则**：
-   - HTML = 设计源头，大改需人确认
+   - HTML = 设计源头，**实质性变更需人确认**（数值、规则、玩法、流程的改动；错别字/样式修正除外）
    - `features/*.md` = 实现细节，AI 可自主维护
    - `INDEX.md` = 地图，每次增删文档必须同步
-5. **变更日志**：末尾追加式记录每次规范调整（何时、为何、改了什么）
+5. **变更日志**：末尾追加式记录，条目格式固定为：
+   `- YYYY-MM-DD | 触发原因 | 改动摘要 | 涉及文件`
+6. **阶段切换机制**：AGENTS.md 顶部「当前阶段」字段（文档期 / 编码期）只能由人确认后修改；切换到编码期时按 `tests/README.md` 预写的规则启用经典代码 TDD
 
-`.codebuddy/rules/project.md` 只写一句：「开始任何任务前必须先读根目录 AGENTS.md」。
+`.codebuddy/rules/project.md` 只写一句：「开始任何任务前必须先读根目录 AGENTS.md」。其他工具入口（如 `CLAUDE.md`）不预建，未来需要时同样只写这一行引用。
 
 ## 4. 功能细节文档层 — `docs/features/`
 
@@ -73,11 +89,20 @@ AI 接手的第一入口，控制在约 150 行内，包含：
 
 规则：
 
-- 功能编号自 `F-001` 起，永不复用
+- 功能编号自 `F-001` 起，永不复用；下一可用编号登记在 `INDEX.md` 顶部
+- 文件命名：`F-001-ball-launch.md`（编号-英文短横线名），标题内用中文
 - HTML 文档变更 → 对应功能卡必须同步（由 doc-sync SKILL 检查）
+- 测试文件与功能卡关联：测试文件 docstring 首行标注 `覆盖: F-001`，功能卡「关联测试」字段回指测试路径，双向可查
 - 编码期代码注释引用 `F-xxx` 编号，形成「代码 ↔ 文档 ↔ 测试」三向索引
 
-首批建卡：从数值文档提取（倍率档位、RTP、投注档、赔付表等）约 5-8 张。
+首批建卡（从数值文档与 PRD 提取，约 5-8 张，编号在实施时按此顺序分配）：
+
+1. 倍率档位集合（×2/×4/×6/×8/×16/×32）
+2. RTP 与赔付表
+3. 投注档位与加注
+4. 弹珠发射与钉板判定
+5. 结算与派彩流程
+6. （备选）跑马灯/LED 表现规则、机台布局约束
 
 ## 5. TDD 层 — `tests/`
 
@@ -92,9 +117,16 @@ AI 接手的第一入口，控制在约 150 行内，包含：
 
 **编码期（未来）**：`tests/` 平级扩展 `unit/`、`integration/`，沿用「先测试后实现」约定。切换规则预写在 `tests/README.md`，届时无需重新设计。
 
+### 5.1 运行环境与依赖
+
+- Python 3.10+，测试框架 pytest；依赖清单写入根目录 `requirements.txt`（现阶段仅 `pytest`）
+- 统一运行命令：`pytest tests/numeric -q`（写入 AGENTS.md 与 tests/README.md）
+- `economy_sim.py` 需可被测试导入：若当前仅支持脚本运行，实施时补充可导入的参数/函数入口（不改变其原有 CLI 行为）
+- `__pycache__` 等产物由 `.gitignore` 排除（已有 .gitignore，实施时核对）
+
 ## 6. SKILL 层 — `.codebuddy/skills/`
 
-首批 3 个 SKILL，每个是一份 SOP 式 `SKILL.md`：
+首批 3 个 SKILL，每个是一份 SOP 式 `SKILL.md`，需含 frontmatter（`name`、`description`，description 写明触发时机以便 AI 自动匹配）：
 
 | SKILL | 触发时机 | 核心步骤 |
 |---|---|---|
@@ -117,6 +149,6 @@ AI 接手的第一入口，控制在约 150 行内，包含：
 
 ## 9. 验收标准
 
-1. `AGENTS.md`、`docs/INDEX.md`、`docs/features/`（模板 + 首批卡片）、`tests/numeric/`（可运行且全绿）、3 个 SKILL 全部就位
+1. `AGENTS.md`、`.codebuddy/rules/project.md`、`docs/INDEX.md`、`docs/features/`（模板 + 首批卡片）、`requirements.txt`、`tests/README.md`、`tests/numeric/`（`pytest tests/numeric -q` 全绿）、3 个 SKILL 全部就位
 2. 模拟场景验证：让 AI 从零接手执行「修改一个倍率档位」，能沿 索引 → 功能卡 → 测试红绿 → 回写日志 全链路走通
 3. 故意制造一处文档矛盾，doc-sync SKILL 能发现并按权威层级修正
