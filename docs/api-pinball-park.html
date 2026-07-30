@@ -230,7 +230,7 @@ X-Sign = HMAC-SHA256( deviceSecret, stringToSign ).toHexUpper()
   <span class="k">"isNewUser"</span>: false,
   <span class="k">"assets"</span>: { <span class="k">"beans"</span>: 30, <span class="k">"cards"</span>: 0, <span class="k">"points"</span>: 0 }
 }</pre>
-  <div class="card"><b>登录即送每日登录 30 珠</b>（在 <code>daily:{uid}:{date}</code> 未签到时发放，幂等；open 不再发放）。<b>deviceSecret 为设备级长期密钥</b>，登录时随 token 一并安全下发，与 token 解耦——token 刷新（/auth/token/refresh）不影响 deviceSecret，写接口签名始终用同一 deviceSecret。</div>
+  <div class="card"><b>登录即送每日登录 30 珠</b>（在 <code>daily:{uid}:{date}</code> 未签到时发放，幂等；open 不再发放）。<b>deviceSecret 为设备级密钥</b>，登录时随 token 一并安全下发，与 token 解耦——token 刷新（/auth/token/refresh）不影响 deviceSecret，写接口签名始终用同一 deviceSecret。<b>[P1-9 修订] 密钥管理升级为 P1：</b>①<b>定期轮换</b>——服务端按策略（如 90 天）下发新 deviceSecret，旧密钥保留短重叠期平滑迁移；②<b>设备绑定</b>——deviceSecret 与 <code>deviceFp</code> 绑定，异地/换设备须重新校验；③<b>异常吊销</b>——同一 deviceSecret 出现签名异常或多账号聚集时，风控触发吊销并强制重新登录下发新密钥；④<b>应急响应</b>——泄露时服务端可即时作废密钥（<code>risk:dev:{deviceFp}</code> 标记黑名单），客户端下次请求返回 <code>40102</code> 后走重新登录换密。密钥存储仅限系统安全区（见 CMP-04）。</div>
 
   <span class="endpoint"><span class="m">POST</span>/auth/token/refresh</span>
   <pre>Request:  { <span class="k">"refreshToken"</span>: <span class="s">"rt-..."</span> }
@@ -277,7 +277,8 @@ Response: {
   <span class="k">"roundCards"</span>: 3,               <span class="c">// 本局获得积分卡</span>
   <span class="k">"totalCards"</span>: 3,               <span class="c">// 入账后总积分卡余额</span>
   <span class="k">"balance"</span>: 145,
-  <span class="k">"doubled"</span>: false               <span class="c">// 是否看过视频翻倍</span>
+  <span class="k">"doubled"</span>: false,              <span class="c">// 是否看过视频翻倍</span>
+  <span class="k">"double_pending"</span>: false,       <span class="c">// 是否仍待翻倍补发（命中且未翻倍、翻倍窗口未关闭则为 true；客户端据此决定是否展示"看视频×2"）</span>
 }</pre>
   <p>事务：幂等（同 round 仅一次）；若 hit 则 <code>+rewardBeans</code> 入 <code>bean_ledger(type=settle_win)</code>、<code>+cards</code> 入 <code>point_ledger</code>；写 <code>status=settled</code>；释放 <code>game_lock:{uid}</code>。响应返回 <code>roundCards</code>（本局获得）/ <code>totalCards</code>（总余额）。失败重连可经 <code>/game/round</code> 重查重放。</p>
   <div class="card ok">客户端「再来一局」必须等本局 <code>settle</code> 成功（释放锁）后再 <code>open</code>；正常并发 <code>open</code> 将收到 <code>40903 game_locked</code>。<b>game_lock 设 TTL（如 30min）</b>：超时未 settle 自动置 <code>round.status=aborted</code> 并释放锁、回滚 open 锁定的 bet（写 <code>bean_ledger(type=open_refund)</code>），防崩溃死锁。</div>
@@ -292,6 +293,7 @@ Response: {
   <span class="k">"rewardBeans"</span>: 120,
   <span class="k">"cards"</span>: 3,
   <span class="k">"doubled"</span>: false,
+  <span class="k">"double_pending"</span>: false,       <span class="c">// 同 settle：命中且未翻倍、窗口未关闭则为 true</span>
   <span class="k">"settleDone"</span>: true                <span class="c">// 是否已入账（true 则客户端直接展示结果，不重复 settle）</span>
 }</pre>
   <div class="card">恢复策略：<code>settled</code> → 直接展示结果（幂等，无需再 settle）；<code>launched</code> → 客户端播放落点演出后调 <code>settle</code>；<code>bet_locked</code> 且未超时 → 续播拉杆演出后调 <code>launch</code>；<code>bet_locked</code> 且已超时/aborted → 资产已回滚，引导用户重新 <code>open</code>。所有路径均不丢资产、不重复发奖。</div>
@@ -325,7 +327,7 @@ Response: {
   <span class="k">"balance"</span>: 265
 }</pre>
   <div class="card"><b>集成形态说明：</b>本接口为「发奖逻辑抽象入口」。真实微信流量主 / 穿山甲为 <b>平台服务端 → 我方服务端</b> 的 server-to-server 回调（架构 §11.2），由 AdModule 验真平台签名后<b>内部调用同一入账逻辑</b>；客户端仅负责播放广告并（可选）在收到平台成功信号后通知本接口触发补发。无论哪种形态，发奖一律以 server verify 通过为前提。</div>
-  <div class="card warn"><b>翻倍时序：</b>命中后点"看视频 ×2"→ 播广告 → 平台回调本接口 → 将本局 <code>rewardBeans×=2, doubled=true</code>（幂等，仅限 hit 且未翻倍）。<b>若翻倍回调发生在 settle 之后</b>，补一次入账事务（同 roundId 幂等累加），客户端补播额外 N 颗（PRD 5.3 / 架构 §9.3）。<b>客户端须以 callback 成功返回的最新 <code>doubled/balance/rewardBeans</code> 刷新结果区</b>——settle 旧响应（doubled=false）仅作兜底，不可作为终态。</div>
+  <div class="card warn"><b>翻倍时序：</b>命中后点"看视频 ×2"→ 播广告 → 平台回调本接口 → 将本局 <code>rewardBeans×=2, doubled=true</code>（幂等，仅限 hit 且未翻倍）。<b>若翻倍回调发生在 settle 之后</b>，补一次入账事务（同 roundId 幂等累加），客户端补播额外 N 颗（PRD 5.3 / 架构 §9.3）。<b>客户端须以 callback 成功返回的最新 <code>doubled/balance/rewardBeans</code> 刷新结果区</b>——settle 旧响应（doubled=false）仅作兜底，不可作为终态。<b>[P1-11] settle 响应新增 <code>double_pending: bool</code> 作为终态权威信号：为 true 时须等待 /ad/callback 补发后再定稿展示，消除"是否待补发"的歧义。</b></div>
 </section>
 
 <!-- 7 -->

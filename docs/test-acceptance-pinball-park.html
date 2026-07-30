@@ -153,7 +153,7 @@
   <tr><td>SEC-06</td><td>广告回调伪造</td><td>伪造「看完广告」直接领珠 → 必须经平台 server-to-server 回调验真（adModule 验签）才发奖</td><td><span class="tag p0">P0</span></td></tr>
   <tr><td>SEC-07</td><td>领珠频控绕过</td><td>尝试第 7 次领珠 → 拒绝；客户端改本地时钟无效（以服务端日期为准）</td><td><span class="tag p1">P1</span></td></tr>
   <tr><td>SEC-08</td><td>并发双 settle 刷奖</td><td>同 roundId 并发 settle → 仅一次入账（状态机去重）</td><td><span class="tag p0">P0</span></td></tr>
-  <tr><td>SEC-09</td><td>deviceSecret 泄露面</td><td>token 刷新不影响 deviceSecret；签名始终用同一 deviceSecret；传输仅 HTTPS</td><td><span class="tag p2">P2</span></td></tr>
+  <tr><td>SEC-09</td><td>deviceSecret 泄露面</td><td>token 刷新不影响 deviceSecret；签名始终用同一 deviceSecret；传输仅 HTTPS；[P1-9] 补充<b>密钥定期轮换</b>、<b>deviceFp 设备绑定</b>、<b>异常吊销</b>与泄露即时作废的应急响应（40102 后重新登录换密）；存储仅限系统安全区</td><td><span class="tag p1">P1</span></td></tr>
 </table>
 <div class="card bad">价值安全红线：任何「弹珠 / 积分卡 / 广告发奖」的权威值<b>必须</b>来自服务端。客户端仅负责演出与上报，不得参与判定。SEC-03/04/06 为高危用例，门禁一票否决。</div>
 
@@ -174,7 +174,7 @@
 <h2 class="sec"><span class="num">7</span>合规与内容安全</h2>
 <table>
   <tr><th>用例</th><th>项</th><th>预期</th><th>级别</th></tr>
-  <tr><td>CMP-01</td><td>概率公示常驻</td><td>大厅金刚区 + 设置页可一键查看 6 档倍率及各自出现概率（取自数值 §1.2 权重）；不可移除或深藏</td><td><span class="tag p0">P0</span></td></tr>
+  <tr><td>CMP-01</td><td>概率公示常驻</td><td>大厅金刚区 + 设置页可一键查看 6 档倍率、各自出现概率（权重）、<b>综合返奖率 RTP（0.90）</b>与<b>各档命中概率</b>（取自数值 §1.2）；不可移除或深藏</td><td><span class="tag p0">P0</span></td></tr>
   <tr><td>CMP-02</td><td>未成年提示</td><td>启动 / 设置页存在未成年防沉迷提示与时段限制入口</td><td><span class="tag p0">P0</span></td></tr>
   <tr><td>CMP-03</td><td>广告频控提示</td><td>领珠每日 6 次、翻倍触发有频控与剩余次数提示；不诱导过度观看</td><td><span class="tag p1">P1</span></td></tr>
   <tr><td>CMP-04</td><td>隐私与权限</td><td>仅申请必要权限；隐私政策链接可达；deviceSecret 不落不安全存储</td><td><span class="tag p2">P2</span></td></tr>

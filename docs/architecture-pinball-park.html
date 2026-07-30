@@ -366,7 +366,7 @@
     <table>
       <tr><th style="width:24%">Package（业务域）</th><th>核心职责</th><th>对外接口（概览）</th></tr>
       <tr><td><code>auth</code></td><td>微信/手机号登录、跨端统一 uid、游客兜底、token 签发</td><td>login / token/refresh</td></tr>
-      <tr><td><code><b>game</b></code></td><td><b>开局 / 加注锁 / 拉杆判定 / 结算入账 / 翻倍</b>——核心价值判定</td><td>open / bet / launch / settle / double</td></tr>
+      <tr><td><code><b>game</b></code></td><td><b>开局 / 加注锁 / 拉杆判定 / 结算入账 / 翻倍</b>——核心价值判定</td><td>open / bet / launch / settle（<b>翻倍非独立对外接口</b>，由 <code>/ad/callback</code> 内部处理，见 §9.3）</td></tr>
       <tr><td><code>asset</code></td><td>弹珠账本、积分账本、流水；事务与幂等</td><td>内部服务 + 查询</td></tr>
       <tr><td><code>exchange</code></td><td>商城列表、兑换下单、风控后扣卡、第三方履约、订单状态机</td><td>list / create / status</td></tr>
       <tr><td><code>ad</code></td><td>广告场景频控、回调验真、发奖</td><td>reward / callback</td></tr>
