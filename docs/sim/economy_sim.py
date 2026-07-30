@@ -13,7 +13,7 @@
     卡数 = min(CARD_CAP, R // CARD_THRESHOLD); R < 阈值则 0 张.
 - 兑换所需卡数 K (可配置): 实物奖品单位成本须 <= K x (广告收益/卡数)
 - 每日免费珠供给 = 登录 login + 领珠视频 max_free_videos x video_beads
-- 翻倍视频: 命中后玩家以 p_double 概率看视频翻倍, 既是收益事件也膨胀珠子
+- 翻倍视频: 命中后玩家以 p_double 概率看视频翻倍, 既是收益事件也膨胀弹珠
 
 [评审修订 v2 — 2026-07-29]
 原脚本存在评审 P0-1/P0-2/P1-6 缺陷, 本次修订:
@@ -53,6 +53,13 @@ def roll_mult():
     return 2
 
 
+def cards_for_reward(reward):
+    """发卡公式 (数值文档 §1.3): R >= 40 才发卡, 卡数 = min(5, floor(R/40))."""
+    if reward < CARD_THRESHOLD:
+        return 0
+    return int(min(CARD_CAP, reward // CARD_THRESHOLD))
+
+
 def simulate_user_lifecycle(rtp, bet, p_double, eCPM,
                             max_free_videos=6, login=30, video_beads=88,
                             max_games_per_day=300,
@@ -62,7 +69,7 @@ def simulate_user_lifecycle(rtp, bet, p_double, eCPM,
                             days=30, seed=None):
     """
     模拟一个用户 days 天的生命周期, 返回稳态日均指标元组:
-    (游戏局数/日, 视频次数/日, 珠子余额日均(无意义, 占位), 卡/日, 广告收益/日, 发卡触发/日)
+    (游戏局数/日, 视频次数/日, 弹珠余额日均(无意义, 占位), 卡/日, 广告收益/日, 发卡触发/日)
     """
     if seed is not None:
         random.seed(seed)
@@ -77,13 +84,13 @@ def simulate_user_lifecycle(rtp, bet, p_double, eCPM,
         cards_today = 0
         card_trig_today = 0
         while games_today < max_games_per_day:
-            # 珠子不足 -> 看领珠视频 (受 领珠上限 与 每日总视频上限 双重约束)
+            # 弹珠不足 -> 看领珠视频 (受 领珠上限 与 每日总视频上限 双重约束)
             if beads < 5:
                 if videos < min(max_free_videos, daily_video_cap):
                     beads += video_beads
                     videos += 1
                     continue
-                break  # 额度用尽且珠子不足, 当日结束
+                break  # 额度用尽且弹珠不足, 当日结束
             invest = min(bet, beads)
             if invest < 5:
                 break
@@ -101,8 +108,9 @@ def simulate_user_lifecycle(rtp, bet, p_double, eCPM,
                     reward *= 2
                     videos += 1
                 beads += reward
-                if reward >= CARD_THRESHOLD:
-                    cards_today += min(CARD_CAP, reward // CARD_THRESHOLD)
+                gained = cards_for_reward(reward)
+                if gained:
+                    cards_today += gained
                     card_trig_today += 1
             # 未命中: 投入沉没
 
