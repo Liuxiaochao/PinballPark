@@ -40,3 +40,4 @@
 条目格式：`- YYYY-MM-DD | 触发原因 | 改动摘要 | 涉及文件`
 
 - 2026-07-30 | 工作流落地 | 建立 AGENTS/INDEX/功能卡/数值测试/SKILL 三层体系 | AGENTS.md, docs/INDEX.md, docs/features/*, tests/*, .codebuddy/skills/*
+- 2026-07-30 | 验收演练 | 全链路红绿演练(×32→×30变红→还原全绿)与矛盾发现演练(功能卡25 vs 规范/测试20, doc-sync 判定回修功能卡)通过, 工作流验收完成 | AGENTS.md
