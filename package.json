@@ -1,0 +1,12 @@
+{
+  "name": "pinball-park",
+  "version": "0.1.0",
+  "type": "3d",
+  "uuid": "b3a1f2c4-7e9d-4c6a-8b15-2f0d4e6a9c11",
+  "creator": {
+    "version": "3.8.4"
+  },
+  "description": "弹珠乐园 v1 —— 大厅 + 核心对局闭环（Cocos Creator 3.8 + TypeScript）",
+  "dependencies": {},
+  "devDependencies": {}
+}
