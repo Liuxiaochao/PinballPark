@@ -13,7 +13,7 @@
 - 发卡公式：R ≥ 40 才发卡，卡数 = min(5, floor(R/40))；R < 40 得 0 张（来源 §1.3）
 - 1 张积分卡 = 10 积分（来源 §1.3，沿用 PRD）
 - K 档位：{5, 20, 50, 80, 120}（来源 §3.2 / PRD §7.1）
-- 权威实现：`docs/sim/economy_sim.py::cards_for_reward()`
+- 权威实现：`docs/numeric/sim/economy_sim.py::cards_for_reward()`
 
 ## 已知问题 / 决策记录
 

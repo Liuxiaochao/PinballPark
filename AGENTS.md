@@ -1,43 +1,131 @@
-# AGENTS.md · 弹珠乐园 AI 工作规范
+# AGENTS.md · 弹珠乐园 — 游戏开发入口
 
-> 任何 AI 接手本项目，先读完本文件（约 2 分钟），再开始任务。
+> 这是微信小游戏「弹珠乐园」的根文档。不管你是人还是 AI，接手前花 2 分钟看完它。
 
-- **项目**：微信小游戏「弹珠乐园」——弹珠机玩法 + 广告变现 + 积分卡兑实物，纯文档与数值先行。
-- **当前阶段**：`文档期`（此字段仅可由人确认后修改；切换为「编码期」时按 `tests/README.md` 的切换规则启用代码 TDD）
+## 一句话说清这个项目
 
-## 30 秒索引表
+**弹珠乐园** = 弹珠机玩法 × 广告变现 × 积分卡兑实物。服务器控制概率（RTP 反解），客户端做弹珠动画。纯微信小游戏生态，首发工具链是 HTML/CSS/JS。
 
-| 我要做的事 | 先读 | 用哪个 SKILL |
+## 项目真实状态（诚实版）
+
+| 领域 | 状态 | 说明 |
 |---|---|---|
-| 了解项目全貌 | `docs/INDEX.md` → PRD | — |
-| 新增/修改任何功能或玩法规则 | 对应 `docs/features/F-xxx` 卡 | feature-dev |
-| 改任何数值（倍率/RTP/发卡/频控…） | 数值文档 + F-xxx 卡 + `tests/numeric/` | feature-dev + numeric-verify |
-| 验证数值改动是否破坏经济 | `docs/sim/economy_sim.py` | numeric-verify |
-| 发现文档之间说法矛盾 | `docs/INDEX.md` 权威层级 | doc-sync |
-| 改 UI/视觉 | ui-ux 文档 + 机台视觉稿 | feature-dev |
-| 查 API 契约 | api 文档 | — |
+| 数值模型与仿真 | ✅ 已完成 | RTP 反解法、6 档倍率、发卡公式、K 分层、蒙特卡洛仿真 |
+| 经济生命线验证 | ⚠️ 有 bug | 引入 20 次/日视频上限后重度场景破防，需调参 |
+| 设计文档（PRD/数值/架构/API/UI）| ✅ 已完成 | 10 份 HTML 源头规范 |
+| 功能卡片（F-001～F-005） | ✅ 已完成 | 倍率/RTP/发卡/投注/频控，挂接数值测试 |
+| 数值测试（pytest） | ✅ 全绿 | 13 条断言，`pytest tests/numeric -q` |
+| **客户端代码** | ❌ 未开始 | 一行前端代码都没有 |
+| **美术资源** | ❌ 未开始 | 零素材、零切图、零尺寸规范 |
+| **音效** | ❌ 未开始 | 零 BGM、零 SFX、零振动反馈 |
+| **上手引导** | ❌ 未开始 | 仅有数值层新手保护（前 15 局 RTP=1.5），无引导流程 |
+| **社交/裂变** | ❌ 未开始 | 微信小游戏最核心的分享/排行榜/组队，全空 |
+| **运营活动** | ❌ 未开始 | 无签到、无节日活动、无限时挑战 |
 
-## 工作守则
+**当前优先级应该是：跑通可玩原型 → 补齐美术/音效 → 接入微信生态 → 修经济 bug → 运营体系。**
 
-1. **先索引后动手**：任何改动前查 `docs/INDEX.md` 找到权威文档；找不到对应文档的需求，先建功能卡再干活。
-2. **数值必过测试**：涉及数值的改动，必须走「先改测试（红）→ 再改文档/仿真（绿）」，统一命令 `pytest tests/numeric -q`。
-3. **矛盾即停**：发现文档间矛盾 → 停下 → 触发 doc-sync SKILL → 先修文档再继续原任务。
-4. **HTML 是源头**：`docs/*.html` 的实质性变更（数值/规则/玩法/流程）需人确认；错别字与样式修正除外。
-5. **收尾自检**：任务结束前检查——本次改动是否触碰 INDEX 所列文档？触碰了就核对同步（功能卡/测试/INDEX 三处）。
-6. **留痕**：凡修改了规范类文件（本文件/INDEX/功能卡/测试基线），在下方变更日志追加一行。
+## 这项目在文档上做了什么（以及为什么）
 
-## 文档分层与权威顺序
+之前有人建了一套三层文档体系（源头 HTML → 功能卡片 → 数值测试），外加 3 个 SKILL 来管理 AI 工作流。这套体系**作为 AI 流程管理是合格的**，但作为**游戏开发的文档根入口**是错的，因为：
 
-冲突时权威顺序：**HTML 源头规范 > 功能卡 > 测试**（例外：测试挂的是已人工确认的新数值时，以测试为准回改文档）。
+1. 它回答的是"AI 该读哪份文档"，而不是"这个游戏怎么做"
+2. 游戏开发最关键的领域（美术/音效/上手/社交/运营）完全缺失
+3. 3 个 SKILL + 计划文档 + 设计规范文档 = 流程比产品还重
+4. 3681 行文档 vs 185 行可执行代码（仿真），比例完全倒挂
 
-- `docs/*.html`：设计源头，只读格式，实质变更需人确认
-- `docs/features/F-xxx-*.md`：功能细节卡，AI 可自主维护；编号永不复用，下一可用编号见 `docs/INDEX.md` 顶部
-- `tests/numeric/`：数值结论的可执行固化；测试 docstring 标注 `覆盖: F-xxx`
-- `docs/INDEX.md`：地图；文档增删改名必须同步
+**这些东西我不删，它们的工作成果（数值测试、功能卡片、文档索引）本身有价值。但必须把它们放到正确的位置——工具层，不是入口层。**
+
+## 开发者快速索引（面向人）
+
+| 你想做什么 | 去哪看 |
+|---|---|
+| 搞清楚游戏怎么玩 | `docs/design/PRD-pinball-park.html` |
+| 查数值参数（倍率/RTP/发卡/经济） | `docs/numeric/numerical-design-pinball-park.html` + `docs/numeric/sim/economy_sim.py` |
+| 看技术架构 | `docs/tech/architecture-pinball-park.html` |
+| 调 API | `docs/tech/api-pinball-park.html` |
+| 设计 UI | `docs/ui/ui-ux-pinball-park.html` + `docs/ui/ui-game-machine-mockup.html` |
+| 改数值后验证经济 | `pytest tests/numeric -q` + `python3 docs/numeric/sim/economy_sim.py` |
+| 改功能细节 | `docs/features/F-xxx-*.md`（功能卡片，AI 可改）|
+| 找功能编号 | `docs/INDEX.md` 顶部"下一可用功能编号" |
+| 检查文档一致性 | `docs/INDEX.md` 权威层级说明 |
+| 看运营方案 | `docs/ops/operations-pinball-park.html` |
+| 查测试验收标准 | `docs/qa/test-acceptance-pinball-park.html` |
+| 查文档管理规则 | `docs/RULES.md` |
+
+**数值改动必须遵守的最简规则：**
+1. 改数值 → 先改 `tests/numeric/` 里的断言（让它红）
+2. 再改文档和仿真引擎参数（让它绿）
+3. `pytest tests/numeric -q` 全绿通过 → 跑 `python3 docs/numeric/sim/economy_sim.py` 看结论
+
+## 文档分类管理规则
+
+`docs/` 不接受新文件平铺在根目录。所有文档按功能放入对应子目录：
+
+| 分类 | 目录 | 放什么 | 现有文件 |
+|---|---|---|---|
+| 游戏设计 | `design/` | PRD、GDD、玩法概览 | `PRD-pinball-park.html`, `pinball-park-outline.html` |
+| 数值与经济 | `numeric/` | 数值设计文档、仿真引擎 | `numerical-design-pinball-park.html`, `sim/economy_sim.py` |
+| 技术架构 | `tech/` | 架构图、API 契约 | `architecture-pinball-park.html`, `api-pinball-park.html` |
+| UI/UX | `ui/` | UI 规范、机台视觉稿 | `ui-ux-pinball-park.html`, `ui-game-machine-mockup.html` |
+| 运营 | `ops/` | 上线方案、运营计划 | `operations-pinball-park.html` |
+| 测试验收 | `qa/` | 测试策略、验收标准 | `test-acceptance-pinball-park.html` |
+| 评审审计 | `reviews/` | 评审报告、审查结果 | `review-pinball-park-2026-07-29.html`, `review-doc-audit-2026-07-30.html` |
+| 功能卡片 | `features/` | F-xxx 细节卡 | `_TEMPLATE.md`, `F-001` ~ `F-005` |
+
+### 四条铁律
+
+1. **新文件必须入分类目录**——根目录下只允许 `INDEX.md`、`AGENTS.md`（引用）、`RULES.md` 这三个管理文件
+2. **命名规范**：全小写英文短横线，不加项目名前缀。例如`retention-model.md`不叫 `pinball-park-retention-model.md`
+3. **新增必有登记**——先在 `docs/RULES.md` 记录日期、文件名、分类、用途，再同步更新 `docs/INDEX.md` 映射表
+4. **跨分类引用**——功能卡「上游规范」字段写文档名即可，路径统一在 INDEX.md 查；实在需要路径的，相对于项目根目录写
+
+### 本次迁移记录
+
+| 旧路径 | 新路径 |
+|---|---|
+| `docs/sim/economy_sim.py` | `docs/numeric/sim/economy_sim.py` |
+| `docs/*.html`（10 份） | `docs/{design,numeric,tech,ui,ops,qa}/` |
+| `docs/review-doc-audit-2026-07-30.html` | `docs/reviews/` |
+
+`docs/superpowers/` 保留不动。`docs/INDEX.md` 和 `docs/RULES.md` 为根级管理文件。
+
+## 游戏开发特别提醒
+
+### 🎨 美术（缺失）
+- 需要：机台背景、弹珠、钉板/障碍物、LED 跑马灯、UI 图标、积分卡视觉、loading/结果页
+- 微信小游戏包体限制 4MB（含代码），美术资源必须精打细算
+
+### 🎵 音效（缺失）
+- 需要：弹珠碰撞、中奖音、翻倍确认、卡掉落、按钮反馈
+- 微信小游戏音频 API 有限，建议用 Web Audio 生成 SFX（最小化资源加载）
+
+### 📱 微信生态（缺失）
+- 必须接入：wx.shareAppMessage（分享）、wx.createLeaderboard（排行榜）、wx.shareMessageToFriend（送心）
+- 推荐利用：订阅消息模板（通知开奖）、客服消息（兑奖咨询）
+
+### 🔄 留存与运营（缺失）
+- 设计目标：次日留存 > 40%、7 日 > 20%（微信小游戏基准线）
+- 机制设计：签到体系、离线收益、好友互助、限时挑战
+- 运营节奏：上线前准备 3 套活动模板（节日/周末/新手）
+
+## 参考：旧 SKILL 文件的使用时机
+
+项目下面有 `.codebuddy/skills/` 目录（3 个 SKILL）。日常开发看 `AGENTS.md` 和 `RULES.md` 就够了，但当需要详细 SOP 时：
+
+- `feature-dev/SKILL.md` — 完整的功能开发七步流程（AGENTS.md 只精简为 3 条）
+- `numeric-verify/SKILL.md` — 数值验收的完整判据和结论模板
+- `doc-sync/SKILL.md` — 文档三层一致性比对细则
+
+上述 SKILL 的「自发调整闭环」段统一收在 `docs/RULES.md § 自发调整闭环`，三处同步。
+
+`docs/superpowers/` 下的 spec 和 plan 是之前工作流实施时的设计文档，已完成。保留不动。
 
 ## 变更日志
 
-条目格式：`- YYYY-MM-DD | 触发原因 | 改动摘要 | 涉及文件`
 
-- 2026-07-30 | 工作流落地 | 建立 AGENTS/INDEX/功能卡/数值测试/SKILL 三层体系 | AGENTS.md, docs/INDEX.md, docs/features/*, tests/*, .codebuddy/skills/*
-- 2026-07-30 | 验收演练 | 全链路红绿演练(×32→×30变红→还原全绿)与矛盾发现演练(功能卡25 vs 规范/测试20, doc-sync 判定回修功能卡)通过, 工作流验收完成 | AGENTS.md
+
+- 2026-07-30 | 文档结构化 | 所有文档按功能分类归入子目录，新增 RULES.md 管理规范，更新所有路径引用 | AGENTS.md, docs/RULES.md, docs/INDEX.md, docs/design/*, docs/numeric/*, docs/tech/*, docs/ui/*, docs/ops/*, docs/qa/*, docs/reviews/*, tests/conftest.py, tests/README.md, .codebuddy/skills/*
+
+格式：`- YYYY-MM-DD | 触发原因 | 改动摘要 | 涉及文件`
+- 2026-07-30 | 文档审查 | AGENTS/INDEX 重写为游戏开发导向，新增待补领域/项目真实状态/经济问题记录 | AGENTS.md, docs/INDEX.md, docs/features/_TEMPLATE.md, .codebuddy/rules/project.md, docs/review-doc-audit-*.html
+- 2026-07-30 | 逻辑审查 | 修复 7 处逻辑漏洞/3 处表达问题：SKILL 使用说明/自发调整闭环合并/日志模板/路径遗漏 | AGENTS.md, docs/RULES.md, .codebuddy/skills/*/SKILL.md, docs/features/_TEMPLATE.md, docs/INDEX.md

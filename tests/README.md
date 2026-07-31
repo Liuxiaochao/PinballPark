@@ -5,7 +5,7 @@
 ## 当前阶段：文档期
 
 - `tests/numeric/` 存放数值断言测试：把设计文档（HTML）中的关键数值结论转成 pytest 断言。
-- 仿真引擎为 `docs/sim/economy_sim.py`，由 `tests/conftest.py` 注入导入路径，测试直接 `import economy_sim`。
+- 仿真引擎为 `docs/numeric/sim/economy_sim.py`，由 `tests/conftest.py` 注入导入路径，测试直接 `import economy_sim`。
 - **文档期 TDD 循环**：要改数值 → 先改测试使其反映新数值（跑一次确认红）→ 再改文档与 `economy_sim.py` 参数（跑一次确认绿）→ 触发 numeric-verify SKILL 出验收报告。
 - 每个测试文件 docstring 首行标注 `覆盖: F-xxx`（对应 `docs/features/` 功能卡），功能卡的「关联测试」字段回指测试路径，双向可查。
 

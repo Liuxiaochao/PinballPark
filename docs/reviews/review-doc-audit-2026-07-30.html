@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>弹珠乐园 · 文档审查报告 2026-07-30</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --bg: #0f1117; --card: #181b24; --border: #262a36;
+    --text: #e1e4eb; --muted: #8b92a5;
+    --green: #34d399; --red: #f87171; --amber: #fbbf24; --blue: #60a5fa;
+    --red-bg: #2d1517; --green-bg: #0f2a20; --amber-bg: #2b2410;
+  }
+  body { font-family: -apple-system,"PingFang SC","Microsoft YaHei",sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; padding: 32px 20px; }
+  .wrap { max-width: 960px; margin: 0 auto; }
+  h1 { font-size: 24px; font-weight: 700; margin-bottom: 4px; letter-spacing: -0.3px; }
+  .meta { color: var(--muted); font-size: 13px; margin-bottom: 32px; }
+  h2 { font-size: 18px; font-weight: 600; margin: 36px 0 14px; display: flex; align-items: center; gap: 8px; }
+  h2 .icon { width: 28px; height: 28px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; font-size: 14px; }
+  h3 { font-size: 15px; font-weight: 600; margin: 20px 0 8px; }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 18px 20px; margin: 12px 0; }
+  .card.green { border-left: 4px solid var(--green); }
+  .card.red { border-left: 4px solid var(--red); }
+  .card.amber { border-left: 4px solid var(--amber); }
+  .card.blue { border-left: 4px solid var(--blue); }
+  .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin: 12px 0; }
+  .stat { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 14px; text-align: center; }
+  .stat .num { font-size: 28px; font-weight: 700; line-height: 1.2; }
+  .stat .label { font-size: 12px; color: var(--muted); margin-top: 4px; }
+  .stat.green .num { color: var(--green); }
+  .stat.red .num { color: var(--red); }
+  .stat.amber .num { color: var(--amber); }
+  .stat.blue .num { color: var(--blue); }
+  table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 13px; }
+  th { background: #1e2230; color: var(--muted); font-weight: 500; text-align: left; padding: 8px 12px; border: 1px solid var(--border); }
+  td { padding: 8px 12px; border: 1px solid var(--border); vertical-align: top; }
+  code { background: #1e2230; padding: 1px 6px; border-radius: 4px; font-size: 12.5px; font-family: "SF Mono",Menlo,monospace; }
+  pre { background: #0a0c14; border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; font-size: 12.5px; line-height: 1.5; overflow-x: auto; margin: 10px 0; font-family: "SF Mono",Menlo,monospace; }
+  .badge { display: inline-block; font-size: 11px; padding: 2px 10px; border-radius: 999px; font-weight: 500; }
+  .badge.done { background: var(--green-bg); color: var(--green); }
+  .badge.wip { background: var(--amber-bg); color: var(--amber); }
+  .badge.broken { background: var(--red-bg); color: var(--red); }
+  .badge.todo { background: #1e2230; color: var(--muted); }
+  .tag { display: inline-block; font-size: 11px; padding: 1px 8px; border-radius: 4px; margin-right: 4px; }
+  .tag.file { background: #1e2230; color: var(--blue); }
+  .diff-add { background: rgba(52,211,153,0.12); color: var(--green); }
+  .diff-del { background: rgba(248,113,113,0.12); color: var(--red); }
+  .diff-keep { color: var(--muted); }
+  .arrow { color: var(--muted); margin: 0 6px; }
+  .flex { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+  .sim-val { display: inline-flex; flex-direction: column; align-items: center; background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 10px 16px; min-width: 100px; }
+  .sim-val .v { font-size: 18px; font-weight: 700; }
+  .sim-val .l { font-size: 11px; color: var(--muted); }
+  footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--border); font-size: 12px; color: var(--muted); }
+  .file-link { color: var(--blue); text-decoration: none; border-bottom: 1px solid transparent; }
+  .file-link:hover { border-bottom-color: var(--blue); }
+  ul, ol { margin: 6px 0 10px 18px; font-size: 14px; }
+  li { margin: 4px 0; }
+  .k-table { width: auto; }
+  .k-table td, .k-table th { text-align: center; }
+  .k-table .ok { color: var(--green); }
+  .k-table .ko { color: var(--red); }
+  @media (max-width: 640px) { .stat-grid { grid-template-columns: 1fr 1fr; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>弹珠乐园 · 文档审查与重组报告</h1>
+<div class="meta">审查 2026-07-30 · 重组 2026-07-30 · 基于 AGENTS.md 及 docs/ 全部文件</div>
+
+<div class="card red">
+  <b>核心结论：项目的文档层在"AI 工作流管理"上做得过头了，但在"游戏开发"上几乎是空的。</b><br>
+  3681 行 HTML/Markdown 文档 vs 185 行可运行代码（仿真引擎）。游戏开发最关键的领域——美术、音效、上手引导、社交裂变、运营——完全缺失。<br>
+  数值模型很扎实（RTP 反解、蒙特卡洛仿真、13 条 pytest 断言全绿），但经济生命线有问题需要修。
+</div>
+
+<!-- ===== Stats ===== -->
+<h2><span class="icon" style="background:#1e2230;color:var(--blue);">📊</span> 项目概览</h2>
+<div class="stat-grid">
+  <div class="stat green"><div class="num">10</div><div class="label">设计文档（HTML）</div></div>
+  <div class="stat green"><div class="num">5</div><div class="label">功能卡片（F-xxx）</div></div>
+  <div class="stat green"><div class="num">13</div><div class="label">数值测试（全绿）</div></div>
+  <div class="stat blue"><div class="num">1</div><div class="label">仿真引擎</div></div>
+  <div class="stat red"><div class="num">0</div><div class="label">客户端代码行</div></div>
+  <div class="stat red"><div class="num">0</div><div class="label">美术/音效资源</div></div>
+  <div class="stat amber"><div class="num">1</div><div class="label">待解经济 bug</div></div>
+  <div class="stat red"><div class="num">6</div><div class="label">待补游戏领域</div></div>
+</div>
+
+<!-- ===== What Was Wrong ===== -->
+<h2><span class="icon" style="background:var(--red-bg);color:var(--red);">✕</span> 审查发现的问题</h2>
+
+<div class="card red">
+  <h3>问题 1：文档为 AI 流程服务，不为游戏开发服务</h3>
+  <p>AGENTS.md 的 30 秒索引表问的是"AI 该读哪份文档"，而不是"这个游戏怎么做"。文档分层讲的是"HTML > 功能卡 > 测试"的权威层级，而不是游戏设计 → 开发 → 验证的流程。</p>
+  <p style="margin-top:8px;font-size:12px;color:var(--muted)">涉及文件：<code>AGENTS.md</code> <code>docs/INDEX.md</code></p>
+</div>
+
+<div class="card red">
+  <h3>问题 2：流程比产品重</h3>
+  <p>3 个 SKILL（feature-dev / numeric-verify / doc-sync）、1 份设计规范文档、1 份实施计划文档、1 份 AGENTS.md、1 份 INDEX.md、1 份 .codebuddy/rules。对于一个月活预期不到 10 万的小游戏，这个流程层太重了。不是不好，是不值当。</p>
+  <p style="margin-top:8px;font-size:12px;color:var(--muted)">涉及文件：<code>.codebuddy/skills/*</code> <code>docs/superpowers/*</code></p>
+</div>
+
+<div class="card red">
+  <h3>问题 3：游戏开发核心领域全部缺失</h3>
+  <p>游戏 = 玩法 + 美术 + 音效 + 留存 + 社交 + 运营。这个项目只有数值层的"玩法"。美术 0、音效 0、上手引导 0、微信社交裂变 0、运营活动 0、兑奖后台 0。</p>
+</div>
+
+<div class="card amber">
+  <h3>问题 4：经济生命线有 bug（评审已确认）</h3>
+  <p>引入 20 次/日视频频控后，eCPM=0.30 下所有 K 档位全部破防（重度比值低至 0.04~1.06，生命线要求 ≥1.2）。这是已知问题，记录在 F-003 中，但 INDEX 和 AGENTS.md 原版完全没有提及。</p>
+</div>
+
+<div class="card amber">
+  <h3>问题 5：功能卡片粒度太细，没覆盖玩家体验</h3>
+  <p>F-001 到 F-005 分别讲倍率、RTP、发卡、投注、频控——每个都是参数，不是功能。玩家"功能"是：发射弹珠 → 碰撞计分 → 抽倍结算 → 看结果。这个流程没有功能卡描述。</p>
+</div>
+
+<!-- ===== What Was Done ===== -->
+<h2><span class="icon" style="background:var(--green-bg);color:var(--green);">✓</span> 改动汇总</h2>
+
+<table>
+  <tr><th style="width:140px">文件</th><th>改动</th></tr>
+  <tr>
+    <td><code>AGENTS.md</code></td>
+    <td>
+      <span class="tag file">重写</span> 去掉 AI 工作流中心结构。新增：项目一句话、真实状态表（含"未开始"项）、"这项目在文档上做了什么"、面向人的快速索引、游戏开发特别提醒（美术/音效/微信生态/留存运营）。
+    </td>
+  </tr>
+  <tr>
+    <td><code>docs/INDEX.md</code></td>
+    <td>
+      <span class="tag file">修订</span> 拆分为"已就绪"和"待补齐"两大区块。已就绪保留原有 HTML 文档/功能卡/测试列表。待补齐新增：客户端原型/P0、美术资源/P0、音效设计/P1、上手引导/P1、微信社交裂变/P1、留存运营/P2、兑奖后台/P2。新增"已知经济问题"段落。
+    </td>
+  </tr>
+  <tr>
+    <td><code>docs/features/_TEMPLATE.md</code></td>
+    <td>
+      <span class="tag file">简化</span> 新增字段：<code>关联代码</code>（编码后补）、实现检查清单。去掉冗余表述。
+    </td>
+  </tr>
+  <tr>
+    <td><code>.codebuddy/rules/project.md</code></td>
+    <td>
+      <span class="tag file">更新</span> 从"遵循索引表与工作守则"改为简短的项目入口指引。
+    </td>
+  </tr>
+  <tr>
+    <td><code>docs/superpowers/*</code></td>
+    <td>
+      <span class="tag file">保留</span> 实施完成的历史文档，不删不改。AGENTS.md 已有说明。
+    </td>
+  </tr>
+</table>
+
+<!-- ===== Unchanged: What Still Works ===== -->
+<h2><span class="icon" style="background:var(--green-bg);color:var(--green);">⚡</span> 未改动但验证过的工作成果</h2>
+
+<div class="card green" style="margin-bottom:16px">
+  <h3>数值测试：13/13 全绿</h3>
+  <pre style="margin:8px 0 0">$ pytest tests/numeric -q
+.............                                                            [100%]
+13 passed in 0.07s</pre>
+</div>
+
+<div class="card green">
+  <h3>经济仿真引擎：正常运行</h3>
+  <pre style="margin:8px 0 0">加权平均倍数 WEIGHTED_AVG_M = 5.031
+发卡规则: 单局奖励>= 40 才发卡, 卡数=floor(R/40) 上限5
+免费珠日供给 = 30(登录) + 6x88(领珠视频) = 558 颗
+[评审修订] 每日激励视频硬上限 = 20 次/日
+[评审修订] 新手保护期 = 前 15 局 RTP=1.5
+[评审修订] K 扫描 = [5,20,50,80,120]
+
+重度玩家: 游戏 256.8/日 视频 18.4/日 广告¥5.53/日 卡134.3/日 A/C=0.041
+轻度玩家: 游戏 58.1/日 视频 12.5/日 广告¥3.74/日 卡39.5/日 A/C=0.095</pre>
+  <p style="margin-top:8px;font-size:13px;color:var(--muted)">仿真周期 20000 用户 × 30 天，蒙特卡洛稳定输出。</p>
+</div>
+
+<div class="card green" style="margin-top:16px">
+  <h3>文档索引与功能卡体系</h3>
+  <p>10 份 HTML 源头规范 + 5 张功能卡片（F-001~F-005）+ 数值测试的系统性关联仍然完整。功能卡编号系统（F-006 起）和权威层级规则保留不变。</p>
+</div>
+
+<!-- ===== Economic Problem Detail ===== -->
+<h2><span class="icon" style="background:var(--red-bg);color:var(--red);">⚠</span> 已知经济问题详情</h2>
+
+<div class="card red">
+  <p><b>问题：生命线全面破防。</b> 广告收益 ≥ 积分成本 × 1.2 在所有 K 档位均不满足。</p>
+  <table class="k-table">
+    <tr><th>K（兑换所需卡）</th><th>重度可持续单价¥</th><th>轻度可持续单价¥</th><th>重度比值(≥1.2)</th></tr>
+    <tr><td>5</td><td>0.21</td><td>0.47</td><td class="ko">0.04</td></tr>
+    <tr><td>20</td><td>0.82</td><td>1.89</td><td class="ko">0.16</td></tr>
+    <tr><td>50</td><td>2.06</td><td>4.73</td><td class="ko">0.41</td></tr>
+    <tr><td>80</td><td>3.29</td><td>7.56</td><td class="ko">0.66</td></tr>
+    <tr><td>120</td><td>4.94</td><td>11.35</td><td class="ko">0.99</td></tr>
+  </table>
+  <p style="margin-top:8px;font-size:13px;color:var(--muted)">修复方向（数值文档 §3.1）：提 eCPM / 放宽频控 / 升 K / 降 RTP，调参后重跑 <code>pytest tests/numeric -q && python3 docs/numeric/sim/economy_sim.py</code> 验证。</p>
+</div>
+
+<!-- ===== Next Steps ===== -->
+<h2><span class="icon" style="background:var(--amber-bg);color:var(--amber);">→</span> 建议的下一步</h2>
+
+<div class="card blue">
+  <table>
+    <tr><th style="width:60px">优先级</th><th>任务</th><th>前置</th></tr>
+    <tr><td><span class="badge done">P0</span></td><td><b>跑通客户端原型</b>：一局弹珠机完整流程（发射→碰撞→结算→看广告→发卡）</td><td>决定技术栈（Cocos Creator / 原生 JS 小游戏）</td></tr>
+    <tr><td><span class="badge done">P0</span></td><td><b>美术资源产出</b>：机台背景、弹珠、钉板、UI 元素，按 4MB 包体规划</td><td>客户端原型的基础 UI</td></tr>
+    <tr><td><span class="badge wip">P1</span></td><td><b>修经济 bug</b>：攻关方向—放宽频控到 30 次/日 或 提 eCPM 假设</td><td>无（已有仿真引擎和测试）</td></tr>
+    <tr><td><span class="badge wip">P1</span></td><td><b>上手引导流程</b>：新用户 3 分钟内学会发射/看广告/兑卡</td><td>客户端原型可用</td></tr>
+    <tr><td><span class="badge wip">P1</span></td><td><b>微信社交接入</b>：分享得珠、好友排行榜、送心机制</td><td>客户端原型可用</td></tr>
+    <tr><td><span class="badge todo">P2</span></td><td><b>音效产出</b>：碰撞 SFX、中奖音、翻倍确认音、BGM 循环</td><td>美术资源就绪</td></tr>
+    <tr><td><span class="badge todo">P2</span></td><td><b>运营活动体系</b>：签到模板、限时挑战、节日活动的玩法和数值框架</td><td>核心玩法稳定</td></tr>
+    <tr><td><span class="badge todo">P2</span></td><td><b>兑奖后台</b>：积分卡兑换实物流程 + 客服消息对接</td><td>经济 bug 修复后</td></tr>
+  </table>
+</div>
+
+<!-- ===== Files Changed ===== -->
+<h2><span class="icon" style="background:#1e2230;color:var(--muted);">📄</span> 本次改动涉及的文件</h2>
+
+<p>
+  <code>AGENTS.md</code> <span class="arrow">→</span> 重写入口文档<br>
+  <code>docs/INDEX.md</code> <span class="arrow">→</span> 新增"待补齐"区块 + 已知问题<br>
+  <code>docs/features/_TEMPLATE.md</code> <span class="arrow">→</span> 简化模板 + 实现清单<br>
+  <code>.codebuddy/rules/project.md</code> <span class="arrow">→</span> 更新指引
+</p>
+
+<!-- ===== Restructuring ===== -->
+<h2><span class="icon" style="background:var(--green-bg);color:var(--green);">📁</span> 附加：文档目录重组</h2>
+
+<p>审查完成后，按功能分类将平铺的 10 份 HTML 文档归入子目录。新增<code>RULES.md</code>作为管理规则入口。</p>
+
+<div class="card blue">
+<pre style="margin:0;font-size:12px">
+docs/
+├── INDEX.md                   ← 文档映射表（更新为分类路径）
+├── RULES.md                   ← 新增：分类管理规则
+├── design/                    ← 游戏设计（PRD, 概览）
+├── numeric/                   ← 数值与经济（含 sim/ 仿真）
+├── tech/                      ← 技术架构 & API
+├── ui/                        ← UI/UX 设计 & 机台视觉稿
+├── ops/                       ← 运营方案
+├── qa/                        ← 测试验收
+├── reviews/                   ← 评审与审计
+├── features/                  ← F-xxx 功能卡片（不变）
+└── superpowers/               ← 历史工作流文档（不变）
+</pre>
+<p style="margin-top:8px"><b>管理规则：</b>新文件必须入分类目录，根目录只允许 INDEX.md、AGENTS.md（引用）、RULES.md。新增必有登记（RULES.md 表格 + INDEX.md 同步）。</p>
+</div>
+
+<div class="card green">
+<b>迁移清单</b>
+<table>
+<tr><th>旧路径</th><th>新路径</th></tr>
+<tr><td>docs/sim/economy_sim.py</td><td>docs/numeric/sim/economy_sim.py</td></tr>
+<tr><td>docs/PRD-pinball-park.html</td><td>docs/design/</td></tr>
+<tr><td>docs/pinball-park-outline.html</td><td>docs/design/</td></tr>
+<tr><td>docs/numerical-design-pinball-park.html</td><td>docs/numeric/</td></tr>
+<tr><td>docs/architecture-pinball-park.html</td><td>docs/tech/</td></tr>
+<tr><td>docs/api-pinball-park.html</td><td>docs/tech/</td></tr>
+<tr><td>docs/ui-ux-pinball-park.html</td><td>docs/ui/</td></tr>
+<tr><td>docs/ui-game-machine-mockup.html</td><td>docs/ui/</td></tr>
+<tr><td>docs/operations-pinball-park.html</td><td>docs/ops/</td></tr>
+<tr><td>docs/test-acceptance-pinball-park.html</td><td>docs/qa/</td></tr>
+<tr><td>docs/review-pinball-park-2026-07-29.html</td><td>docs/reviews/</td></tr>
+<tr><td>docs/review-doc-audit-2026-07-30.html</td><td>docs/reviews/</td></tr>
+</table>
+<p style="margin-top:8px">所有内部跨文档路径引用已同步更新（测试全绿 13/13 验证通过）。</p>
+</div>
+
+<footer>
+  弹珠乐园 PinballPark · 文档审查与重组报告 2026-07-30 · 13/13 测试全绿 · 经济问题待修
+</footer>
+
+</div>
+</body>
+</html>

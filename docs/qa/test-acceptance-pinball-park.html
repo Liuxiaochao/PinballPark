@@ -124,11 +124,11 @@
   <tr><th>用例</th><th>校验项</th><th>预期</th></tr>
   <tr><td>NUM-07</td><td>发卡门槛</td><td><code>rewardBeans&lt;40 → cards=0</code>；<code>R≥40 → cards=min(5, floor(R/40))</code></td></tr>
   <tr><td>NUM-08</td><td>K 分层兑换</td><td>兑换所需卡数仅取 {5,20,50,80,120}；扣卡走事务，失败补偿退卡</td></tr>
-  <tr><td>NUM-09</td><td>经济生命线回归</td><td>重跑 <code>docs/sim/economy_sim.py</code>（v2，含每日 20 次视频频控）：当前默认参数（eCPM=0.30）下 <b>K=80 重度 A/C=0.66×、轻度 1.38×，重度破防</b>；须将 eCPM 校准至 ≥0.55（或等效组合）使重度比值 ≥1.2× 后方可判定通过（达标基准：eCPM≈0.55 时 K=80 重度≈1.21×）</td></tr>
+  <tr><td>NUM-09</td><td>经济生命线回归</td><td>重跑 <code>docs/numeric/sim/economy_sim.py</code>（v2，含每日 20 次视频频控）：当前默认参数（eCPM=0.30）下 <b>K=80 重度 A/C=0.66×、轻度 1.38×，重度破防</b>；须将 eCPM 校准至 ≥0.55（或等效组合）使重度比值 ≥1.2× 后方可判定通过（达标基准：eCPM≈0.55 时 K=80 重度≈1.21×）</td></tr>
   <tr><td>NUM-10</td><td>免费珠池</td><td>每日登录 30 + 领珠 88×6 = 558；领珠每日 ≤6 次强制限频</td></tr>
   <tr><td>NUM-11</td><td>N=1980 边界</td><td>投入 99 × ×32 时单局最大奖励 = 3168；不生成 3168 个物理刚体（演出受控，计数累加至 N）</td></tr>
 </table>
-<div class="card warn">NUM-09 是商业生命线，每次改动倍率/权重/卡规则/广告 eCPM 模型后<b>必须重跑仿真</b>回填，禁止只改表格。仿真脚本 <code>docs/sim/economy_sim.py</code> 即唯一权威回归入口。</div>
+<div class="card warn">NUM-09 是商业生命线，每次改动倍率/权重/卡规则/广告 eCPM 模型后<b>必须重跑仿真</b>回填，禁止只改表格。仿真脚本 <code>docs/numeric/sim/economy_sim.py</code> 即唯一权威回归入口。</div>
 
 <h2 class="sec"><span class="num">4</span>性能与压力测试</h2>
 <table>
@@ -158,7 +158,7 @@
 <div class="card bad">价值安全红线：任何「弹珠 / 积分卡 / 广告发奖」的权威值<b>必须</b>来自服务端。客户端仅负责演出与上报，不得参与判定。SEC-03/04/06 为高危用例，门禁一票否决。</div>
 
 <h2 class="sec"><span class="num">6</span>客户端 / 引擎渲染专项</h2>
-<p>注：当前仅为设计示意稿（<code>docs/ui-game-machine-mockup.html</code> 等 HTML）已冻结为方向 spec；本节省略「示意稿像素级」验收，聚焦<b>真实 Cocos 实现</b>须满足的几何与一致性硬指标。</p>
+<p>注：当前仅为设计示意稿（<code>../ui/ui-game-machine-mockup.html</code> 等 HTML）已冻结为方向 spec；本节省略「示意稿像素级」验收，聚焦<b>真实 Cocos 实现</b>须满足的几何与一致性硬指标。</p>
 <table>
   <tr><th>用例</th><th>项</th><th>预期（真实界面）</th></tr>
   <tr><td>UI-01</td><td>透视倾斜</td><td>机台后仰 30°（<code>perspective + rotateX(30°)</code>），板面有纵深；球沿后仰面板下落观感正确</td></tr>

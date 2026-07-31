@@ -54,7 +54,7 @@
     <tr><td style="width:90px;font-weight:600">评审对象</td><td>《弹珠乐园》M0 七份阶段文档（PRD / 数值 / 架构 / API / UI-UX / 测试验收 / 上线运营）+ 大纲 + 经济仿真脚本</td></tr>
     <tr><td style="font-weight:600">评审版本</td><td>PRD v1.0 · 数值 v1.2 · 架构/API/UI-UX/测试/运营 均 v1.0 · 大纲 v0.1</td></tr>
     <tr><td style="font-weight:600">评审日期</td><td>2026-07-29</td></tr>
-    <tr><td style="font-weight:600">评审方式</td><td>全量通读 + 跨文档一致性比对 + 仿真脚本实跑验证（<code>python3 docs/sim/economy_sim.py</code>，exit 0）</td></tr>
+    <tr><td style="font-weight:600">评审方式</td><td>全量通读 + 跨文档一致性比对 + 仿真脚本实跑验证（<code>python3 docs/numeric/sim/economy_sim.py</code>，exit 0）</td></tr>
     <tr><td style="font-weight:600">评审结论</td><td><b class="tag" style="background:#0f9d58;color:#fff">已闭环 — 全部 P0×4 / P1×9 闭环，文档定稿，可进入 M1</b></td></tr>
   </table>
 </section>
@@ -88,7 +88,7 @@
 
 <div class="finding">
   <h4><span class="p0">P0-2</span> 仿真 K 扫描范围与文档推荐阶梯不匹配（生命线结论无实证）</h4>
-  <p><b>证据：</b>脚本第 109 行 <code>for K in [3, 5, 8, 10, 15, 20, 30, 50]</code>，<b>最高仅 K=50</b>，从未运行 K=80（实物主档）/K=120（高实物档）。而数值文档 §3.2 表格与 §4.1 却给出 K=80（重度 ¥6.88、比值 1.38×）、K=120（¥10.31）的数值，并标注"数值来自 docs/sim/economy_sim.py"。</p>
+  <p><b>证据：</b>脚本第 109 行 <code>for K in [3, 5, 8, 10, 15, 20, 30, 50]</code>，<b>最高仅 K=50</b>，从未运行 K=80（实物主档）/K=120（高实物档）。而数值文档 §3.2 表格与 §4.1 却给出 K=80（重度 ¥6.88、比值 1.38×）、K=120（¥10.31）的数值，并标注"数值来自 docs/numeric/sim/economy_sim.py"。</p>
   <p><b>影响：</b>主档/高档的生命线比值（1.25×/1.38×）是<b>手工按公式 <code>K×(广告收益/卡数)</code> 外推</b>，脚本从未产出，文档"数值来自脚本"的声明与事实不符；K=80/120 的可持续性缺乏可复现证据。</p>
   <p><b>建议：</b>将脚本 K 循环改为 <code>[5,20,50,80,120]</code>（对齐 PRD §7.1 / 数值 §3.2 阶梯）并重跑，使 §3.2/§4.1 表格可由脚本直接产出；或如实标注 K=80/120 为"公式外推、待脚本覆盖"。</p>
 </div>
