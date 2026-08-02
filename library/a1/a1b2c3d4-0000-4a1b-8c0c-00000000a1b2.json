@@ -102,7 +102,7 @@
       "__type__": "cc.Vec3",
       "x": 0,
       "y": 0,
-      "z": 0
+      "z": 1000
     },
     "_lrot": {
       "__type__": "cc.Quat",
@@ -140,7 +140,7 @@
     "_fov": 45,
     "_fovAxis": 0,
     "_orthoHeight": 640,
-    "_near": 0,
+    "_near": 1,
     "_far": 2000,
     "_color": {
       "__type__": "cc.Color",
@@ -163,7 +163,7 @@
     "_shutter": 7,
     "_iso": 0,
     "_screenScale": 1,
-    "_visibility": 1108344832,
+    "_visibility": 4294967295,
     "_targetTexture": null,
     "_id": "uP7yK1dF5gL3zW8xR6nV2s"
   },

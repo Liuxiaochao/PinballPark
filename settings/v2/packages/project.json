@@ -4,6 +4,7 @@
     "designResolution": {
       "width": 720,
       "height": 1280
-    }
+    },
+    "startScene": "a1b2c3d4-0000-4a1b-8c0c-00000000a1b2"
   }
 }
