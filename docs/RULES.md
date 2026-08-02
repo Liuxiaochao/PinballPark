@@ -72,6 +72,38 @@ docs/
   3. 变更日志登记
 ```
 
+## Cocos 工程运行规范（权威版）
+
+> 精简版见 `AGENTS.md § Cocos Creator 运行与场景引用规范`。本节记录已发生过的真实踩坑与完整执行规范。
+
+### 一、场景脚本组件引用（__type__）格式
+
+Cocos Creator 场景/预制体 JSON 中，自定义脚本组件的 `__type__` 必须是该脚本 meta UUID 的压缩形式：
+
+- 算法 = Cocos `UuidUtils.compressUUID(uuid, min=false)`：保留 UUID 前 5 位十六进制，后 27 位每 3 位 hex 压成 2 个 base64 字符，共 23 字符；
+- 示例：`f0a84e37-9c03-4746-9fdf-41dea229a08b` → `f0a8443nANHRp/fQd6iKaCL`；
+- 反例（会导致 `Missing class`，组件被丢弃、界面空白）：完整 UUID、整段 base64 的 22 位串（如 `8KhON5wDR0af30Heoimgiw`）、`min=true` 的 22 位形式。
+
+执行规范：
+1. 引用脚本时禁止手工输入 `__type__`；
+2. 修改脚本 meta、场景或预制体后，运行 `python3 tools/sync_scene_script_refs.py --check`（`npm run check:cocos`）；
+3. 校验不过 → 运行不带 `--check` 的版本自动按 meta uuid 重算，再跑 `--check` 确认；
+4. 提交前 `--check` 必须全绿。
+
+### 二、运行黑屏排查（按序执行）
+
+1. 确认编辑器已打开目标场景：预览 `current-scene` 为空时 `launchScene` 解析成字面量 `current_scene`，引擎无场景可加载 → 黑屏；
+2. 删除过 `library/`/`temp/` 时，等待资源导入与脚本编译完成（首次约 1~2 分钟，asset-db 日志无 error）再预览；
+3. 浏览器控制台验证顺序：`[Main] onLoad scene=Main` → `[Main] lobby built ok` → `Success to load scene`；
+4. 构建/打包日志 `grep "Missing class"`，命中先执行 §一 的校验工具；
+5. 仍黑屏时检查相机：UI 相机位于内容前方（z=1000 看向 -Z）、`orthoHeight` = 设计高/2、`visibility` 含 UI_2D 层；Canvas 保持编辑器默认位置（不要用代码重置位置）。
+
+### 三、缓存管理
+
+- `library/`、`temp/`、`build/`、`.creator/` 均为生成物，删除后由编辑器自动重建，禁止手工编辑其中的 uuid/文件名；
+- 不要手工改这些目录里的文件来"对齐"引用；引用对齐只通过 §一 的脚本或编辑器保存场景完成；
+- 历史教训：曾有人手工把场景 `__type__` 改成错误压缩形式，以及手工"修"缓存文件，导致黑屏反复出现；一律以 `--check` 脚本结果为准。
+
 
 - [ ] `docs/INDEX.md` 已同步
 - [ ] `docs/RULES.md` 登记表（新增时）已更新

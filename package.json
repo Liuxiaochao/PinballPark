@@ -7,6 +7,10 @@
     "version": "3.8.4"
   },
   "description": "弹珠乐园 v1 —— 大厅 + 核心对局闭环（Cocos Creator 3.8 + TypeScript）",
+  "scripts": {
+    "sync:cocos": "python3 tools/sync_scene_script_refs.py",
+    "check:cocos": "python3 tools/sync_scene_script_refs.py --check"
+  },
   "dependencies": {},
   "devDependencies": {}
 }

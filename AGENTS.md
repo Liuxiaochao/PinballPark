@@ -44,6 +44,7 @@
 | 看技术架构 | `docs/tech/architecture-pinball-park.html` |
 | 调 API | `docs/tech/api-pinball-park.html` |
 | 设计 UI | `docs/ui/ui-ux-pinball-park.html` + `docs/ui/ui-game-machine-mockup.html` |
+| 场景里脚本引用 hash 对不上/黑屏 | `AGENTS.md § Cocos Creator 运行与场景引用规范` + `python3 tools/sync_scene_script_refs.py --check`（`npm run check:cocos`）；不一致时跑不带 `--check` 的版本自动按 meta uuid 重算 23 字符压缩 UUID |
 | 改数值后验证经济 | `pytest tests/numeric -q` + `python3 docs/numeric/sim/economy_sim.py` |
 | 改功能细节 | `docs/features/F-xxx-*.md`（功能卡片，AI 可改）|
 | 找功能编号 | `docs/INDEX.md` 顶部"下一可用功能编号" |
@@ -108,6 +109,23 @@
 - 机制设计：签到体系、离线收益、好友互助、限时挑战
 - 运营节奏：上线前准备 3 套活动模板（节日/周末/新手）
 
+## Cocos Creator 运行与场景引用规范（踩坑必读）
+
+> 完整执行规范见 `docs/RULES.md § Cocos 工程运行规范`，这里放精简版。
+
+### 场景脚本引用 —— 黑屏头号原因
+
+- 场景/预制体里自定义脚本组件的 `__type__` 必须是脚本 meta UUID 的 **23 字符压缩形式**（Cocos `UuidUtils.compressUUID(uuid, min=false)`：保留 UUID 前 5 位 hex，后 27 位每 3 位 hex 压成 2 个 base64 字符）。例：`f0a84e37-9c03-4746-9fdf-41dea229a08b` → `f0a8443nANHRp/fQd6iKaCL`。
+- 写完整 UUID、或整段 base64 的 22 位串（如 `8KhON5wDR0af30Heoimgiw`）都会导致反序列化报 `Missing class`，组件被丢弃 → 界面空白（黑屏）。
+- 禁止手动对齐该值：改过场景/脚本后跑 `python3 tools/sync_scene_script_refs.py --check`（`npm run check:cocos`）校验；不一致时直接跑不带 `--check` 的版本，按 meta 自动重算。
+
+### 运行黑屏排查顺序
+
+1. 编辑器里先打开目标场景再点预览（`current-scene` 为空时，预览 `launchScene` 会解析成字面量 `current_scene` → 无场景可加载 → 黑屏）。
+2. 删除过 `library/`/`temp/` 时，必须等资源导入 + 脚本编译完成（约 1~2 分钟）再运行，否则预览的是半成品。
+3. 看浏览器控制台：正常应依次出现 `[Main] onLoad scene=Main` → `[Main] lobby built ok` → `Success to load scene`；没有这些说明组件没挂上，回到上一条。
+4. 构建/打包日志 `grep Missing class`，命中先跑 §场景脚本引用 的校验脚本。
+
 ## 参考：旧 SKILL 文件的使用时机
 
 项目下面有 `.codebuddy/skills/` 目录（3 个 SKILL）。日常开发看 `AGENTS.md` 和 `RULES.md` 就够了，但当需要详细 SOP 时：
@@ -124,6 +142,7 @@
 
 
 
+- 2026-08-02 | 界面黑屏修复 + 运行规范沉淀 | 场景脚本组件 `__type__` 必须是 meta uuid 的 23 字符压缩形式（UuidUtils 规则，保留前 5 位 hex），错误 base64 写法会导致 Missing class 组件被丢弃；新增 `tools/sync_scene_script_refs.py` 自动对齐与校验；运行/黑屏排查规范写入 AGENTS.md 与 RULES.md | AGENTS.md, docs/RULES.md, assets/scenes/Main.scene, assets/scripts/Main.ts, package.json, tools/sync_scene_script_refs.py
 - 2026-07-30 | 文档结构化 | 所有文档按功能分类归入子目录，新增 RULES.md 管理规范，更新所有路径引用 | AGENTS.md, docs/RULES.md, docs/INDEX.md, docs/design/*, docs/numeric/*, docs/tech/*, docs/ui/*, docs/ops/*, docs/qa/*, docs/reviews/*, tests/conftest.py, tests/README.md, .codebuddy/skills/*
 
 格式：`- YYYY-MM-DD | 触发原因 | 改动摘要 | 涉及文件`
