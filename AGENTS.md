@@ -68,7 +68,7 @@
 | 游戏设计 | `design/` | PRD、GDD、玩法概览 | `PRD-pinball-park.html`, `pinball-park-outline.html` |
 | 数值与经济 | `numeric/` | 数值设计文档、仿真引擎 | `numerical-design-pinball-park.html`, `sim/economy_sim.py` |
 | 技术架构 | `tech/` | 架构图、API 契约 | `architecture-pinball-park.html`, `api-pinball-park.html` |
-| UI/UX | `ui/` | UI 规范、机台视觉稿 | `ui-ux-pinball-park.html`, `ui-game-machine-mockup.html` |
+| UI/UX | `ui/` | 界面实现规范、历史视觉参考 | `game-interface.html`（权威）, `ui-ux-pinball-park.html`（历史）, `ui-game-machine-mockup.html`（历史） |
 | 运营 | `ops/` | 上线方案、运营计划 | `operations-pinball-park.html` |
 | 测试验收 | `qa/` | 测试策略、验收标准 | `test-acceptance-pinball-park.html` |
 | 评审审计 | `reviews/` | 评审报告、审查结果 | `review-pinball-park-2026-07-29.html`, `review-doc-audit-2026-07-30.html` |
@@ -144,6 +144,7 @@
 
 
 - 2026-08-03 | 弹珠玩法面板界面改版 | 机台 60° 后仰透视渲染（机台独立透视相机 + HUD 正交相机双相机）、发射通道顶部圆角朝左出（圆头导向）、本局倍数 LED 面板、按住蓄力/松开发射动画、机台按游戏机风格重绘（拱门/LED/圆角出口格）；顺带修复 3 个隐藏物理 bug：① 2.x 的 onBeginContact 组件方法式回调在 3.x 不生效，需 `collider.on(Contact2DType.BEGIN_CONTACT)` 事件式注册；② `enabledContactListener` 必须设在 RigidBody2D 上（引擎读 collider.body 的开关）；③ 钉列间距 28px < 弹珠直径 32px 导致弹珠无法穿过钉阵，恢复 9 列（间距 38.75px） | AGENTS.md, assets/scripts/GameConfig.ts, assets/scripts/Main.ts, assets/scripts/PinballGame.ts, assets/scripts/BallController.ts
+- 2026-08-03 | 游戏界面文档重构 | 新增 `game-interface.html` 权威界面文档；旧 UI 文档降级为历史视觉参考；同步 INDEX/RULES/AGENTS | AGENTS.md, docs/INDEX.md, docs/RULES.md, docs/ui/game-interface.html, docs/ui/ui-ux-pinball-park.html, docs/ui/ui-game-machine-mockup.html, docs/qa/test-acceptance-pinball-park.html
 - 2026-08-02 | 界面黑屏修复 + 运行规范沉淀 | 场景脚本组件 `__type__` 必须是 meta uuid 的 23 字符压缩形式（UuidUtils 规则，保留前 5 位 hex），错误 base64 写法会导致 Missing class 组件被丢弃；新增 `tools/sync_scene_script_refs.py` 自动对齐与校验；运行/黑屏排查规范写入 AGENTS.md 与 RULES.md | AGENTS.md, docs/RULES.md, assets/scenes/Main.scene, assets/scripts/Main.ts, package.json, tools/sync_scene_script_refs.py
 - 2026-07-30 | 文档结构化 | 所有文档按功能分类归入子目录，新增 RULES.md 管理规范，更新所有路径引用 | AGENTS.md, docs/RULES.md, docs/INDEX.md, docs/design/*, docs/numeric/*, docs/tech/*, docs/ui/*, docs/ops/*, docs/qa/*, docs/reviews/*, tests/conftest.py, tests/README.md, .codebuddy/skills/*
 

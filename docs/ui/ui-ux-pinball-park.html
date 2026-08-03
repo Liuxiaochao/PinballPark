@@ -122,6 +122,7 @@
 <main>
   <h1>弹珠乐园 · UI-UX 设计文档</h1>
   <p class="subtitle">对标实体"弹珠乐园"游戏机的线上多端休闲游戏 —— 第五份阶段文档（UI-UX v1.0）</p>
+  <div class="card warn"><b>历史参考：</b>本文档已降级为视觉风格参考，当前界面实现权威见 <a href="game-interface.html">game-interface.html</a>。其中 30° 板面、加注等旧表述不作为当前实现规范。</div>
   <div class="meta">
     <span class="tag">微信小游戏优先</span><span class="tag">Cocos Creator 3.x</span><span class="tag">纯免费 + 激励视频</span><span class="tag">物理为表·结果可控</span><span class="tag">暗色游戏舞台 + 浅色应用壳</span>
   </div>
@@ -271,7 +272,7 @@
     </div>
 
     <h3>4.3 游戏局内 Game（核心）</h3>
-    <div class="card ok"><b>图层关系（来自 PRD §5.3 / 架构 §3 / §4）：</b>板面（钉板+亮灯出口+球）在<b>板面局部坐标做 2D 物理仿真</b>，渲染时施加 <b>机台后仰 30° 的真实透视倾斜（perspective + rotateX(30°)）</b>——板面有纵深、球沿后仰面板"下坡"滚动，符合真实柏青哥/老虎机机台观感（非平面 2D 旋转）；HUD 文字与拉杆/加注按钮属于<b>屏幕正向独立图层，不随板倾斜</b>；倍数数字用屏幕正向 overlay 叠加保证可读。<b>权威视觉稿见 <a href="ui-game-machine-mockup.html">ui-game-machine-mockup.html</a>（含机柜质感与倾斜对比开关）。</b></div>
+    <div class="card ok"><b>图层关系（历史参考）：</b>旧设计为板面在<b>板面局部坐标做 2D 物理仿真</b>，渲染时施加 <b>机台后仰 30°</b>；该表述已不作为当前实现规范。当前界面实现权威见 <a href="game-interface.html">game-interface.html</a>，历史视觉稿参考见 <a href="ui-game-machine-mockup.html">ui-game-machine-mockup.html</a>。</div>
     <div class="wf">
       <svg viewBox="0 0 340 460" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'PingFang SC',sans-serif">
         <rect x="0" y="0" width="340" height="460" rx="16" fill="#0E1726"/>
