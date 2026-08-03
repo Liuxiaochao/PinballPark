@@ -129,8 +129,8 @@ Cocos Creator 场景/预制体 JSON 中，自定义脚本组件的 `__type__` �
 | 2026-07-30 | economy_sim.py | numeric/sim/ | 经济数值仿真引擎（迁移自 docs/sim/） | 人工撰写 |
 | 2026-07-30 | architecture-pinball-park.html | tech/ | 技术架构（迁移自根目录） | 人工撰写 |
 | 2026-07-30 | api-pinball-park.html | tech/ | API 契约（迁移自根目录） | 人工撰写 |
-| 2026-07-30 | ui-ux-pinball-park.html | ui/ | UI-UX 设计规范（迁移自根目录） | 人工撰写 |
-| 2026-07-30 | ui-game-machine-mockup.html | ui/ | 机台视觉稿（迁移自根目录） | 人工撰写 |
+| 2026-07-30 | ui-ux-pinball-park.html | ui/ | UI-UX 设计规范（历史参考，迁移自根目录） | 人工撰写 |
+| 2026-07-30 | ui-game-machine-mockup.html | ui/ | 机台视觉稿（历史参考，迁移自根目录） | 人工撰写 |
 | 2026-07-30 | operations-pinball-park.html | ops/ | 上线与运营方案（迁移自根目录） | 人工撰写 |
 | 2026-07-30 | test-acceptance-pinball-park.html | qa/ | 测试验收标准（迁移自根目录） | 人工撰写 |
 | 2026-07-30 | review-pinball-park-2026-07-29.html | reviews/ | 阶段评审报告（迁移自根目录） | 人工撰写 |
