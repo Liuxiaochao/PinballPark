@@ -261,6 +261,8 @@
       <tr><td>涉及文件/节点</td><td>代码文件、界面节点</td></tr>
       <tr><td>优先级</td><td>P0/P1/P2</td></tr>
     </table>
+    <p class="note">优先级定义：P0 = 阻断启动/结算/账本/合规；P1 = 阻断核心体验；P2 = 视觉或体验打磨。</p>
+    <div class="card"><b>示例：</b>现象：命中后弹窗遮住机台；复现：命中落定后；期望：吐票结算带；实际：全屏遮罩；影响：体验/偏离规范；涉及：<code>PinballGame.ts</code> 结果展示节点；优先级：P1。</div>
     <h3>AI 排查流程</h3>
     <ol>
       <li>定位界面：主屏 / 抽屉 / 结算带 / 领珠 / 概率公示。</li>
@@ -276,6 +278,7 @@
     <table>
       <tr><th>文件</th><th>对应职责</th></tr>
       <tr><td>assets/scripts/Main.ts</td><td>场景入口与相机</td></tr>
+      <tr><td>assets/scripts/Lobby.ts</td><td>当前独立大厅、领珠、概率公示入口（待迁移到机台内）</td></tr>
       <tr><td>assets/scripts/PinballGame.ts</td><td>机台、状态、结果</td></tr>
       <tr><td>assets/scripts/UI.ts</td><td>UI 工厂</td></tr>
       <tr><td>assets/scripts/GameConfig.ts</td><td>界面/机台参数</td></tr>
@@ -283,7 +286,7 @@
       <tr><td>assets/scripts/ExitTag.ts</td><td>出口标签</td></tr>
       <tr><td>assets/scripts/MockBackend.ts</td><td>本地账本</td></tr>
     </table>
-    <div class="card warn"><b>已知迁移差异：</b>当前代码仍是结算弹窗、固定 1 颗、无加珠、无抽屉；这些是后续按本文档重构客户端的迁移项。</div>
+    <div class="card warn"><b>已知迁移差异：</b>当前代码仍是独立大厅、结算弹窗、固定 1 颗、无加珠、无抽屉；这些是后续按本文档重构客户端的迁移项。</div>
   </section>
 
   <section id="s11">
@@ -291,9 +294,9 @@
     <ul>
       <li>无 TBD / TODO / 占位内容。</li>
       <li>状态机、分区、交互、动效、适配无内部矛盾。</li>
-      <li>每个状态可追溯到控件和代码映射。</li>
+      <li>状态和控件规范可在第 3-6 节直接追踪；客户端状态到代码的逐项映射在实施验收阶段完成。</li>
       <li>问题模板和 AI 排查流程可直接使用。</li>
-      <li><code>docs/INDEX.md</code>、<code>docs/RULES.md</code>、<code>AGENTS.md</code> 引用已同步。</li>
+      <li>发布前：<code>docs/INDEX.md</code>、<code>docs/RULES.md</code>、<code>AGENTS.md</code> 引用已同步（Task 5）。</li>
     </ul>
   </section>
 
