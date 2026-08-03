@@ -248,7 +248,54 @@
     </ul>
   </section>
 
-  <!-- @@MORE@@ -->
+  <section id="s9">
+    <h2 class="sec">9. 实现问题清单与 AI 排查流程</h2>
+    <h3>问题登记模板</h3>
+    <table>
+      <tr><th style="width:20%">字段</th><th>说明</th></tr>
+      <tr><td>现象</td><td>用户看到/操作的异常</td></tr>
+      <tr><td>复现步骤</td><td>从哪个状态、按什么顺序触发</td></tr>
+      <tr><td>期望</td><td>对照本文档对应规范</td></tr>
+      <tr><td>实际</td><td>当前代码实际表现</td></tr>
+      <tr><td>影响</td><td>阻断/体验/合规/性能</td></tr>
+      <tr><td>涉及文件/节点</td><td>代码文件、界面节点</td></tr>
+      <tr><td>优先级</td><td>P0/P1/P2</td></tr>
+    </table>
+    <h3>AI 排查流程</h3>
+    <ol>
+      <li>定位界面：主屏 / 抽屉 / 结算带 / 领珠 / 概率公示。</li>
+      <li>找到状态：对照第 3、5 节状态机。</li>
+      <li>对照分区/控件/交互：使用第 4、6 节。</li>
+      <li>核对代码映射：使用第 10 节。</li>
+      <li>按模板登记问题，不直接凭感觉改代码。</li>
+    </ol>
+  </section>
+
+  <section id="s10">
+    <h2 class="sec">10. 与现有代码/文档一致性映射</h2>
+    <table>
+      <tr><th>文件</th><th>对应职责</th></tr>
+      <tr><td>assets/scripts/Main.ts</td><td>场景入口与相机</td></tr>
+      <tr><td>assets/scripts/PinballGame.ts</td><td>机台、状态、结果</td></tr>
+      <tr><td>assets/scripts/UI.ts</td><td>UI 工厂</td></tr>
+      <tr><td>assets/scripts/GameConfig.ts</td><td>界面/机台参数</td></tr>
+      <tr><td>assets/scripts/BallController.ts</td><td>物理回调</td></tr>
+      <tr><td>assets/scripts/ExitTag.ts</td><td>出口标签</td></tr>
+      <tr><td>assets/scripts/MockBackend.ts</td><td>本地账本</td></tr>
+    </table>
+    <div class="card warn"><b>已知迁移差异：</b>当前代码仍是结算弹窗、固定 1 颗、无加珠、无抽屉；这些是后续按本文档重构客户端的迁移项。</div>
+  </section>
+
+  <section id="s11">
+    <h2 class="sec">11. 验收清单</h2>
+    <ul>
+      <li>无 TBD / TODO / 占位内容。</li>
+      <li>状态机、分区、交互、动效、适配无内部矛盾。</li>
+      <li>每个状态可追溯到控件和代码映射。</li>
+      <li>问题模板和 AI 排查流程可直接使用。</li>
+      <li><code>docs/INDEX.md</code>、<code>docs/RULES.md</code>、<code>AGENTS.md</code> 引用已同步。</li>
+    </ul>
+  </section>
 
   <footer>弹珠乐园 · 游戏界面文档 v1.0</footer>
 </main>
