@@ -191,6 +191,7 @@
       <li>沉没按钮：<code>再来</code>、<code>去商城</code>。</li>
       <li>“再来”直接再扣 5 颗进 <code>STARTING</code>。</li>
       <li>“看视频 ×2”只翻弹珠奖励，积分卡不重复发；成功后按钮禁用。</li>
+      <li>“看视频 ×2”失败：奖励回退到原值、按钮恢复可用、Toast 提示“未获得翻倍”。</li>
       <li>抽屉和领珠可用。</li>
     </ul>
   </section>
@@ -199,39 +200,50 @@
     <h2 class="sec">6. 交互与动效规格</h2>
     <table>
       <tr><th style="width:24%">交互</th><th>规格</th></tr>
-      <tr><td>蓄力发射</td><td>按住填充约 1.4 秒满；松手发射</td></tr>
-      <tr><td>取消</td><td>移出热区/拖入取消区松手即取消</td></tr>
-      <tr><td>加珠</td><td>单击 +1；按住约 100ms 间隔连续加</td></tr>
-      <tr><td>吐票结算带</td><td>260ms 从机台下部滑出，不弹窗</td></tr>
-      <tr><td>左抽屉</td><td>200ms 从左侧滑出，机台压暗</td></tr>
-      <tr><td>顶部领珠</td><td>显示今日次数；验真后 +88 数字滚动</td></tr>
-      <tr><td>亮灯出口</td><td>服务端返回后 200ms glow 点亮</td></tr>
-      <tr><td>看视频 ×2</td><td>结果带内 N 翻到 2N，按钮禁用；积分卡不重复发</td></tr>
-      <tr><td>按钮按压</td><td>按下 scale 0.96 + 亮度变化，回弹约 80ms</td></tr>
+      <tr><td>蓄力发射</td><td>按住填充 1.4s ± 0.1s 满；松手时蓄力 ≥4% 才发射</td></tr>
+      <tr><td>取消</td><td>松手点距发射键中心超过 120px，或拖入独立取消区（96×96），即取消</td></tr>
+      <tr><td>加珠</td><td>单击 +1；长按首个重复延迟 300ms，之后每 100ms +1</td></tr>
+      <tr><td>吐票结算带</td><td>260ms ± 20ms 从机台下部滑出，不弹窗</td></tr>
+      <tr><td>左抽屉</td><td>200ms ± 20ms 从左侧滑出，机台压暗</td></tr>
+      <tr><td>顶部领珠</td><td>显示“今日剩 N/6”；验真后 +88 数字滚动 220ms</td></tr>
+      <tr><td>亮灯出口</td><td>服务端返回后 200ms ± 20ms glow 点亮</td></tr>
+      <tr><td>看视频 ×2</td><td>成功：N→2N，按钮禁用；失败：回退原值、恢复按钮、Toast</td></tr>
+      <tr><td>按钮按压</td><td>按下 scale 0.96 + 亮度变化，回弹 80ms ± 20ms</td></tr>
     </table>
   </section>
 
   <section id="s7">
     <h2 class="sec">7. 音效与触觉反馈</h2>
-    <h3>音效</h3>
+    <h3>7.1 音效</h3>
+    <table>
+      <tr><th style="width:24%">事件</th><th>触发状态</th><th>实现约束</th></tr>
+      <tr><td>按钮/开始/加珠</td><td>对应控件按下</td><td>Web Audio 合成默认，音量 0.5</td></tr>
+      <tr><td>蓄力/松手发射</td><td>CHARGING 起止</td><td>蓄力短滑音，发射单次播放</td></tr>
+      <tr><td>球碰钉</td><td>SIMULATING 碰撞</td><td>最小触发间隔 80ms，音量 0.35</td></tr>
+      <tr><td>落出口/吐票</td><td>SIMULATING 落定 / RESULT_TRAY 滑出</td><td>单次播放，音量 0.5</td></tr>
+      <tr><td>积分卡/命中/沉没</td><td>RESULT_TRAY 展示</td><td>单次播放，命中音量 0.6，沉没音量 0.4</td></tr>
+      <tr><td>抽屉开合/领珠到账</td><td>抽屉滑入滑出 / 领珠验真成功</td><td>单次播放，音量 0.4</td></tr>
+    </table>
+    <h3>7.2 触觉</h3>
     <ul>
-      <li>按钮、开始、蓄力、松手发射、球碰钉、落出口、吐票、积分卡、命中、沉没、抽屉开合、领珠到账。</li>
-    </ul>
-    <h3>触觉</h3>
-    <ul>
-      <li>发射、落口、命中、沉没使用 <code>wx.vibrateShort</code> 轻震动。</li>
-      <li>连点加珠不逐次震动。</li>
+      <li>发射、命中：<code>wx.vibrateShort({ type: 'medium' })</code>。</li>
+      <li>落口、沉没：<code>wx.vibrateShort({ type: 'light' })</code>。</li>
+      <li>连续震动最短间隔 300ms；连点加珠不逐次震动。</li>
+      <li>API 不可用或系统关闭触觉时静默跳过，不阻塞流程。</li>
+      <li>系统“减少动态效果”开启时不触发触觉。</li>
     </ul>
   </section>
 
   <section id="s8">
     <h2 class="sec">8. 微信适配、安全区、触控热区</h2>
     <ul>
-      <li>720×1280 竖屏。</li>
-      <li>顶部避让微信胶囊，底部避让安全区。</li>
-      <li>机台四角保留安全内边距。</li>
+      <li>项目配置锁定竖屏；横屏设备不旋转画布，按等比缩放居中。</li>
+      <li>安全区来源：<code>wx.getWindowInfo().safeArea</code>，兼容旧接口 <code>wx.getSystemInfoSync()</code>。</li>
+      <li>顶部避让：安全区顶部 + 16 设计像素；底部避让：窗口底部到安全区底 + 16 设计像素。</li>
+      <li>缩放：设计稿 720×1280，<code>scale = min(screenW/720, screenH/1280)</code>，等比缩放并居中，禁止拉伸文字。</li>
+      <li>机台外框四边内边距 ≥16 设计像素。</li>
       <li><code>开始</code>、<code>加珠 +1</code>、<code>按住拉杆</code>、领珠、抽屉触发边至少 88×88 设计像素。</li>
-      <li>取消区明显且可独立命中。</li>
+      <li>取消区为独立 96×96 设计像素热区，放在发射键附近；松手点距发射键中心超过 120px 也视为取消。</li>
     </ul>
   </section>
 
