@@ -135,7 +135,7 @@
       <tr><td style="border:none;background:none;font-weight:600">下游文档</td><td style="border:none;background:none">《测试与验收文档》《上线与运营文档》</td></tr>
       <tr><td style="border:none;background:none;font-weight:600">目标读者</td><td style="border:none;background:none">UI/UX 设计、客户端（Cocos）、美术、产品、测试</td></tr>
     </table>
-    <div class="card"><b>本档定位：</b>PRD §5.3/§5.4/§4.6/§4.7 已锁定的全部"功能交互决策"（投珠数/倍数/奖励/剩余展示、30°板面、拉杆、加注、无结算弹窗、出珠盒子、按钮层级甲）一律<b>不改动、不重议</b>，本档只补其空缺的<b>视觉与动效语言</b>：设计令牌、配色、字体、间距、动效时长、页面布局 wireframe、组件规范、多端适配。所有数值（RTP/倍数/K/容量 60/发卡门槛 40）源自上游，本档只读展示。</div>
+    <div class="card"><b>历史定位：</b>本文档曾汇总旧版"功能交互决策"与视觉语言，现已降级为历史参考；当前界面实现规范以 <a href="game-interface.html">game-interface.html</a> 为准。旧文中 30° 板面、加注、按钮层级等内容不再构成当前实现要求。</div>
   </section>
 
   <section id="s1">
@@ -317,7 +317,7 @@
         <text x="265" y="379" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">按住拉杆</text>
         <text x="265" y="392" text-anchor="middle" font-size="8" fill="#9FB2CC">蓄力松手发射·可取消</text>
       </svg>
-      <div class="cap">板面 30° <b>透视倾斜</b>（机台后仰，真实机台观感；下图为平面示意，权威渲染见 <a href="ui-game-machine-mockup.html">机台视觉稿</a>）；顶部 HUD 与底部"加注/拉杆"为屏幕正向独立图层，不随板倾斜；亮灯出口高亮、暗口置灰；出珠盒子位于底部承接口。</div>
+      <div class="cap">历史示意：板面 30° <b>透视倾斜</b>（下图为平面示意，历史视觉稿参考见 <a href="ui-game-machine-mockup.html">机台视觉稿</a>）。当前界面实现规范见 <a href="game-interface.html">game-interface.html</a>。</div>
     </div>
     <ul>
       <li><b>投珠输入</b>：默认 5，±步进 / 滑块 5–99，"最大"快捷；实时显示"命中预计得珠 = 投入 × 倍数"（PRD §5.3）。</li>
@@ -458,7 +458,7 @@
   <section id="s10">
     <h2 class="sec"><span class="num">10</span>与上游一致性核对 + 下游依赖</h2>
     <table>
-      <tr><th>上游决策（已锁定）</th><th>本档落地</th><th>状态</th></tr>
+      <tr><th>旧版上游决策（历史记录）</th><th>旧档落地</th><th>状态</th></tr>
       <tr><td>投珠 5–99 / 默认 5 / 预计得珠</td><td>§4.3 输入规范 + 实时展示</td><td>✅ 一致</td></tr>
       <tr><td>倍数 ×2/×4/×6/×8/×16/×32 + 亮灯出口 12 方案</td><td>§4.3 大字 overlay + 亮灯 glow</td><td>✅ 一致</td></tr>
       <tr><td>加注常驻按钮 + 实时预计奖励</td><td>§4.3 加注按钮 + HUD 高亮</td><td>✅ 一致</td></tr>
