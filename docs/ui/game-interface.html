@@ -85,9 +85,9 @@
       <tr><td>机台布局</td><td>整机一体：顶部招牌 + 中部弹珠板 + 底部控制台</td></tr>
       <tr><td>系统入口</td><td>左侧抽屉：任务、商城、概率公示、设置</td></tr>
       <tr><td>快捷入口</td><td>顶部招牌下保留“领珠 +88”</td></tr>
-      <tr><td>投注入口</td><td>底部控制台集成</td></tr>
-      <tr><td>开局</td><td>IDLE 态点“开始”，自动投入 5 颗，进入可加注/可发射态</td></tr>
-      <tr><td>加注</td><td>每次 +1 颗，支持快速连点；按住连续加，上限 99 且受余额约束</td></tr>
+      <tr><td>投入入口</td><td>底部控制台集成</td></tr>
+      <tr><td>开局</td><td>IDLE 态点“开始”，自动投入 5 颗，进入可加珠/可发射态</td></tr>
+      <tr><td>加珠</td><td>每次 +1 颗，支持快速连点；按住连续加，上限 99 且受余额约束</td></tr>
       <tr><td>结算</td><td>吐票结算带，不弹窗</td></tr>
       <tr><td>发射</td><td>按住蓄力、松开发射，支持取消</td></tr>
       <tr><td>透视参数</td><td>60° 只作用于钉板、发射通道、倍率显示；其余界面元素保持屏幕正向；角度作为可配置参数，后续人工统一</td></tr>
@@ -105,7 +105,7 @@
       <li>底部控制台：<code>投入 5</code> + <code>加珠 +1</code> + <code>按住拉杆</code>。</li>
       <li>结果态：吐票结算带从机台下部滑出。</li>
     </ul>
-    <div class="card"><b>透视分组：</b>倾斜组 = 钉板、发射通道、倍率显示。屏幕正向组 = 顶部招牌、状态行/领珠、左抽屉、出珠盒/沉没区、底部控制台、吐票结算带。</div>
+    <div class="card"><b>透视分组：</b>倾斜组 = 钉板、发射通道、倍率显示。屏幕正向组 = 顶部招牌、状态行/领珠、亮灯出口、左抽屉、出珠盒/沉没区、底部控制台、吐票结算带。</div>
     <h3>3.2 状态机</h3>
     <p><code>IDLE_START → STARTING → BET_READY → CHARGING → SIMULATING → RESULT_TRAY</code></p>
     <table>
@@ -115,7 +115,7 @@
       <tr><td>BET_READY</td><td>加珠、发射</td><td>抽屉、领珠</td><td>无</td></tr>
       <tr><td>CHARGING</td><td>蓄力/取消/发射</td><td>无</td><td>抽屉、领珠、加珠、投入</td></tr>
       <tr><td>SIMULATING</td><td>球飞行</td><td>无</td><td>所有操作</td></tr>
-      <tr><td>RESULT_TRAY</td><td>再来 / ×2 / 商城</td><td>抽屉、领珠</td><td>主屏控制台</td></tr>
+      <tr><td>RESULT_TRAY</td><td>命中：再来 / ×2 / 商城；沉没：再来 / 商城</td><td>抽屉、领珠</td><td>主屏控制台</td></tr>
     </table>
     <ul>
       <li>取消：<code>CHARGING → BET_READY</code>，不扣珠、不请求服务端。</li>
