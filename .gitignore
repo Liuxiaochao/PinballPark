@@ -1,6 +1,9 @@
 # WorkBuddy 项目数据（非源码，不入库）
 .workbuddy/
 
+# 头脑风暴/视觉伴侣临时产物（不入库）
+.superpowers/
+
 # 系统/编辑器
 .DS_Store
 *.log
