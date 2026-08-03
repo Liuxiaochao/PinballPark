@@ -13,6 +13,7 @@ export interface GameState {
 
 export class MockBackend {
   private state: GameState;
+  private activeBet = 0;
 
   constructor() {
     this.state = {
@@ -93,9 +94,43 @@ export class MockBackend {
     return { ok: true, msg: 'ok' };
   }
 
+  // 开局：自动投入 5 颗，进入可加珠/可发射态
+  beginRound(): { ok: boolean; msg: string; activeBet?: number } {
+    this.rolloverDay();
+    if (this.state.beads < GameConfig.bet.beadsPerRound) {
+      return { ok: false, msg: '弹珠不足' };
+    }
+    this.state.beads -= GameConfig.bet.beadsPerRound;
+    this.activeBet = GameConfig.bet.beadsPerRound;
+    return { ok: true, msg: '开局成功', activeBet: this.activeBet };
+  }
+
+  // 加珠：每次 +1，支持快速连点
+  addBeads(count = GameConfig.bet.addStep): { ok: boolean; msg: string; activeBet?: number } {
+    this.rolloverDay();
+    if (this.activeBet <= 0) {
+      return { ok: false, msg: '请先开始一局' };
+    }
+    const next = this.activeBet + count;
+    if (next > GameConfig.bet.maxBet) {
+      return { ok: false, msg: `单局投入上限 ${GameConfig.bet.maxBet} 颗` };
+    }
+    if (this.state.beads < count) {
+      return { ok: false, msg: '弹珠不足' };
+    }
+    this.state.beads -= count;
+    this.activeBet = next;
+    return { ok: true, msg: `+${count} 颗`, activeBet: this.activeBet };
+  }
+
+  getActiveBet(): number {
+    return this.activeBet;
+  }
+
   // 结算发放（弹珠 + 可选发卡）
   settle(beads: number, cards: number): void {
     this.state.beads += beads;
     this.state.cards += cards;
+    this.activeBet = 0;
   }
 }

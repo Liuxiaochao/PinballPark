@@ -25,6 +25,7 @@ import base64
 import json
 import sys
 from pathlib import Path
+from typing import Dict, List, Optional
 
 ROOT = Path(__file__).resolve().parent.parent
 ASSETS = ROOT / "assets"
@@ -36,7 +37,7 @@ def compress_uuid(uuid: str, reserved: int) -> str:
     """compressUUID：保留前 reserved 个十六进制字符，其余每 3 位 hex 压成 2 个 base64。"""
     h = uuid.replace("-", "").lower()
     head, tail = h[:reserved], h[reserved:]
-    out: list[str] = []
+    out: List[str] = []
     for i in range(0, len(tail), 3):
         v1, v2, v3 = (int(tail[i], 16), int(tail[i + 1], 16), int(tail[i + 2], 16))
         out.append(_B64[(v1 << 2) | (v2 >> 2)])
@@ -44,14 +45,14 @@ def compress_uuid(uuid: str, reserved: int) -> str:
     return head + "".join(out)
 
 
-def _hex_to_uuid(h: str) -> str | None:
+def _hex_to_uuid(h: str) -> Optional[str]:
     h = h.lower()
     if len(h) != 32 or any(c not in "0123456789abcdef" for c in h):
         return None
     return f"{h[:8]}-{h[8:12]}-{h[12:16]}-{h[16:20]}-{h[20:]}"
 
 
-def decompress_uuid(compressed: str, reserved: int) -> str | None:
+def decompress_uuid(compressed: str, reserved: int) -> Optional[str]:
     """decompressUUID（min=false，保留 5 位 / min=true，保留 2 位）。"""
     expected = 23 if reserved == 5 else 22
     if len(compressed) != expected:
@@ -59,7 +60,7 @@ def decompress_uuid(compressed: str, reserved: int) -> str | None:
     head, tail = compressed[:reserved], compressed[reserved:]
     if len(tail) % 2 != 0:
         return None
-    hx: list[str] = []
+    hx: List[str] = []
     for i in range(0, len(tail), 2):
         lhs = _B64.find(tail[i])
         rhs = _B64.find(tail[i + 1])
@@ -69,7 +70,7 @@ def decompress_uuid(compressed: str, reserved: int) -> str | None:
     return _hex_to_uuid(head + "".join(hx))
 
 
-def decode_type(type_id: str) -> str | None:
+def decode_type(type_id: str) -> Optional[str]:
     """把任意常见形式的 __type__ 解回完整 UUID（可能为 None）。"""
     type_id = type_id.strip()
     if "@" in type_id:
@@ -91,9 +92,9 @@ def decode_type(type_id: str) -> str | None:
     return None
 
 
-def collect_scripts() -> dict[str, Path]:
+def collect_scripts() -> Dict[str, Path]:
     """uuid -> 脚本路径（仅 typescript 资产）。"""
-    scripts: dict[str, Path] = {}
+    scripts: Dict[str, Path] = {}
     for meta in ASSETS.rglob("*.meta"):
         try:
             info = json.loads(meta.read_text(encoding="utf-8"))
@@ -135,8 +136,8 @@ def main() -> int:
         print("未找到 .scene / .prefab 文件")
         return 1
 
-    changed_files: list[Path] = []
-    problems: list[str] = []
+    changed_files: List[Path] = []
+    problems: List[str] = []
     total_refs = 0
 
     for path in files:

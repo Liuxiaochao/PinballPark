@@ -13,22 +13,29 @@ export const GameConfig = {
   // 弹珠（bead）经济
   bead: {
     dailyFree: 88, // 每日免费领取
-    videoReward: 6, // 每次看视频领珠
+    videoReward: 88, // 每次看视频领珠
     maxVideoRedeemPerDay: 6, // 看视频领珠 ≤6 次/日
     maxVideoTotalPerDay: 20, // 所有看视频（含 ×2 / 领珠）≤20 次/日
   },
 
   // 投注
   bet: {
-    beadsPerRound: 1, // 每局消耗 1 颗弹珠
+    beadsPerRound: 5, // 点“开始”自动投入 5 颗
+    minBet: 5,
+    maxBet: 99, // 有效投入上限
+    addStep: 1, // 加珠每次 +1
   },
 
   // 倍率分布（投注后抽随机倍率用），权重近似 F-001 / F-002
   multiplierLevels: [2, 4, 6, 8, 16, 32],
   multiplierWeights: [50, 25, 12, 8, 4, 1],
 
-  // 发卡阈值：落点倍率 ≥ 该值则掉 1 张积分卡
-  cardDropMultiplierThreshold: 4,
+  // 发卡：R≥40 才发卡，最多 5 张
+  card: {
+    threshold: 40,
+    maxPerRound: 5,
+    pointsPerCard: 10,
+  },
 
   // 机台（扁平物理坐标，单位 px）
   machine: {

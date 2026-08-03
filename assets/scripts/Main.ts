@@ -12,7 +12,6 @@ import {
 } from 'cc';
 import { GameConfig } from './GameConfig';
 import { MockBackend } from './MockBackend';
-import { Lobby } from './Lobby';
 import { PinballGame } from './PinballGame';
 
 const { ccclass } = _decorator;
@@ -20,7 +19,6 @@ const { ccclass } = _decorator;
 @ccclass('Main')
 export class Main extends Component {
   private backend!: MockBackend;
-  private lobbyRoot!: Node;
   private gameRoot!: Node;
 
   onLoad() {
@@ -28,16 +26,13 @@ export class Main extends Component {
     try {
       this.backend = new MockBackend();
 
-      // 大厅与对局都挂在唯一 Canvas（this.node）下，由同一相机渲染
-      this.lobbyRoot = new Node('LobbyRoot');
-      this.lobbyRoot.layer = Layers.Enum.UI_2D;
-      this.node.addChild(this.lobbyRoot);
+      // 机台直接挂在唯一 Canvas（this.node）下，由独立透视相机 + HUD 正交相机渲染
       this.gameRoot = new Node('GameRoot');
       this.gameRoot.layer = Layers.Enum.UI_2D;
       this.node.addChild(this.gameRoot);
 
-      this.showLobby();
-      console.log('[Main] lobby built ok');
+      this.showGame();
+      console.log('[Main] machine built ok');
     } catch (e) {
       console.error('[Main] onLoad error:', e);
     }
@@ -107,19 +102,10 @@ export class Main extends Component {
     ps.gravity = new Vec2(0, m.gravity * Math.sin((m.tiltDeg * Math.PI) / 180));
   }
 
-  private showLobby() {
-    this.gameRoot.active = false;
-    this.lobbyRoot.active = true;
-    this.lobbyRoot.removeAllChildren();
-    const lobby = new Lobby();
-    lobby.build(this.lobbyRoot, this.backend, () => this.showGame());
-  }
-
   private showGame() {
-    this.lobbyRoot.active = false;
     this.gameRoot.active = true;
     this.gameRoot.removeAllChildren();
     const game = this.gameRoot.addComponent(PinballGame);
-    game.init(this.backend, () => this.showLobby(), this.node, this.node);
+    game.init(this.backend, () => this.showGame(), this.node, this.node);
   }
 }
