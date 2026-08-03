@@ -119,6 +119,76 @@
     </table>
   </section>
 
+  <section id="s4">
+    <h2 class="sec">4. 主屏分区与节点规范</h2>
+    <p>设计分辨率：<code>720×1280</code>，竖屏。</p>
+    <table>
+      <tr><th style="width:24%">分区</th><th>用途</th><th>屏幕关系</th></tr>
+      <tr><td>1. 顶部招牌区</td><td>品牌 LED 跑马灯</td><td>屏幕正向</td></tr>
+      <tr><td>2. 状态行/领珠区</td><td>弹珠、领珠 +88、积分卡</td><td>屏幕正向</td></tr>
+      <tr><td>3. 弹珠板/物理演出区</td><td>钉阵与物理演出主体</td><td>60° 倾斜组</td></tr>
+      <tr><td>4. 发射通道</td><td>发射杆、蓄力与取消反馈</td><td>60° 倾斜组</td></tr>
+      <tr><td>5. 倍数/亮灯出口区</td><td>本局倍数与亮灯出口</td><td>60° 倾斜组</td></tr>
+      <tr><td>6. 出珠盒/沉没区</td><td>奖励珠与沉没视觉落点</td><td>屏幕正向</td></tr>
+      <tr><td>7. 左抽屉触发边</td><td>任务/商城/概率/设置入口</td><td>屏幕正向</td></tr>
+      <tr><td>8. 底部控制台</td><td>投入、加珠、发射</td><td>屏幕正向</td></tr>
+      <tr><td>9. 吐票结算带</td><td>命中/沉没结果与动作</td><td>屏幕正向</td></tr>
+    </table>
+    <div class="card warn"><b>透视规则：</b>钉板、发射通道、倍率显示组成倾斜组，暂按 60° 后仰透视渲染；其余界面元素不随倾斜组旋转。倾斜角度作为可配置参数，后续由人工统一 PRD/架构/代码。</div>
+    <h3>节点规范字段</h3>
+    <ul>
+      <li>用途</li>
+      <li>父级关系</li>
+      <li>坐标/尺寸</li>
+      <li>可见状态</li>
+      <li>交互状态</li>
+      <li>对应代码文件</li>
+    </ul>
+  </section>
+
+  <section id="s5">
+    <h2 class="sec">5. 页面/状态细则</h2>
+    <h3>5.1 IDLE_START</h3>
+    <ul>
+      <li>底部控制台显示：<code>投入 5</code>（只读）、<code>开始</code>（主按钮）。</li>
+      <li>顶部领珠、左抽屉可用。</li>
+      <li>弹珠板播放待机演示，不显示本局倍数，不扣珠。</li>
+    </ul>
+    <h3>5.2 STARTING</h3>
+    <ul>
+      <li>点“开始”后按钮变“开局中”，自动扣 5 颗。</li>
+      <li>服务端返回倍数和亮灯出口后才进入 <code>BET_READY</code>。</li>
+      <li>失败时 Toast 并回到 <code>IDLE_START</code>。</li>
+    </ul>
+    <h3>5.3 BET_READY</h3>
+    <ul>
+      <li>底部控制台显示：<code>投入 5</code>、<code>加珠 +1</code>、<code>按住拉杆</code>。</li>
+      <li><code>加珠 +1</code> 每点一次加 1 颗，支持快速连点；按住连续加。</li>
+      <li>总投入上限 99，且不能超过弹珠余额。</li>
+      <li>有效投入和“预计得珠 = 投入 × 当前倍数”实时刷新。</li>
+      <li>抽屉和领珠可用。</li>
+    </ul>
+    <h3>5.4 CHARGING</h3>
+    <ul>
+      <li>按住蓄力，弹珠板/发射杆同步反馈。</li>
+      <li>松手发射。</li>
+      <li>移出发射热区或拖入取消区松手为取消，不扣珠、不请求服务端，回 <code>BET_READY</code>。</li>
+      <li>蓄力期间抽屉、领珠、投注、加注全部禁用。</li>
+    </ul>
+    <h3>5.5 SIMULATING</h3>
+    <ul>
+      <li>球飞行期间所有游戏控件禁用，不弹窗。</li>
+    </ul>
+    <h3>5.6 RESULT_TRAY</h3>
+    <ul>
+      <li>吐票结算带滑出。</li>
+      <li>命中显示奖励和积分卡；沉没显示明确沉没文案。</li>
+      <li>命中按钮：<code>看视频 ×2</code>、<code>再来</code>、<code>去商城</code>。</li>
+      <li>沉没按钮：<code>再来</code>、<code>去商城</code>。</li>
+      <li>抽屉和领珠可用。</li>
+    </ul>
+  </section>
+
   <!-- @@MORE@@ -->
 
   <footer>弹珠乐园 · 游戏界面文档 v1.0</footer>
