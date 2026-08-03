@@ -48,14 +48,13 @@ export const GameConfig = {
     ballRadius: 16,
     gravity: -980,
     tiltDeg: 60, // 机台后仰角：沿面板方向的重力 = gravity * sin(tiltDeg)
-    chargeTime: 1.4, // 蓄力满所需秒数
-    launchSpeedMin: 1250, // 蓄力 0% 时的发射速度（需足够越过通道内墙）
-    launchSpeedMax: 1450, // 蓄力 100% 时的发射速度
+    chargeTime: 1.2, // 蓄力满所需秒数
+    launchSpeedMin: 750, // 蓄力 0% 时的发射速度（很弱，蓄力不足会出不了弯管）
+    launchSpeedMax: 1550, // 蓄力 100% 时的发射速度（明显快于下限，蓄力多少决定能否出管）
     launchSpeedX: 5, // 发射时随机横向抖动（小）
     linearDamping: 0.015,
     restitution: 0.4, // 碰撞回弹
-    laneWidth: 62, // 发射通道宽
-    laneTopRatio: 0.8, // 通道内墙顶高度（占机台高比例；弹珠在顶部被圆头导向左方进场）
+    laneWidth: 62, // 发射通道宽（保留参数，弯管几何在 PinballGame.buildBoard 内计算）
     plungerPull: 46, // 蓄力时发射杆/弹珠后拉距离
   },
 

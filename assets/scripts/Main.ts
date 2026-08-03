@@ -49,7 +49,8 @@ export class Main extends Component {
     // 机台顶部更远更小，形成 60° 后仰的游戏机观感），只渲染机台层（UI_3D）
     const pitchDeg = 30;
     const pitchRad = (pitchDeg * Math.PI) / 180;
-    const dist = 860; // 相机到机台中心的视线距离
+    // 拉远相机：缩小机台透视投影，使其完整落在屏幕内并给 HUD 留足上下边距
+    const dist = 1500; // 相机到机台中心的视线距离
     let boardCam = this.node.getChildByName('BoardCamera')?.getComponent(Camera);
     if (!boardCam) {
       const camNode = new Node('BoardCamera');

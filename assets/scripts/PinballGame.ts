@@ -61,6 +61,11 @@ export class PinballGame extends Component {
   private plunger!: Node;
   private plungerBaseY = 0;
   private barWidth = 320;
+  private laneCX = 0;
+  private launchY = 0;
+  private bendY = 0;
+  private minExitPower = 1;
+  private reachedArc = false;
   private power = 0;
   private charging = false;
   private touchStart = new Vec2();
@@ -91,6 +96,8 @@ export class PinballGame extends Component {
 
     this.board = new Node('board');
     this.boardParent.addChild(this.board);
+    // 整机上移，给顶部状态栏与底部控制台留出清晰间距
+    this.board.setPosition(0, 150, 0);
 
     const back = new Node('back');
     back.addComponent(UITransform).setContentSize(W + wall * 2, H + wall * 2);
@@ -140,50 +147,122 @@ export class PinballGame extends Component {
     this.addBox(this.board, halfW + wall / 2, 0, wall, H, boardColor);
     this.addBox(this.board, 0, -halfH - wall / 2 + 2, W + wall * 2, wall, boardColor);
 
-    // 发射通道
-    const laneW = m.laneWidth;
-    const laneTop = -halfH + H * m.laneTopRatio;
-    const laneX = halfW - laneW / 2;
-    const lane = new Node('lane');
-    lane.addComponent(UITransform).setContentSize(laneW + 22, laneTop + halfH + 26);
-    const lg = lane.addComponent(Graphics);
-    lg.fillColor = new Color(19, 23, 44);
-    lg.roundRect(-(laneW + 22) / 2, -26, laneW + 22, laneTop + halfH + 26, 16);
-    lg.fill();
-    lg.lineWidth = 2;
-    lg.strokeColor = new Color(125, 145, 195, 140);
-    lg.roundRect(-(laneW + 22) / 2 + 3, -23, laneW + 16, laneTop + halfH + 20, 13);
-    lg.stroke();
-    lane.setPosition(halfW, -halfH, 0);
-    this.board.addChild(lane);
+    // 发射通道：贴边 L 形弯管（圆角版）—— 竖直段贴机器最右侧上行，在右上角沿四分之一圆弧左转，
+    // 再贴机器顶水平飞出。关键：内侧直角改为半径 innerR 的圆弧（内外壁都是同心圆弧），
+    // 弹珠沿外侧弧面被顺导左转，不再卡在直角、也不再落回通道。
+    const tubeW = 52;                      // 通道净宽
+    const wallT = 12;                      // 管壁物理厚度
+    const botY = -halfH - wall;            // 管底（机器底）
+    const topY = halfH - 60;               // 机器内顶（顶墙内沿 y=430）
+    const rightEdge = halfW;               // 机器内右沿 x=280
+    const vOuterX = rightEdge;             // 外壁贴机器右墙
+    const vInnerX = rightEdge - tubeW;     // 竖直段内壁 x（分隔钉阵）
+    const laneCX = (vOuterX + vInnerX) / 2;
+    const hTopY = topY;                    // 顶壁贴机器顶墙
+    const hBotY = topY - tubeW;            // 水平段底壁 y（分隔钉阵/出口）
+    const laneTopCY = (hTopY + hBotY) / 2;
+    const exitX = 150;                     // 水平段左端开口（弹珠水平飞出）
 
-    const laneInnerX = halfW - laneW - 10;
-    const innerH = laneTop + halfH - 64;
-    this.addBox(this.board, laneInnerX, (-halfH + 64 + laneTop) / 2, 14, innerH, boardColor);
+    // 弯角：把内侧直角改成四分之一圆弧。圆心 C 取在 (vInnerX - innerR, hBotY - innerR)，
+    // 这样圆弧两端正好接上竖直段（左壁 x=vInnerX）与水平段（底壁 y=hBotY），通道宽始终 = tubeW。
+    const innerR = 22;                     // 内侧圆弧半径（圆角大小）
+    const Rc = tubeW / 2 + innerR;         // 通道中心线圆弧半径
+    const outerR = Rc + tubeW / 2;         // 外侧圆弧半径
+    const Cx = vInnerX - innerR;           // 弯角圆心 x
+    const Cy = hBotY - innerR;             // 弯角圆心 y
+    const bendStartY = Cy;                 // 竖直段与圆弧分界（圆弧 θ=0 处 y）
+    const bendEndX = Cx;                   // 水平段与圆弧分界（圆弧 θ=90° 处 x）
+    this.laneCX = laneCX;
+    this.launchY = -halfH + 110;
+    this.bendY = bendStartY;               // 弹珠越过圆弧起点即视为已出管，弱发射落回才退回
+    const wallColor = boardColor;
+    const tubeBody = new Color(19, 23, 44);
+    const tubeHi = new Color(32, 38, 70);
 
-    const bumpR = 45;
-    const bump = this.addCircle(this.board, halfW, laneTop + 86, bumpR, new Color(52, 60, 104));
-    const bumpG = bump.getComponent(Graphics)!;
-    bumpG.lineWidth = 4;
-    bumpG.strokeColor = new Color(185, 200, 240, 170);
-    bumpG.circle(0, 0, bumpR - 2);
-    bumpG.stroke();
-    bumpG.fillColor = new Color(30, 35, 62);
-    bumpG.circle(0, 0, bumpR - 14);
-    bumpG.fill();
+    // --- 弯管描边（管身：竖直 → 四分之一圆弧 → 水平 中心线） ---
+    const tube = new Node('launchTube');
+    tube.layer = GAME_LAYER;
+    this.board.addChild(tube);
+    const tg = tube.addComponent(Graphics);
+    const arcSeg = 16;
+    const cl: Vec2[] = [new Vec2(laneCX, botY), new Vec2(laneCX, bendStartY)];
+    for (let i = 0; i <= arcSeg; i++) {
+      const a = (Math.PI / 2) * (i / arcSeg); // 0° → 90°：绕弯角圆心左转
+      cl.push(new Vec2(Cx + Rc * Math.cos(a), Cy + Rc * Math.sin(a)));
+    }
+    cl.push(new Vec2(exitX, laneTopCY));
+    const strokePath = (w: number, col: Color) => {
+      tg.lineWidth = w;
+      tg.strokeColor = col;
+      tg.moveTo(cl[0].x, cl[0].y);
+      for (let i = 1; i < cl.length; i++) tg.lineTo(cl[i].x, cl[i].y);
+      tg.stroke();
+    };
+    strokePath(tubeW, tubeBody);
+    strokePath(tubeW - 16, tubeHi);
+    // 内外壁轮廓（圆角 L 形：竖直段 + 同心圆弧 + 水平段）
+    const outline = new Color(125, 145, 195, 150);
+    tg.lineWidth = 3;
+    tg.strokeColor = outline;
+    // 外（右墙 + 外侧圆弧 + 顶墙）
+    tg.moveTo(vOuterX, botY); tg.lineTo(vOuterX, bendStartY);
+    for (let i = 0; i <= arcSeg; i++) {
+      const a = (Math.PI / 2) * (i / arcSeg);
+      if (i === 0) tg.moveTo(Cx + outerR * Math.cos(a), Cy + outerR * Math.sin(a));
+      else tg.lineTo(Cx + outerR * Math.cos(a), Cy + outerR * Math.sin(a));
+    }
+    tg.lineTo(exitX, hTopY);
+    // 内（左墙 + 内侧圆弧 + 底墙）
+    tg.moveTo(vInnerX, botY); tg.lineTo(vInnerX, bendStartY);
+    for (let i = 0; i <= arcSeg; i++) {
+      const a = (Math.PI / 2) * (i / arcSeg);
+      if (i === 0) tg.moveTo(Cx + innerR * Math.cos(a), Cy + innerR * Math.sin(a));
+      else tg.lineTo(Cx + innerR * Math.cos(a), Cy + innerR * Math.sin(a));
+    }
+    tg.lineTo(exitX, hBotY);
+    tg.stroke();
+    // 出口喇叭口（朝左，提示弹珠水平飞出）
+    tg.lineWidth = 4;
+    tg.strokeColor = new Color(255, 196, 0, 180);
+    tg.moveTo(exitX, laneTopCY - tubeW / 2 + 6); tg.lineTo(exitX - 26, laneTopCY - tubeW / 2 - 8);
+    tg.moveTo(exitX, laneTopCY + tubeW / 2 - 6); tg.lineTo(exitX - 26, laneTopCY + tubeW / 2 + 8);
+    tg.stroke();
 
-    this.addBox(this.board, laneX, -halfH + 38, laneW, 16, new Color(38, 44, 78));
+    // --- 弯管物理墙体（圆角 L 形：竖直内外壁 + 圆弧内外壁 + 水平顶底壁；通道净宽始终 = tubeW） ---
+    // 竖直段外壁（贴机器右墙：内沿=机器右沿 280），从管底到圆弧起点
+    this.addBox(this.board, vOuterX + wallT / 2, (botY + bendStartY) / 2, wallT, bendStartY - botY, wallColor);
+    // 竖直段内壁（分隔钉阵：外沿=通道左沿 228），到圆弧起点止
+    this.addBox(this.board, vInnerX - wallT / 2, (botY + bendStartY) / 2, wallT, bendStartY - botY, wallColor);
+    // 水平段顶壁（贴机器顶墙：内沿=机器顶沿 430），从开口到圆弧终点
+    this.addBox(this.board, (exitX + bendEndX) / 2, hTopY + wallT / 2, bendEndX - exitX, wallT, wallColor);
+    // 水平段底壁（分隔钉阵与出口：外沿=通道下沿 378），到圆弧终点止
+    this.addBox(this.board, (exitX + bendEndX) / 2, hBotY - wallT / 2, bendEndX - exitX, wallT, wallColor);
+    // 圆弧内外壁：用一串重叠的圆形碰撞体铺成（圆对圆永远光滑，没有分段盒的棱角/衔接凸起）。
+    // 关键：圆心落在「直墙内面所在半径 ± wallT/2」，使圆弧与竖直/水平直墙在衔接处内面坐标完全一致
+    // —— 外壁 x=280、内壁 x=228、顶壁 y=430、底壁 y=378 全部对齐，无凸起、无缺口。
+    // 弹珠沿外侧圆弧被顺导左转，平滑出管。
+    this.addArcWall(Cx, Cy, innerR - wallT / 2, 0, Math.PI / 2, wallT, wallColor);
+    this.addArcWall(Cx, Cy, outerR + wallT / 2, 0, Math.PI / 2, wallT, wallColor);
 
+    // 出管所需最低蓄力（物理反解：竖直段需爬升到圆弧起点）
+    const g = -m.gravity;
+    const vyNeed = Math.sqrt(2 * g * (this.bendY - this.launchY));
+    this.minExitPower = Math.max(
+      0,
+      Math.min(1, ((vyNeed - m.launchSpeedMin) / (m.launchSpeedMax - m.launchSpeedMin)) * 1.05)
+    );
+
+    // 发射杆（蓄力时后拉）
     const plunger = new Node('plunger');
-    plunger.addComponent(UITransform).setContentSize(laneW - 16, 64);
+    plunger.addComponent(UITransform).setContentSize(tubeW - 16, 60);
     const pg = plunger.addComponent(Graphics);
     pg.fillColor = new Color(205, 130, 64);
-    pg.roundRect(-(laneW - 16) / 2, -32, laneW - 16, 64, 12);
+    pg.roundRect(-(tubeW - 16) / 2, -30, tubeW - 16, 60, 12);
     pg.fill();
     pg.fillColor = new Color(128, 74, 40);
-    pg.roundRect(-(laneW - 16) / 2, 10, laneW - 16, 20, 6);
+    pg.roundRect(-(tubeW - 16) / 2, 8, tubeW - 16, 18, 6);
     pg.fill();
-    plunger.setPosition(laneX, -halfH + 78, 0);
+    plunger.setPosition(laneCX, -halfH + 78, 0);
     this.board.addChild(plunger);
     this.plunger = plunger;
     this.plungerBaseY = -halfH + 78;
@@ -191,7 +270,7 @@ export class PinballGame extends Component {
     // 钉阵
     const pegColor = new Color(196, 206, 235);
     const fieldL = -halfW + 46;
-    const fieldR = laneInnerX - 20;
+    const fieldR = laneCX - tubeW / 2 - 20;
     const fieldB = -halfH + m.height * 0.42;
     const fieldT = halfH - 270;
     const colStep = (fieldR - fieldL) / (m.pegCols - 1);
@@ -216,7 +295,8 @@ export class PinballGame extends Component {
     this.setLayerRec(this.board, GAME_LAYER);
   }
 
-  // 亮灯出口与出珠盒：屏幕正向，不随倾斜组旋转
+  // 亮灯出口与出珠盒：作为机台的一部分随机台一起渲染，确保与落球点始终对齐，
+  // 且不再被底部控制台（UI_2D）覆盖
   private buildExits() {
     const m = GameConfig.machine;
     const W = m.width;
@@ -227,12 +307,12 @@ export class PinballGame extends Component {
     const binW = (W - 12) / n;
     this.binW = binW;
     const root = new Node('exitsRoot');
-    root.layer = Layers.Enum.UI_2D;
-    this.hudParent.addChild(root);
+    root.layer = GAME_LAYER;
+    this.board.addChild(root);
     for (let i = 0; i < n; i++) {
       const cx = -halfW + 6 + binW * (i + 0.5);
       const bottom = this.addBox(root, cx, -halfH + 12, binW - 5, 24, new Color(54, 60, 96));
-      this.setLayerRec(bottom, Layers.Enum.UI_2D);
+      this.setLayerRec(bottom, GAME_LAYER);
       const g = bottom.getComponent(Graphics)!;
       g.clear();
       g.fillColor = new Color(54, 60, 96);
@@ -249,7 +329,7 @@ export class PinballGame extends Component {
 
       if (i > 0) {
         const divider = this.addBox(root, -halfW + 6 + binW * i, -halfH + 48, 5, 68, new Color(34, 39, 70));
-        this.setLayerRec(divider, Layers.Enum.UI_2D);
+        this.setLayerRec(divider, GAME_LAYER);
       }
       const val = GameConfig.exitValues[i];
       const lab = makeLabel(
@@ -259,7 +339,7 @@ export class PinballGame extends Component {
         val > 0 ? new Color(215, 222, 248) : new Color(190, 120, 120)
       );
       lab.node.setPosition(0, 30, 1);
-      lab.node.layer = Layers.Enum.UI_2D;
+      lab.node.layer = GAME_LAYER;
     }
   }
 
@@ -285,22 +365,22 @@ export class PinballGame extends Component {
     const drawerBtn = makeButton(hud, '菜单', 72, 92, () => this.toggleDrawer(), Palette.panelHi);
     drawerBtn.setPosition(-W / 2 + 48, 0, 40);
 
-    // 底部控制台
-    const deck = makePanel(hud, W - 36, 232, Palette.panel, 18);
-    deck.setPosition(0, -H / 2 + 136, 40);
+    // 底部控制台：下沉到屏幕底部，与上方机台/落球出口留足间距
+    const deck = makePanel(hud, W - 36, 280, Palette.panel, 18);
+    deck.setPosition(0, -H / 2 + 140, 40);
     this.betLabel = makeLabel(deck, '', 26, Palette.text);
-    this.betLabel.node.setPosition(-230, 56, 1);
+    this.betLabel.node.setPosition(-230, 80, 1);
     this.expectedLabel = makeLabel(deck, '', 20, Palette.sub);
-    this.expectedLabel.node.setPosition(-230, 8, 1);
+    this.expectedLabel.node.setPosition(-230, 45, 1);
 
-    this.startBtn = makeButton(deck, '开始游戏', 300, 96, () => this.startRound(), Palette.accent);
+    this.startBtn = makeButton(deck, '开始游戏', 300, 84, () => this.startRound(), Palette.accent);
     this.startBtn.setPosition(0, -30, 1);
 
-    this.addBtn = makeButton(deck, '加珠 +1', 180, 88, () => this.addBead(), Palette.accent2);
-    this.addBtn.setPosition(-130, -36, 1);
+    this.addBtn = makeButton(deck, '加珠 +1', 170, 80, () => this.addBead(), Palette.accent2);
+    this.addBtn.setPosition(-128, -30, 1);
 
-    this.launchBtn = makeButton(deck, '按住拉杆\n松开发射', 300, 92, () => {}, Palette.accent);
-    this.launchBtn.setPosition(140, -36, 1);
+    this.launchBtn = makeButton(deck, '按住拉杆\n松开发射', 300, 80, () => {}, Palette.accent);
+    this.launchBtn.setPosition(142, -30, 1);
     this.launchBtn.on(Node.EventType.TOUCH_START, (e: any) => {
       const p = e.getUILocation() as Vec2;
       this.touchStart.set(p.x, p.y);
@@ -316,10 +396,10 @@ export class PinballGame extends Component {
     this.launchBtn.on(Node.EventType.TOUCH_END, () => this.releaseCharge(), this.launchBtn);
     this.launchBtn.on(Node.EventType.TOUCH_CANCEL, () => this.releaseCharge(), this.launchBtn);
 
-    // 蓄力条
+    // 蓄力条：内嵌在控制台底部，避免与面板分离重叠
     const barW = 330;
-    const barBg = makePanel(hud, barW, 14, new Color(8, 10, 20), 7);
-    barBg.setPosition(0, -H / 2 + 34, 40);
+    const barBg = makePanel(deck, barW, 14, new Color(8, 10, 20), 7);
+    barBg.setPosition(0, -110, 1);
     const fill = new Node('powerFill');
     fill.layer = Layers.Enum.UI_2D;
     fill.addComponent(UITransform).setContentSize(barW - 4, 10);
@@ -364,6 +444,27 @@ export class PinballGame extends Component {
     return n;
   }
 
+  // 沿圆弧铺设一串重叠的静态圆形碰撞体，构成光滑的弯管圆弧墙体（圆对圆永远光滑，无分段盒棱角）。
+  // radius 是「圆心所在半径」：调用方已按 直墙内面所在半径 ± thickness/2 传入，保证圆弧与直墙在衔接处对齐。
+  // 仅建物理碰撞体、不画图形，避免视觉噪点（管身由上方 Graphics 描边统一渲染）。
+  private addArcWall(cx: number, cy: number, radius: number, a0: number, a1: number, thickness: number, _color: Color) {
+    const rc = thickness / 2;
+    const arcLen = Math.abs(a1 - a0) * radius;
+    const count = Math.max(2, Math.ceil(arcLen / (rc * 1.3)) + 1); // 间距 < 直径，保证圆与圆重叠无缺口
+    for (let i = 0; i <= count; i++) {
+      const a = a0 + (a1 - a0) * (i / count);
+      const n = new Node('arcSeg');
+      n.setPosition(cx + radius * Math.cos(a), cy + radius * Math.sin(a), 0);
+      const rb = n.addComponent(RigidBody2D);
+      rb.type = ERigidBody2DType.Static;
+      const col = n.addComponent(CircleCollider2D);
+      col.radius = rc;
+      col.apply();
+      this.board.addChild(n);
+      n.layer = GAME_LAYER;
+    }
+  }
+
   private setLayerRec(node: Node, layer: number) {
     node.layer = layer;
     for (const c of node.children) this.setLayerRec(c, layer);
@@ -404,11 +505,6 @@ export class PinballGame extends Component {
     this.multLed.string = `×${this.currentMult}`;
     this.spawnBall();
     this.enterBetReady();
-
-    const myId = this.roundId;
-    this.scheduleOnce(() => {
-      if (this.roundId === myId && !this.resolved) this.resolveExit(-1, 0);
-    }, 15);
   }
 
   private enterBetReady() {
@@ -456,7 +552,7 @@ export class PinballGame extends Component {
     this.power = 0;
     this.updateChargeVisual();
     if (this.state !== 'BET_READY' || !this.ball) return;
-    if (this.cancelled || p < 0.04) {
+    if (this.cancelled || p < 0.03) {
       this.cancelled = false;
       this.enterBetReady();
       toast(this.hudParent, '已取消发射');
@@ -472,10 +568,16 @@ export class PinballGame extends Component {
     if (this.plunger) this.plunger.setPosition(this.plunger.position.x, this.plungerBaseY - pull, 0);
     const g = this.powerBar;
     g.clear();
-    const r = Math.round(80 + this.power * 175);
-    const gg = Math.round(200 - this.power * 4);
-    const b = Math.round(255 - this.power * 255);
-    g.fillColor = new Color(r, gg, b, 255);
+    let col: Color;
+    if (this.power < this.minExitPower) {
+      col = new Color(196, 72, 72); // 蓄力不足：弹珠出不了弯管
+    } else {
+      const r = Math.round(90 + this.power * 165);
+      const gg = Math.round(214 - this.power * 34);
+      const b = Math.round(120 - this.power * 120);
+      col = new Color(r, gg, b, 255);
+    }
+    g.fillColor = col;
     const w = Math.max(2, Math.round(this.barWidth * this.power));
     g.fillRect(-this.barWidth / 2, -6, w, 12);
   }
@@ -483,12 +585,14 @@ export class PinballGame extends Component {
   private launch(power: number) {
     if (!this.ball) return;
     this.state = 'SIMULATING';
+    this.reachedArc = false;
     this.launchBtn.active = false;
     this.addBtn.active = false;
     const m = GameConfig.machine;
-    const vx = -(30 + 10 * power) + (Math.random() * 2 - 1) * m.launchSpeedX;
-    const vy = m.launchSpeedMin + (m.launchSpeedMax - m.launchSpeedMin) * power;
     const rb = this.ball.getComponent(RigidBody2D)!;
+    rb.gravityScale = 1; // 发射后恢复重力
+    const vx = -(12 + 6 * power) + (Math.random() * 2 - 1) * m.launchSpeedX;
+    const vy = m.launchSpeedMin + (m.launchSpeedMax - m.launchSpeedMin) * power;
     rb.linearVelocity = new Vec2(vx, vy);
     this.plunger.setPosition(this.plunger.position.x, this.plungerBaseY, 0);
     tween(this.plunger)
@@ -520,14 +624,14 @@ export class PinballGame extends Component {
 
   private spawnBall() {
     const m = GameConfig.machine;
-    const laneX = m.width / 2 - m.laneWidth / 2;
-    const y = -m.height / 2 + 110;
+    const laneX = this.laneCX;
+    const y = this.launchY;
     const n = new Node('ball');
     n.setPosition(laneX, y, 0);
     n.addComponent(UITransform).setContentSize(m.ballRadius * 2, m.ballRadius * 2);
     const rb = n.addComponent(RigidBody2D);
     rb.type = ERigidBody2DType.Dynamic;
-    rb.gravityScale = 1;
+    rb.gravityScale = 0; // 等待发射时不收重力，弹珠停在弹射平面上，不往下掉
     rb.linearDamping = m.linearDamping;
     rb.bullet = true;
     const col = n.addComponent(CircleCollider2D);
@@ -552,9 +656,31 @@ export class PinballGame extends Component {
   }
 
   update(dt: number) {
-    if (!this.charging) return;
+    if (!this.charging) {
+      // 蓄力不足、弹珠没能冲出弯管（从未到达圆弧顶）而落回通道：退回发射杆，不结算、不结束
+      if (this.state === 'SIMULATING' && this.ball) {
+        if (this.ball.position.y > this.bendY) this.reachedArc = true;
+        if (!this.reachedArc && this.ball.position.y < this.launchY) {
+          this.returnBallToPlunger();
+        }
+      }
+      return;
+    }
     this.power = Math.min(1, this.power + dt / GameConfig.machine.chargeTime);
     this.updateChargeVisual();
+  }
+
+  // 弱发射落回通道：弹珠退回发射杆，重新等待发射（不结算、不沉没、不结束本局）
+  private returnBallToPlunger() {
+    const b = this.ball;
+    if (!b) return;
+    const rb = b.getComponent(RigidBody2D)!;
+    rb.gravityScale = 0; // 停住，不再下落
+    rb.linearVelocity = Vec2.ZERO;
+    b.setPosition(this.laneCX, this.launchY, 0);
+    this.reachedArc = false;
+    toast(this.hudParent, '蓄力不足，弹珠退回通道');
+    this.enterBetReady();
   }
 
   resolveExit(index: number, multiplier: number) {
@@ -589,10 +715,10 @@ export class PinballGame extends Component {
     const W = GameConfig.designWidth;
     const H = GameConfig.designHeight;
     const tray = makePanel(this.hudParent, W - 44, 430, Palette.panel, 20);
-    tray.setPosition(0, -H / 2 - 120, 60);
+    tray.setPosition(0, -H / 2 - 200, 60);
     this.resultTray = tray;
     tween(tray)
-      .to(0.26, { position: new Vec3(0, -H / 2 + 252, 60) }, { easing: 'quadOut' })
+      .to(0.26, { position: new Vec3(0, -H / 2 + 340, 60) }, { easing: 'quadOut' })
       .start();
 
     const title = mult > 0 ? `命中！×${mult}` : GameConfig.sinkLabel;
