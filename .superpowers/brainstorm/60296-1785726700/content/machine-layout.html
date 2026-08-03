@@ -1,0 +1,84 @@
+<h2>全屏机台：主界面分区方式</h2>
+<p class="subtitle">三种都保持街机实感，区别是信息、机台和操作按钮怎么占屏幕。</p>
+
+<div class="options">
+  <div class="option" data-choice="cabinet" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>整机一体</h3>
+      <p>机台本身就是整块屏幕：顶部招牌，中部弹珠板，底部实体控制台；HUD 嵌入机台边框。</p>
+      <div class="mockup" style="margin-top:10px">
+        <div style="background:linear-gradient(180deg,#13294d,#0a1830);border:3px solid #2a4f86;border-radius:22px;padding:12px;width:220px;color:#eaf2ff;font-family:sans-serif">
+          <div style="background:#1a0606;border:1px solid #5e1010;border-radius:12px;padding:8px;text-align:center;color:#ff3b30;font-family:monospace;font-size:14px;letter-spacing:3px">PINBALL PARK</div>
+          <div style="display:flex;justify-content:space-between;padding:6px 4px 0;font-size:9px;color:#ff6b63">
+            <span>弹珠 1286</span><span>本局 ×8</span>
+          </div>
+          <div style="background:#0e2036;border:1px solid #2b4a78;border-radius:12px;height:240px;position:relative;overflow:hidden">
+            <div style="position:absolute;left:14px;top:10px;right:42px;bottom:42px;background:#0a1726;border:1px solid #2b4a78;border-radius:10px;transform:rotateX(30deg)"></div>
+            <div style="position:absolute;right:14px;top:8px;bottom:42px;width:16px;background:#16263f;border:1px solid #2b4a78;border-radius:8px"></div>
+            <div style="position:absolute;left:14px;right:42px;bottom:22px;height:18px;background:#0c0404;border:1px solid #5e1010;border-radius:5px;color:#ff3b30;text-align:center;font-size:8px;line-height:18px">×2 ×4 ×6 ×8 ×16 ×32</div>
+            <div style="position:absolute;left:18px;right:48px;bottom:0;height:22px;background:#16263f;border:1px solid #2b4a78;border-radius:6px 6px 3px 3px"></div>
+            <div style="position:absolute;left:4px;right:4px;top:4px;bottom:4px;border:1px solid rgba(255,59,48,.4);border-radius:8px"></div>
+          </div>
+          <div style="margin-top:8px;background:#0c1830;border:1px solid #2a4f86;border-radius:12px;padding:8px;display:flex;gap:6px">
+            <div style="flex:1;background:#1b3a66;border:1px solid #3a5f9a;border-radius:9px;padding:8px 0;text-align:center;font-size:9px">加注</div>
+            <div style="flex:1;background:#39E0FF;color:#04222e;border-radius:9px;padding:8px 0;text-align:center;font-size:9px;font-weight:800">按住拉杆</div>
+            <div style="flex:0 0 30px;background:#1b3a66;border:1px solid #3a5f9a;border-radius:9px;text-align:center;line-height:30px;font-size:9px">≡</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="side-rail" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>机台 + 侧栏</h3>
+      <p>左右金属侧栏放余额、卡数、广告入口，机台主体更宽；信息常驻但视觉更杂。</p>
+      <div class="mockup" style="margin-top:10px">
+        <div style="background:linear-gradient(180deg,#13294d,#0a1830);border:3px solid #2a4f86;border-radius:22px;padding:12px;width:220px;color:#eaf2ff;font-family:sans-serif">
+          <div style="background:#1a0606;border:1px solid #5e1010;border-radius:12px;padding:8px;text-align:center;color:#ff3b30;font-family:monospace;font-size:14px;letter-spacing:3px">PINBALL PARK</div>
+          <div style="display:flex;gap:6px;margin-top:6px">
+            <div style="width:34px;background:#0c1830;border:1px solid #2a4f86;border-radius:8px;padding:6px 2px;text-align:center;font-size:8px;color:#ff6b63;line-height:1.5">弹珠<br><b>1286</b></div>
+            <div style="flex:1;background:#0e2036;border:1px solid #2b4a78;border-radius:10px;height:210px;position:relative">
+              <div style="position:absolute;left:8px;top:8px;right:30px;bottom:36px;background:#0a1726;border:1px solid #2b4a78;border-radius:8px;transform:rotateX(30deg)"></div>
+              <div style="position:absolute;right:8px;top:6px;bottom:36px;width:12px;background:#16263f;border:1px solid #2b4a78;border-radius:6px"></div>
+              <div style="position:absolute;left:8px;right:30px;bottom:14px;height:20px;background:#16263f;border:1px solid #2b4a78;border-radius:5px"></div>
+            </div>
+            <div style="width:34px;background:#0c1830;border:1px solid #2a4f86;border-radius:8px;padding:6px 2px;text-align:center;font-size:8px;color:#FFD66B;line-height:1.5">卡<br><b>42</b></div>
+          </div>
+          <div style="margin-top:8px;background:#0c1830;border:1px solid #2a4f86;border-radius:12px;padding:8px;display:flex;gap:6px">
+            <div style="flex:1;background:#1b3a66;border:1px solid #3a5f9a;border-radius:9px;padding:8px 0;text-align:center;font-size:9px">加注</div>
+            <div style="flex:1.6;background:#39E0FF;color:#04222e;border-radius:9px;padding:8px 0;text-align:center;font-size:9px;font-weight:800">按住拉杆</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="floating-hud" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>机台 + 悬浮 HUD</h3>
+      <p>机台占满背景，HUD、按钮以半透明玻璃芯片悬浮在机台上方；信息层级最清晰。</p>
+      <div class="mockup" style="margin-top:10px">
+        <div style="background:linear-gradient(180deg,#0d1a31,#050b17);border:3px solid #1d3b66;border-radius:22px;padding:12px;width:220px;color:#eaf2ff;font-family:sans-serif;position:relative">
+          <div style="background:#1a0606;border:1px solid #5e1010;border-radius:12px;padding:8px;text-align:center;color:#ff3b30;font-family:monospace;font-size:14px;letter-spacing:3px">PINBALL PARK</div>
+          <div style="background:#0e2036;border:1px solid #2b4a78;border-radius:12px;height:250px;position:relative;margin-top:6px">
+            <div style="position:absolute;left:16px;top:12px;right:44px;bottom:44px;background:#0a1726;border:1px solid #2b4a78;border-radius:10px;transform:rotateX(30deg)"></div>
+            <div style="position:absolute;right:16px;top:10px;bottom:44px;width:16px;background:#16263f;border:1px solid #2b4a78;border-radius:8px"></div>
+            <div style="position:absolute;left:16px;right:44px;bottom:24px;height:18px;background:#0c0404;border:1px solid #5e1010;border-radius:5px"></div>
+            <div style="position:absolute;left:20px;right:50px;bottom:0;height:24px;background:#16263f;border:1px solid #2b4a78;border-radius:6px 6px 3px 3px"></div>
+            <div style="position:absolute;left:8px;top:8px;background:rgba(8,12,24,.82);border:1px solid #39E0FF;color:#39E0FF;border-radius:8px;padding:4px 6px;font-size:8px">弹珠 1286</div>
+            <div style="position:absolute;right:8px;top:8px;background:rgba(8,12,24,.82);border:1px solid #FFD66B;color:#FFD66B;border-radius:8px;padding:4px 6px;font-size:8px">本局 ×8</div>
+            <div style="position:absolute;left:50%;bottom:34px;transform:translateX(-50%);background:rgba(8,12,24,.82);border:1px solid #FF3B30;color:#ff6b63;border-radius:8px;padding:4px 8px;font-size:8px">出珠盒 0/60</div>
+          </div>
+          <div style="position:absolute;left:12px;right:12px;bottom:12px;display:flex;gap:6px">
+            <div style="flex:1;background:rgba(27,58,102,.9);border:1px solid #3a5f9a;border-radius:10px;padding:10px 0;text-align:center;font-size:9px">加注</div>
+            <div style="flex:1.6;background:linear-gradient(180deg,#39E0FF,#1497c9);color:#04222e;border-radius:10px;padding:10px 0;text-align:center;font-size:9px;font-weight:800">按住拉杆</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

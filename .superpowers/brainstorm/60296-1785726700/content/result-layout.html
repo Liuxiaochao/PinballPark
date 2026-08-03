@@ -1,0 +1,88 @@
+<h2>结果结算区：一局结束怎么呈现</h2>
+<p class="subtitle">玩法规则不变，只看“命中/沉没”这个瞬间的界面形态。</p>
+
+<div class="options">
+  <div class="option" data-choice="inline" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>机台常驻结果区</h3>
+      <p>控制台上方保留一块金属结果屏：待机/投入/命中/沉没四种状态原地切换，不弹窗、不打断机台。</p>
+      <div class="mockup" style="margin-top:10px">
+        <div style="background:linear-gradient(180deg,#13294d,#0a1830);border:3px solid #2a4f86;border-radius:22px;padding:12px;width:220px;color:#eaf2ff;font-family:sans-serif">
+          <div style="background:#1a0606;border:1px solid #5e1010;border-radius:12px;padding:8px;text-align:center;color:#ff3b30;font-family:monospace;font-size:14px;letter-spacing:3px">PINBALL PARK</div>
+          <div style="background:#0e2036;border:1px solid #2b4a78;border-radius:12px;height:220px;position:relative">
+            <div style="position:absolute;left:14px;top:10px;right:42px;bottom:42px;background:#0a1726;border:1px solid #2b4a78;border-radius:10px;transform:rotateX(30deg)"></div>
+            <div style="position:absolute;right:14px;top:8px;bottom:42px;width:16px;background:#16263f;border:1px solid #2b4a78;border-radius:8px"></div>
+            <div style="position:absolute;left:14px;right:42px;bottom:20px;height:18px;background:#0c0404;border:1px solid #5e1010;border-radius:5px"></div>
+            <div style="position:absolute;left:18px;right:48px;bottom:0;height:20px;background:#16263f;border:1px solid #2b4a78;border-radius:6px 6px 3px 3px"></div>
+          </div>
+          <div style="margin-top:8px;background:#0c1830;border:1px solid #2a4f86;border-radius:10px;padding:8px 10px;display:flex;justify-content:space-between;align-items:center">
+            <div style="color:#0F9D58;font-size:10px;font-weight:800">命中！+40 珠</div>
+            <div style="color:#FFD66B;font-size:10px">+1 卡</div>
+          </div>
+          <div style="margin-top:6px;background:#0c1830;border:1px solid #2a4f86;border-radius:12px;padding:8px;display:grid;grid-template-columns:1fr 1.5fr;gap:6px">
+            <div style="background:#1b3a66;border:1px solid #3a5f9a;border-radius:9px;padding:7px 0;text-align:center;font-size:8px">再来</div>
+            <div style="background:#39E0FF;color:#04222e;border-radius:9px;padding:7px 0;text-align:center;font-size:8px;font-weight:800">看视频 ×2</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="payout-tray" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>机台吐票结算带</h3>
+      <p>球落定后，机台下部像吐票口一样滑出结算带，包含出珠盒、积分卡和操作键；物理感强但会遮住一部分板面。</p>
+      <div class="mockup" style="margin-top:10px">
+        <div style="background:linear-gradient(180deg,#13294d,#0a1830);border:3px solid #2a4f86;border-radius:22px;padding:12px;width:220px;color:#eaf2ff;font-family:sans-serif">
+          <div style="background:#1a0606;border:1px solid #5e1010;border-radius:12px;padding:8px;text-align:center;color:#ff3b30;font-family:monospace;font-size:14px;letter-spacing:3px">PINBALL PARK</div>
+          <div style="background:#0e2036;border:1px solid #2b4a78;border-radius:12px;height:220px;position:relative;overflow:hidden">
+            <div style="position:absolute;left:14px;top:10px;right:42px;bottom:72px;background:#0a1726;border:1px solid #2b4a78;border-radius:10px;transform:rotateX(30deg)"></div>
+            <div style="position:absolute;right:14px;top:8px;bottom:72px;width:16px;background:#16263f;border:1px solid #2b4a78;border-radius:8px"></div>
+            <div style="position:absolute;left:14px;right:42px;bottom:52px;height:18px;background:#0c0404;border:1px solid #5e1010;border-radius:5px"></div>
+            <div style="position:absolute;left:8px;right:8px;bottom:0;height:50px;background:linear-gradient(180deg,#12314f,#0c1830);border-top:2px solid #39E0FF;border-radius:8px 8px 0 0;padding:6px 8px;font-size:8px;color:#9fb6d8">
+              <div style="display:flex;justify-content:space-between;margin-bottom:5px"><span style="color:#0F9D58;font-weight:800">+40 珠</span><span style="color:#FFD66B">+1 卡</span></div>
+              <div style="display:flex;gap:5px"><div style="flex:1;background:#1b3a66;border:1px solid #3a5f9a;border-radius:7px;padding:5px 0;text-align:center">再来</div><div style="flex:1.4;background:#39E0FF;color:#04222e;border-radius:7px;padding:5px 0;text-align:center;font-weight:800">×2</div></div>
+            </div>
+          </div>
+          <div style="margin-top:6px;background:#0c1830;border:1px solid #2a4f86;border-radius:12px;padding:8px;display:grid;grid-template-columns:1fr 1.5fr;gap:6px">
+            <div style="background:#1b3a66;border:1px solid #3a5f9a;border-radius:9px;padding:7px 0;text-align:center;font-size:8px">加注</div>
+            <div style="background:#39E0FF;color:#04222e;border-radius:9px;padding:7px 0;text-align:center;font-size:8px;font-weight:800">按住拉杆</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="arcade-overlay" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>街机浮层</h3>
+      <p>结果以半透明街机面板盖在机台上，信息最完整、按钮最醒目；实现最接近现在，但机台会被暂时遮住。</p>
+      <div class="mockup" style="margin-top:10px">
+        <div style="background:linear-gradient(180deg,#13294d,#0a1830);border:3px solid #2a4f86;border-radius:22px;padding:12px;width:220px;color:#eaf2ff;font-family:sans-serif;position:relative">
+          <div style="background:#1a0606;border:1px solid #5e1010;border-radius:12px;padding:8px;text-align:center;color:#ff3b30;font-family:monospace;font-size:14px;letter-spacing:3px">PINBALL PARK</div>
+          <div style="background:#0e2036;border:1px solid #2b4a78;border-radius:12px;height:220px;position:relative;opacity:.45">
+            <div style="position:absolute;left:14px;top:10px;right:42px;bottom:42px;background:#0a1726;border:1px solid #2b4a78;border-radius:10px;transform:rotateX(30deg)"></div>
+            <div style="position:absolute;right:14px;top:8px;bottom:42px;width:16px;background:#16263f;border:1px solid #2b4a78;border-radius:8px"></div>
+            <div style="position:absolute;left:14px;right:42px;bottom:20px;height:18px;background:#0c0404;border:1px solid #5e1010;border-radius:5px"></div>
+            <div style="position:absolute;left:18px;right:48px;bottom:0;height:20px;background:#16263f;border:1px solid #2b4a78;border-radius:6px 6px 3px 3px"></div>
+          </div>
+          <div style="position:absolute;left:22px;right:22px;top:88px;background:#0c1830;border:2px solid #39E0FF;border-radius:14px;padding:12px;box-shadow:0 8px 22px rgba(0,0,0,.55);text-align:center">
+            <div style="color:#0F9D58;font-size:13px;font-weight:800">命中！+40 珠</div>
+            <div style="color:#FFD66B;font-size:10px;margin:3px 0 8px">+1 积分卡</div>
+            <div style="display:flex;gap:6px">
+              <div style="flex:1;background:#1b3a66;border:1px solid #3a5f9a;border-radius:8px;padding:7px 0;font-size:9px">再来</div>
+              <div style="flex:1.5;background:#39E0FF;color:#04222e;border-radius:8px;padding:7px 0;font-size:9px;font-weight:800">看视频 ×2</div>
+            </div>
+          </div>
+          <div style="margin-top:8px;background:#0c1830;border:1px solid #2a4f86;border-radius:12px;padding:8px;display:grid;grid-template-columns:1fr 1.5fr;gap:6px">
+            <div style="background:#1b3a66;border:1px solid #3a5f9a;border-radius:9px;padding:7px 0;text-align:center;font-size:8px">加注</div>
+            <div style="background:#39E0FF;color:#04222e;border-radius:9px;padding:7px 0;text-align:center;font-size:8px;font-weight:800">按住拉杆</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
