@@ -136,3 +136,4 @@ Cocos Creator 场景/预制体 JSON 中，自定义脚本组件的 `__type__` �
 | 2026-07-30 | review-pinball-park-2026-07-29.html | reviews/ | 阶段评审报告（迁移自根目录） | 人工撰写 |
 | 2026-07-30 | review-doc-audit-2026-07-30.html | reviews/ | 文档审查与重组报告（新建+迁移） | AI 审查 |
 | 2026-07-30 | RULES.md | — | 文档分类管理规则（本文） | AI 审查 |
+| 2026-08-03 | game-interface.html | ui/ | 游戏界面权威文档（界面重构后唯一实现规范） | AI 实施 |

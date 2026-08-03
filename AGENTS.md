@@ -43,7 +43,8 @@
 | 查数值参数（倍率/RTP/发卡/经济） | `docs/numeric/numerical-design-pinball-park.html` + `docs/numeric/sim/economy_sim.py` |
 | 看技术架构 | `docs/tech/architecture-pinball-park.html` |
 | 调 API | `docs/tech/api-pinball-park.html` |
-| 设计 UI | `docs/ui/ui-ux-pinball-park.html` + `docs/ui/ui-game-machine-mockup.html` |
+| 看界面实现规范 | `docs/ui/game-interface.html` |
+| 历史 UI 视觉参考 | `docs/ui/ui-ux-pinball-park.html` + `docs/ui/ui-game-machine-mockup.html` |
 | 场景里脚本引用 hash 对不上/黑屏 | `AGENTS.md § Cocos Creator 运行与场景引用规范` + `python3 tools/sync_scene_script_refs.py --check`（`npm run check:cocos`）；不一致时跑不带 `--check` 的版本自动按 meta uuid 重算 23 字符压缩 UUID |
 | 改数值后验证经济 | `pytest tests/numeric -q` + `python3 docs/numeric/sim/economy_sim.py` |
 | 改功能细节 | `docs/features/F-xxx-*.md`（功能卡片，AI 可改）|
