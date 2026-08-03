@@ -16,3 +16,10 @@ __pycache__/
 .creator/
 temp/
 build/
+
+# Cocos Creator 编辑器本地状态/导入缓存（可重建，不入库）
+# library/ 为资源导入缓存；profiles/ 与 settings/v2/packages/ 为编辑器/插件本地视图与配置状态
+# 这些文件每次打开项目都会被改写，不应进入版本管理
+library/
+profiles/
+settings/v2/packages/
