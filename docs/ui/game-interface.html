@@ -278,7 +278,7 @@
     <table>
       <tr><th>文件</th><th>对应职责</th></tr>
       <tr><td>assets/scripts/Main.ts</td><td>场景入口与相机</td></tr>
-      <tr><td>assets/scripts/Lobby.ts</td><td>当前独立大厅、领珠、概率公示入口（待迁移到机台内）</td></tr>
+      <tr><td>assets/scripts/Lobby.ts</td><td>旧独立大厅脚本（当前 Main 不再使用，待清理）</td></tr>
       <tr><td>assets/scripts/PinballGame.ts</td><td>机台、状态、结果</td></tr>
       <tr><td>assets/scripts/UI.ts</td><td>UI 工厂</td></tr>
       <tr><td>assets/scripts/GameConfig.ts</td><td>界面/机台参数</td></tr>
@@ -286,7 +286,7 @@
       <tr><td>assets/scripts/ExitTag.ts</td><td>出口标签</td></tr>
       <tr><td>assets/scripts/MockBackend.ts</td><td>本地账本</td></tr>
     </table>
-    <div class="card warn"><b>已知迁移差异：</b>当前代码仍是独立大厅、结算弹窗、固定 1 颗、无加珠、无抽屉；这些是后续按本文档重构客户端的迁移项。</div>
+    <div class="card ok"><b>当前实现状态：</b>客户端已按本文档核心流程重构：无独立大厅入口、5 颗开局、加珠 +1、抽屉、结果带。仍待补真实服务端、广告 SDK、视觉资源与逐项状态映射。</div>
   </section>
 
   <section id="s11">
