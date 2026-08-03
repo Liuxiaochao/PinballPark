@@ -2,8 +2,8 @@
 // 物理在「扁平坐标系」中模拟（x 向右、y 向上、重力向下），机台 30° 后仰由相机透视实现。
 import { Layers } from 'cc';
 
-// 机台（物理世界）渲染层：统一用标准 UI_2D 层，确保被同一个 UI 相机渲染
-export const GAME_LAYER = Layers.Enum.UI_2D;
+// 机台（物理世界）渲染层：独立 UI_3D 层，由专用透视相机以 60° 后仰渲染；HUD 仍用 UI_2D
+export const GAME_LAYER = Layers.Enum.UI_3D;
 
 export const GameConfig = {
   // 设计分辨率（竖屏）
@@ -35,29 +35,27 @@ export const GameConfig = {
     width: 560,
     height: 980,
     wallThickness: 20,
-    pegRows: 6,
-    pegCols: 9,
-    pegRadius: 9,
-    ballRadius: 17,
+    pegRows: 7,
+    pegCols: 9, // 列距必须 > 弹珠直径（32px），否则弹珠无法穿过钉阵
+    pegRadius: 7,
+    ballRadius: 16,
     gravity: -980,
-    launchSpeedY: 1180,
-    launchSpeedX: 160,
-    linearDamping: 0.04,
-    restitution: 0.5, // 碰撞回弹（仅当引擎支持时生效）
+    tiltDeg: 60, // 机台后仰角：沿面板方向的重力 = gravity * sin(tiltDeg)
+    chargeTime: 1.4, // 蓄力满所需秒数
+    launchSpeedMin: 1250, // 蓄力 0% 时的发射速度（需足够越过通道内墙）
+    launchSpeedMax: 1450, // 蓄力 100% 时的发射速度
+    launchSpeedX: 5, // 发射时随机横向抖动（小）
+    linearDamping: 0.015,
+    restitution: 0.4, // 碰撞回弹
+    laneWidth: 62, // 发射通道宽
+    laneTopRatio: 0.8, // 通道内墙顶高度（占机台高比例；弹珠在顶部被圆头导向左方进场）
+    plungerPull: 46, // 蓄力时发射杆/弹珠后拉距离
   },
 
   // 底部出口（12 格：10 倍率格 + 2 暗口/沉没）
   // 倍率值决定物理落点的中奖倍率；0 表示沉没
   exitValues: [2, 4, 2, 6, 2, 8, 4, 16, 2, 32, 0, 0],
   sinkLabel: '沉没',
-
-  // 30° 后仰透视（由 BoardCamera 实现，物理保持扁平）
-  camera: {
-    tiltEnabled: true,
-    fov: 45,
-    distance: 1320,
-    verticalOffset: 680, // 相机低于机台中心，制造后仰观感（≈30°）
-  },
 };
 
 // 按权重抽取一个倍率

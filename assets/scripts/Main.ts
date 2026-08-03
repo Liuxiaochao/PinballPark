@@ -50,17 +50,39 @@ export class Main extends Component {
 
   private setupCamera() {
     const canvas = this.node.getComponent(Canvas);
-    let cam: Camera | null = canvas ? canvas.cameraComponent : this.node.getComponentInChildren(Camera);
-    if (!cam) return;
+    // 机台相机：透视 + 后仰（相机位于机台中心下方 30° 仰角，
+    // 机台顶部更远更小，形成 60° 后仰的游戏机观感），只渲染机台层（UI_3D）
+    const pitchDeg = 30;
+    const pitchRad = (pitchDeg * Math.PI) / 180;
+    const dist = 860; // 相机到机台中心的视线距离
+    let boardCam = this.node.getChildByName('BoardCamera')?.getComponent(Camera);
+    if (!boardCam) {
+      const camNode = new Node('BoardCamera');
+      camNode.layer = Layers.Enum.UI_3D;
+      this.node.addChild(camNode);
+      boardCam = camNode.addComponent(Camera);
+    }
+    boardCam.node.setPosition(0, -Math.sin(pitchRad) * dist, Math.cos(pitchRad) * dist);
+    boardCam.node.setRotationFromEuler(pitchDeg, 0, 0);
+    boardCam.projection = Camera.ProjectionType.PERSPECTIVE;
+    boardCam.fov = 55;
+    boardCam.near = 1;
+    boardCam.far = 4000;
+    boardCam.visibility = Layers.Enum.UI_3D;
+    boardCam.clearFlags = Camera.ClearFlag.SOLID_COLOR;
+    boardCam.clearColor = new Color(10, 12, 26, 255);
+    boardCam.priority = -1;
 
-    // 关键：相机必须位于内容前方（看向 -Z）。相机在 z=0 时，位于 z>=0 的 UI 全在相机背后，必然不可见。
+    // HUD 相机：正交，只渲染 UI_2D，不清颜色（让机台画面透出）
+    const cam = canvas ? canvas.cameraComponent : this.node.getComponentInChildren(Camera);
+    if (!cam) return;
     cam.node.setPosition(0, 0, 1000);
     cam.projection = Camera.ProjectionType.ORTHO;
     cam.orthoHeight = GameConfig.designHeight / 2;
-    cam.visibility = 4294967295; // 渲染所有层，确保 UI_2D 内容可见
-    cam.clearFlags = Camera.ClearFlag.SOLID_COLOR;
-    cam.clearColor = new Color(14, 16, 32, 255);
-    cam.priority = 1;
+    cam.visibility = Layers.Enum.UI_2D;
+    cam.clearFlags = Camera.ClearFlag.DEPTH_ONLY;
+    cam.clearColor = new Color(10, 12, 26, 255);
+    cam.priority = 0;
 
     // 销毁场景中可能存在的多余主相机，避免重复清屏覆盖 UI
     const scene = this.node.getParent();
@@ -80,7 +102,9 @@ export class Main extends Component {
       return;
     }
     ps.enable = true;
-    ps.gravity = new Vec2(0, GameConfig.machine.gravity);
+    // 机台后仰 60°：沿面板方向的有效重力 = g * sin(60°)
+    const m = GameConfig.machine;
+    ps.gravity = new Vec2(0, m.gravity * Math.sin((m.tiltDeg * Math.PI) / 180));
   }
 
   private showLobby() {
