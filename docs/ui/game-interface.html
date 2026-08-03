@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>弹珠乐园 · 游戏界面文档</title>
+<style>
+  :root {
+    --bg: #FAFAF7; --text: #2C2C2A; --muted: #5F5E5A; --border: #E3E1D9;
+    --blue: #185FA5; --blue-l: #E6F1FB; --blue-d: #0C447C;
+    --gold: #F5A623; --gold-l: #FEF3DD; --red: #A32D2D; --red-l: #FCEBEB;
+    --teal: #0F6E56; --teal-l: #E1F5EE; --purple: #534AB7; --purple-l: #EEEDFE;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; color: var(--text); background: var(--bg); line-height: 1.75; }
+  .layout { display: flex; max-width: 1300px; margin: 0 auto; }
+  nav { width: 250px; flex-shrink: 0; position: sticky; top: 0; height: 100vh; overflow-y: auto; padding: 32px 14px; border-right: 1px solid var(--border); background: #fff; }
+  nav h2 { font-size: 13px; color: var(--muted); font-weight: 500; margin-bottom: 12px; }
+  nav a { display: block; padding: 6px 10px; font-size: 12.5px; color: var(--text); text-decoration: none; border-radius: 6px; margin-bottom: 2px; }
+  nav a:hover { background: var(--blue-l); color: var(--blue); }
+  main { flex: 1; padding: 40px 52px 120px; min-width: 0; }
+  h1 { font-size: 26px; font-weight: 600; margin-bottom: 6px; }
+  .subtitle { color: var(--muted); font-size: 14px; margin-bottom: 20px; }
+  .meta { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 28px; }
+  .tag { font-size: 12px; padding: 3px 10px; border-radius: 999px; background: var(--blue-l); color: var(--blue-d); }
+  section { margin-bottom: 46px; scroll-margin-top: 20px; }
+  h2.sec { font-size: 20px; font-weight: 600; padding-bottom: 8px; border-bottom: 2px solid var(--blue); margin-bottom: 14px; }
+  h3 { font-size: 16px; font-weight: 600; margin: 22px 0 8px; }
+  h4 { font-size: 14px; font-weight: 600; margin: 14px 0 6px; color: var(--blue-d); }
+  p { margin-bottom: 10px; font-size: 14px; }
+  ul, ol { margin: 0 0 12px 22px; font-size: 14px; }
+  li { margin-bottom: 4px; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0 16px; font-size: 13px; background: #fff; }
+  th { background: var(--blue-l); color: var(--blue-d); font-weight: 600; text-align: left; padding: 8px 12px; border: 1px solid var(--border); }
+  td { padding: 8px 12px; border: 1px solid var(--border); vertical-align: top; }
+  .card { background: #fff; border: 1px solid var(--border); border-left: 4px solid var(--blue); border-radius: 8px; padding: 14px 18px; margin: 12px 0; font-size: 14px; }
+  .card.warn { border-left-color: var(--red); background: var(--red-l); }
+  .card.ok { border-left-color: var(--teal); background: var(--teal-l); }
+  code { background: #F1EFE8; padding: 1px 6px; border-radius: 4px; font-size: 12.5px; font-family: "SF Mono", Menlo, monospace; }
+  footer { color: var(--muted); font-size: 12px; border-top: 1px solid var(--border); padding-top: 16px; }
+  .docinfo td { font-size: 13px; }
+  @media (max-width: 980px) { nav { display: none; } main { padding: 24px; } }
+</style>
+</head>
+<body>
+<div class="layout">
+<nav>
+  <h2>目录</h2>
+  <a href="#s1">1. 文档信息与权威边界</a>
+  <a href="#s2">2. 设计决策摘要</a>
+  <a href="#s3">3. 界面信息架构与状态机</a>
+  <a href="#s4">4. 主屏分区与节点规范</a>
+  <a href="#s5">5. 页面/状态细则</a>
+  <a href="#s6">6. 交互与动效规格</a>
+  <a href="#s7">7. 音效与触觉反馈</a>
+  <a href="#s8">8. 微信适配、安全区、触控热区</a>
+  <a href="#s9">9. 实现问题清单与 AI 排查流程</a>
+  <a href="#s10">10. 与现有代码/文档一致性映射</a>
+  <a href="#s11">11. 验收清单</a>
+</nav>
+<main>
+  <h1>弹珠乐园 · 游戏界面文档</h1>
+  <p class="subtitle">当前界面重构后的唯一界面实现权威文档；玩法与数值仍以 PRD / 数值文档为准。</p>
+  <div class="meta">
+    <span class="tag">街机实感</span><span class="tag">全屏机台优先</span><span class="tag">720×1280 竖屏</span><span class="tag">界面重构</span>
+  </div>
+
+  <section id="s1">
+    <h2 class="sec">1. 文档信息与权威边界</h2>
+    <table class="docinfo">
+      <tr><td style="width:100px;font-weight:600">文档版本</td><td>v1.0</td></tr>
+      <tr><td style="font-weight:600">日期</td><td>2026-08-03</td></tr>
+      <tr><td style="font-weight:600">上游</td><td>PRD-pinball-park.html、numerical-design-pinball-park.html、ui-ux-pinball-park.html</td></tr>
+      <tr><td style="font-weight:600">下游</td><td>客户端 Cocos 界面实现、测试验收、后续 UI 改动</td></tr>
+    </table>
+    <div class="card"><b>权威边界：</b>本文档拥有界面呈现、交互、状态、动效、实现规范权威；PRD 与数值文档继续拥有玩法规则、数值、服务端行为权威。现有 <code>docs/ui/ui-ux-pinball-park.html</code> 降级为视觉风格参考。</div>
+  </section>
+
+  <section id="s2">
+    <h2 class="sec">2. 设计决策摘要</h2>
+    <table>
+      <tr><th style="width:24%">主题</th><th>决策</th></tr>
+      <tr><td>整体气质</td><td>街机实感</td></tr>
+      <tr><td>信息架构</td><td>全屏机台优先，不保留独立大厅页</td></tr>
+      <tr><td>机台布局</td><td>整机一体：顶部招牌 + 中部弹珠板 + 底部控制台</td></tr>
+      <tr><td>系统入口</td><td>左侧抽屉：任务、商城、概率公示、设置</td></tr>
+      <tr><td>快捷入口</td><td>顶部招牌下保留“领珠 +88”</td></tr>
+      <tr><td>投注入口</td><td>底部控制台集成</td></tr>
+      <tr><td>开局</td><td>IDLE 态点“开始”，自动投入 5 颗，进入可加注/可发射态</td></tr>
+      <tr><td>加注</td><td>每次 +1 颗，支持快速连点；按住连续加，上限 99 且受余额约束</td></tr>
+      <tr><td>结算</td><td>吐票结算带，不弹窗</td></tr>
+      <tr><td>发射</td><td>按住蓄力、松开发射，支持取消</td></tr>
+      <tr><td>透视参数</td><td>60° 只作用于钉板、发射通道、倍率显示；其余界面元素保持屏幕正向；角度作为可配置参数，后续人工统一</td></tr>
+    </table>
+  </section>
+
+  <section id="s3">
+    <h2 class="sec">3. 界面信息架构与状态机</h2>
+    <h3>3.1 信息架构</h3>
+    <ul>
+      <li>顶部招牌：品牌 LED 跑马灯。</li>
+      <li>招牌下状态行：弹珠余额、领珠 +88、积分卡。</li>
+      <li>中部弹珠板：钉阵、发射通道、倍数/亮灯出口、出珠盒、沉没区。</li>
+      <li>左边缘：抽屉触发边。</li>
+      <li>底部控制台：<code>投入 5</code> + <code>加珠 +1</code> + <code>按住拉杆</code>。</li>
+      <li>结果态：吐票结算带从机台下部滑出。</li>
+    </ul>
+    <div class="card"><b>透视分组：</b>倾斜组 = 钉板、发射通道、倍率显示。屏幕正向组 = 顶部招牌、状态行/领珠、左抽屉、出珠盒/沉没区、底部控制台、吐票结算带。</div>
+    <h3>3.2 状态机</h3>
+    <p><code>IDLE_START → STARTING → BET_READY → CHARGING → SIMULATING → RESULT_TRAY</code></p>
+    <table>
+      <tr><th>状态</th><th>主行为</th><th>可用入口</th><th>禁用内容</th></tr>
+      <tr><td>IDLE_START</td><td>开始游戏</td><td>抽屉、领珠</td><td>发射、加珠</td></tr>
+      <tr><td>STARTING</td><td>等待开局</td><td>无</td><td>所有操作</td></tr>
+      <tr><td>BET_READY</td><td>加珠、发射</td><td>抽屉、领珠</td><td>无</td></tr>
+      <tr><td>CHARGING</td><td>蓄力/取消/发射</td><td>无</td><td>抽屉、领珠、加珠、投注</td></tr>
+      <tr><td>SIMULATING</td><td>球飞行</td><td>无</td><td>所有操作</td></tr>
+      <tr><td>RESULT_TRAY</td><td>再来 / ×2 / 商城</td><td>抽屉、领珠</td><td>主屏控制台</td></tr>
+    </table>
+  </section>
+
+  <!-- @@MORE@@ -->
+
+  <footer>弹珠乐园 · 游戏界面文档 v1.0</footer>
+</main>
+</div>
+</body>
+</html>
