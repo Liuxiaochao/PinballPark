@@ -162,3 +162,4 @@
 - 2026-08-03 | 发射通道改为弯管 + 蓄力手感 | 直筒发射通道+圆形 bump 导向改为 J 形弯管：双壁描边管身（粗描边模拟管壁+内壁高光+出口喇叭口），圆弧用分段静态盒近似墙体（addArcWall）；弹珠沿弯管上行从顶部左侧出口飞入场地，钉阵右界随之左移；蓄力弹性过大修复——launchSpeedMin 1250→750、launchSpeedMax 1450→1550、chargeTime 1.4→1.2，蓄力多少真正决定能否出管；反解出管最低蓄力阈值 minExitPower，蓄力条低于阈值显示红色，弱发射弹珠落回通道判沉没并提示 | assets/scripts/PinballGame.ts, assets/scripts/GameConfig.ts, AGENTS.md
 - 2026-07-30 | 文档审查 | AGENTS/INDEX 重写为游戏开发导向，新增待补领域/项目真实状态/经济问题记录 | AGENTS.md, docs/INDEX.md, docs/features/_TEMPLATE.md, .codebuddy/rules/project.md, docs/review-doc-audit-*.html
 - 2026-07-30 | 逻辑审查 | 修复 7 处逻辑漏洞/3 处表达问题：SKILL 使用说明/自发调整闭环合并/日志模板/路径遗漏 | AGENTS.md, docs/RULES.md, .codebuddy/skills/*/SKILL.md, docs/features/_TEMPLATE.md, docs/INDEX.md
+- 2026-08-07 | 出口弹片触发结算 | 每个落球出口开口处新增弹簧弹片（传感器 BoxCollider2D + 视觉），球压过即按该弹片所在出口倍率结算并播放下压反馈；实体出口格不再挂 ExitTag（仅作底），结算主触发改为弹片；保留"按实际落点静止"兜底以防未压到弹片；前版"首次擦碰即结算"误判（导致沉没格不生效）由弹片专属出口判定根治 | assets/scripts/PinballGame.ts, assets/scripts/BallController.ts, AGENTS.md

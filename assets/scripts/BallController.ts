@@ -19,8 +19,9 @@ export class BallController extends Component {
 
   onBeginContact(self: Collider2D, other: Collider2D, contact: IPhysics2DContact | null) {
     if (this.game && !this.game.resolved) {
+      // 球压过出口弹片（传感器）即触发结算，并由弹片所在出口决定落点与结果。
       const tag = other.getComponent(ExitTag);
-      if (tag) this.game.resolveExit(tag.index, tag.multiplier);
+      if (tag) this.game.resolveByPaddle(tag.index, tag.multiplier);
     }
   }
 }

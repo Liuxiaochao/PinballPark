@@ -46,6 +46,7 @@ export class PinballGame extends Component {
   private rollAngle = 0;                  // 累积滚动角（弧度），pip 绕球心公转模拟滚动
   private ballZ = 17;                     // 球视觉抬到机台前方（朝相机 +z），避免与同平面机台 Graphics 互相覆盖
   private binGraphics: Node[] = [];
+  private paddleNodes: Node[] = [];   // 各出口弹片（触发结算的传感器）
   private binW = 0;
   private state: MachineState = 'IDLE';
   private roundId = 0;
@@ -75,6 +76,9 @@ export class PinballGame extends Component {
   private bendY = 0;
   private minExitPower = 1;
   private reachedArc = false;
+  private ballInExitZone = false;   // 球已进入底部出口区（接触过出口格或落到底部）
+  private exitZoneTimer = 0;        // 进入出口区后的计时（用于超时兜底结算）
+  private settleTimer = 0;          // 球低速静止计时（连续低速才判定落定）
   private power = 0;
   private charging = false;
   private touchStart = new Vec2();
@@ -331,15 +335,40 @@ export class PinballGame extends Component {
       g.strokeColor = new Color(180, 195, 235, 90);
       g.roundRect(-(binW - 5) / 2, -12, binW - 5, 24, 8);
       g.stroke();
-      const tag = bottom.addComponent(ExitTag);
-      tag.index = i;
-      tag.multiplier = GameConfig.exitValues[i];
       this.binGraphics.push(bottom);
 
       if (i > 0) {
         const divider = this.addBox(root, -halfW + 6 + binW * i, -halfH + 48, 5, 68, new Color(34, 39, 70));
         this.setLayerRec(divider, GAME_LAYER);
       }
+
+      // 出口弹片（触发结算用传感器）：挂在每个出口开口处，球压过即触发结算并给出结果
+      const paddle = new Node('paddle');
+      paddle.setPosition(cx, -halfH + 70, 1);
+      const pg = paddle.addComponent(Graphics);
+      pg.fillColor = new Color(60, 120, 180);
+      pg.roundRect(-(binW - 12) / 2, -3, binW - 12, 6, 3);
+      pg.fill();
+      pg.fillColor = new Color(180, 230, 255);
+      pg.circle(0, 0, 3);
+      pg.fill();
+      pg.fillColor = new Color(120, 180, 230);
+      pg.circle(-(binW - 12) / 2 + 4, 0, 2);
+      pg.fill();
+      pg.circle((binW - 12) / 2 - 4, 0, 2);
+      pg.fill();
+      const pcol = paddle.addComponent(BoxCollider2D);
+      pcol.sensor = true;
+      pcol.size = new Size(binW - 12, 8);
+      pcol.apply();
+      const ptag = paddle.addComponent(ExitTag);
+      ptag.index = i;
+      ptag.multiplier = GameConfig.exitValues[i];
+      paddle.layer = GAME_LAYER;
+      this.setLayerRec(paddle, GAME_LAYER);
+      root.addChild(paddle);
+      this.paddleNodes.push(paddle);
+
       const val = GameConfig.exitValues[i];
       const lab = makeLabel(
         bottom,
@@ -595,6 +624,9 @@ export class PinballGame extends Component {
     if (!this.ball) return;
     this.state = 'SIMULATING';
     this.reachedArc = false;
+    this.ballInExitZone = false;
+    this.exitZoneTimer = 0;
+    this.settleTimer = 0;
     this.launchBtn.active = false;
     this.addBtn.active = false;
     const m = GameConfig.machine;
@@ -746,6 +778,22 @@ export class PinballGame extends Component {
         if (this.ball.position.y > this.bendY) this.reachedArc = true;
         if (!this.reachedArc && this.ball.position.y < this.launchY) {
           this.returnBallToPlunger();
+          return;
+        }
+        // 出管后进入底部出口区：等球基本静止再按“实际落点”结算，
+        // 避免弹跳途中擦到邻格就误判命中，导致不管掉哪个出口都显示成功。
+        if (this.reachedArc && this.ball.position.y < -GameConfig.machine.height / 2 + 90) {
+          this.ballInExitZone = true;
+        }
+        if (this.ballInExitZone) {
+          this.exitZoneTimer += dt;
+          const rb = this.ball.getComponent(RigidBody2D);
+          const speed = rb ? Math.hypot(rb.linearVelocity.x, rb.linearVelocity.y) : 0;
+          if (speed < 50) this.settleTimer += dt;
+          else this.settleTimer = 0;
+          if (this.settleTimer > 0.2 || this.exitZoneTimer > 3) {
+            this.resolveByPosition();
+          }
         }
       }
       return;
@@ -765,6 +813,32 @@ export class PinballGame extends Component {
     this.reachedArc = false;
     toast(this.hudParent, '蓄力不足，弹珠退回通道');
     this.enterBetReady();
+  }
+
+  // 球压过出口弹片时由 BallController 回调：以该弹片所在出口结算并给出结果，
+  // 同时播放弹片下压反馈。弹片是每个出口专属的传感器，球压过即代表落入该出口，
+  // 因此命中/沉没由真实落点决定，不会因弹跳擦到邻格而误判。
+  resolveByPaddle(index: number, multiplier: number) {
+    if (this.resolved) return;
+    const p = this.paddleNodes[index];
+    if (p && p.isValid) {
+      p.setScale(1, 0.35, 1);
+      this.scheduleOnce(() => { if (p.isValid) p.setScale(1, 1, 1); }, 0.15);
+    }
+    this.resolveExit(index, multiplier);
+  }
+
+  // 兜底：极少数情况球未压到任何弹片却停在底部时，按“实际落点 x 坐标”反推出口结算。
+  private resolveByPosition() {
+    if (this.resolved || !this.ball) return;
+    const m = GameConfig.machine;
+    const halfW = m.width / 2;
+    const n = GameConfig.exitValues.length;
+    const binW = (m.width - 12) / n;
+    const x = this.ball.position.x; // 机台本地坐标，与 buildExits 中出口格坐标同源
+    let idx = Math.round((x + halfW - 6) / binW - 0.5);
+    idx = Math.max(0, Math.min(n - 1, idx));
+    this.resolveExit(idx, GameConfig.exitValues[idx]);
   }
 
   resolveExit(index: number, multiplier: number) {
@@ -861,6 +935,9 @@ export class PinballGame extends Component {
     this.resultTray?.destroy();
     this.resultTray = null;
     this.resolved = false;
+    this.ballInExitZone = false;
+    this.exitZoneTimer = 0;
+    this.settleTimer = 0;
     this.lastBeads = 0;
     this.lastCards = 0;
     this.lastBet = 0;
