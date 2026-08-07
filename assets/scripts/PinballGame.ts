@@ -5,6 +5,7 @@ import {
   Node,
   Vec2,
   Vec3,
+  Quat,
   Color,
   Size,
   Label,
@@ -27,6 +28,10 @@ const { ccclass } = _decorator;
 
 type MachineState = 'IDLE' | 'STARTING' | 'BET_READY' | 'CHARGING' | 'SIMULATING' | 'RESULT';
 
+// 弹珠视觉改用 Graphics 直接绘制（见 createBallVisual）：不依赖 MeshRenderer/材质/顶点色，
+// 规避本机 Cocos 构建里 mesh.reset 处理 colors 属性报 "Cannot read property 'compressed' of undefined" 的问题。
+
+
 @ccclass('PinballGame')
 export class PinballGame extends Component {
   backend!: MockBackend;
@@ -36,6 +41,10 @@ export class PinballGame extends Component {
   private hudParent!: Node;
   private board!: Node;
   private ball: Node | null = null;
+  private ballVisual: Node | null = null; // 弹珠视觉节点（UI_3D 透视相机渲染）
+  private ballPips: Graphics | null = null; // 表面 pip 层（每帧按滚动角重画，公转 = 滚动）
+  private rollAngle = 0;                  // 累积滚动角（弧度），pip 绕球心公转模拟滚动
+  private ballZ = 17;                     // 球视觉抬到机台前方（朝相机 +z），避免与同平面机台 Graphics 互相覆盖
   private binGraphics: Node[] = [];
   private binW = 0;
   private state: MachineState = 'IDLE';
@@ -640,22 +649,97 @@ export class PinballGame extends Component {
     (col as any).friction = 0.2;
     rb.enabledContactListener = true;
     col.apply();
-    const g = n.addComponent(Graphics);
-    g.fillColor = new Color(255, 224, 120);
-    g.circle(0, 0, m.ballRadius);
-    g.fill();
-    g.lineWidth = 2;
-    g.strokeColor = new Color(200, 150, 50, 200);
-    g.circle(0, 0, m.ballRadius - 1);
-    g.stroke();
     const ctrl = n.addComponent(BallController);
     ctrl.game = this;
     this.board.addChild(n);
     n.layer = GAME_LAYER;
     this.ball = n;
+    // 弹珠视觉：独立节点挂 board 下；每帧跟随位置并按线速度滚动（pip 公转）
+    this.ballVisual?.destroy();
+    this.rollAngle = 0;
+    this.ballVisual = this.createBallVisual();
+    this.board.addChild(this.ballVisual);
+  }
+
+  // 生成弹珠视觉：用 Graphics 画「带光影的球体」（径向明暗 + 左上高光 + 描边），再单独一层画随滚动公转的 pip。
+  // 不依赖 MeshRenderer/材质/贴图，纯 2D 绘制在 UI_3D 透视相机下也呈现立体球 + 滚动效果，且绝不崩
+  // （规避 mesh.reset 在部分 Cocos 构建里对 colors 顶点色属性报 'compressed of undefined' 的坑）。
+  private createBallVisual(): Node {
+    const m = GameConfig.machine;
+    const r = m.ballRadius;
+    const grp = new Node('ballVisual');
+    grp.layer = GAME_LAYER; // UI_3D，由透视相机渲染
+
+    // 球体明暗层（画一次）：同心圆从外暗到内亮 + 左上高光 + 描边 → 立体球面
+    const shade = grp.addComponent(Graphics);
+    const bands = 10;
+    for (let i = bands; i >= 1; i--) {
+      const t = i / bands;
+      const k = 0.28 + 0.72 * (1 - t); // 越靠边越暗
+      shade.fillColor = new Color(255 * k, 214 * k, 92 * k);
+      shade.circle(0, 0, r * (0.3 + 0.7 * t));
+      shade.fill();
+    }
+    // 左上高光（固定光源方向，不随滚动移动 → 球面才有稳定立体感）
+    shade.fillColor = new Color(255, 255, 255, 210);
+    shade.circle(-r * 0.34, r * 0.34, r * 0.26);
+    shade.fill();
+    shade.lineWidth = 2;
+    shade.strokeColor = new Color(200, 150, 50, 230);
+    shade.circle(0, 0, r - 1);
+    shade.stroke();
+
+    // pip 层（每帧重画，按 rollAngle 公转 → 滚动/旋转感）
+    const pips = new Node('ballPips');
+    pips.layer = GAME_LAYER;
+    this.ballPips = pips.addComponent(Graphics);
+    grp.addChild(pips);
+    this.drawBallPips();
+    return grp;
+  }
+
+  // 在 pip 层按当前 rollAngle 画几个不同色小球，绕球心公转 → 明显的滚动/旋转效果
+  private drawBallPips() {
+    const g = this.ballPips;
+    if (!g) return;
+    const m = GameConfig.machine;
+    const r = m.ballRadius;
+    g.clear();
+    const orbit = r * 0.52;
+    const pipDefs: Array<{ c: Color; rr: number; base: number }> = [
+      { c: new Color(196, 64, 38), rr: r * 0.26, base: 0 },
+      { c: new Color(60, 84, 170), rr: r * 0.22, base: (Math.PI * 2) / 3 },
+      { c: new Color(238, 238, 248), rr: r * 0.18, base: (Math.PI * 4) / 3 },
+    ];
+    for (const def of pipDefs) {
+      const a = def.base + this.rollAngle;
+      g.fillColor = def.c;
+      g.circle(Math.cos(a) * orbit, Math.sin(a) * orbit, def.rr);
+      g.fill();
+    }
+  }
+
+  // 每帧：弹珠视觉跟随物理球位置；按线速度累积滚动角，并重画 pip 层（绕球心公转）模拟滚动/旋转
+  private syncBallVisual(dt: number) {
+    const b = this.ball;
+    if (!b || !this.ballVisual) return;
+    const m = GameConfig.machine;
+    const p = b.position;
+    this.ballVisual.setPosition(p.x, p.y, this.ballZ); // 抬到机台前方，避免被同平面机台 Graphics 覆盖
+    const rb = b.getComponent(RigidBody2D);
+    if (rb) {
+      const v = rb.linearVelocity;
+      const speed = Math.hypot(v.x, v.y);
+      if (speed > 1e-3) {
+        // 滚动角速度 = 线速度 / 半径；符号让 pip 朝运动反方向流动（自然滚动观感）
+        this.rollAngle -= (speed / m.ballRadius) * dt;
+        this.drawBallPips();
+      }
+    }
   }
 
   update(dt: number) {
+    this.syncBallVisual(dt);
     if (!this.charging) {
       // 蓄力不足、弹珠没能冲出弯管（从未到达圆弧顶）而落回通道：退回发射杆，不结算、不结束
       if (this.state === 'SIMULATING' && this.ball) {
@@ -701,6 +785,11 @@ export class PinballGame extends Component {
       if (this.ball) {
         this.ball.destroy();
         this.ball = null;
+      }
+      if (this.ballVisual) {
+        this.ballVisual.destroy();
+        this.ballVisual = null;
+        this.ballPips = null;
       }
     }, 0.25);
     this.showResult(beads, cards, multiplier, multiplier > 0);
@@ -763,6 +852,11 @@ export class PinballGame extends Component {
     if (this.ball) {
       this.ball.destroy();
       this.ball = null;
+    }
+    if (this.ballVisual) {
+      this.ballVisual.destroy();
+      this.ballVisual = null;
+      this.ballPips = null;
     }
     this.resultTray?.destroy();
     this.resultTray = null;

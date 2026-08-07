@@ -43,9 +43,9 @@ export const GameConfig = {
     height: 980,
     wallThickness: 20,
     pegRows: 7,
-    pegCols: 9, // 列距必须 > 弹珠直径（32px），否则弹珠无法穿过钉阵
+    pegCols: 9, // 钉阵列/行距(≈50~55px) 必须 > 弹珠直径 + 余量：相邻钉净间隙 = 钉距 − 2×钉半径，弹珠要穿过须 直径 < 净间隙，否则被两钉楔死卡住
     pegRadius: 7,
-    ballRadius: 16,
+    ballRadius: 13, // 弹珠半径（直径 26px，明显小于钉阵净间隙 ≈43px，顺畅穿过不卡；弯管通道 52px 余量也更足）
     gravity: -980,
     tiltDeg: 60, // 机台后仰角：沿面板方向的重力 = gravity * sin(tiltDeg)
     chargeTime: 1.2, // 蓄力满所需秒数
