@@ -256,7 +256,8 @@
 </head>
 <body>
   <h1>弹珠乐园 · 机台视觉稿</h1>
-  <div class="sub">透视倾斜 30°（机台后仰）＋ 老虎机/柏青哥机柜 · 红色 LED 跑马灯 · 非线框 · 可直接预览</div>
+  <div class="sub">旧版透视倾斜 30°（机台后仰）＋ 老虎机/柏青哥机柜 · 红色 LED 跑马灯 · 非线框 · 可直接预览</div>
+  <div style="max-width:430px;margin:0 auto 14px;background:rgba(255,59,48,.12);border:1px solid #ff6b63;border-radius:12px;padding:10px 14px;font-size:12px;line-height:1.6;color:#ffc2bf">历史参考：本稿不再作为当前界面实现权威。当前规范见 <a href="game-interface.html" style="color:#FFD66B">game-interface.html</a>；当前 60° 透视只作用于钉板、发射通道、倍率显示。</div>
 
   <div class="cabinet">
     <div class="marquee">
@@ -313,7 +314,7 @@
   </div>
   <div class="legend">
     <b>修正点 1 · 机台质感：</b>金属机柜＋顶部招牌＋金色立体钉阵＋发光奖槽/沉没暗口＋右侧弹簧发射杆＋底部出珠托盘。<br>
-    <b>修正点 2 · 30° 倾斜：</b>机台向后仰 30° 的真实透视倾斜（<code>perspective + rotateX(30deg)</code>），板面有纵深。可切回旧方案（平面 2D 旋转）对比。<br>
+    <b>修正点 2 · 旧版 30° 倾斜：</b>本稿保留旧版机台向后仰 30° 的真实透视倾斜方案；当前实现见 <a href="game-interface.html" style="color:#FFD66B">game-interface.html</a>，60° 只作用于钉板、发射通道、倍率显示。<br>
     <b>修正点 3 · 弹射轨道：</b>右侧竖向发射道（顶部亮灯入口连到钉板右上），弹珠自底部弹起、沿道升至顶端、转入钉板后穿钉下落。<br>
     <b>修正点 4 · 控制区移出画面：</b>「加注 / 拉杆发射」在机柜下方控制条，不遮挡游戏画面；发射道底部保留发射旋钮。<br>
     <b>修正点 5 · 出珠口贴近钉板 + 局部重排：</b>钉阵→倍率表→亮灯出口→出珠盒子自上而下依次排布，互不重叠；出口/托盘均避让右侧发射道（right:48 而非 18）。<br>

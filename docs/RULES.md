@@ -11,7 +11,7 @@ docs/
 ├── design/               # 游戏设计：PRD、GDD、玩法概览
 ├── numeric/              # 数值与经济：数值文档、仿真引擎 (sim/)
 ├── tech/                 # 技术架构：架构图、API 契约
-├── ui/                   # UI/UX：设计规范、机台视觉稿
+├── ui/                   # 界面实现规范：权威文档、历史视觉稿
 ├── ops/                  # 运营：上线方案、运营计划、活动模板
 ├── qa/                   # 测试验收：测试策略、验收标准
 ├── reviews/              # 评审审计：阶段性评审、专项审查
@@ -129,10 +129,11 @@ Cocos Creator 场景/预制体 JSON 中，自定义脚本组件的 `__type__` �
 | 2026-07-30 | economy_sim.py | numeric/sim/ | 经济数值仿真引擎（迁移自 docs/sim/） | 人工撰写 |
 | 2026-07-30 | architecture-pinball-park.html | tech/ | 技术架构（迁移自根目录） | 人工撰写 |
 | 2026-07-30 | api-pinball-park.html | tech/ | API 契约（迁移自根目录） | 人工撰写 |
-| 2026-07-30 | ui-ux-pinball-park.html | ui/ | UI-UX 设计规范（迁移自根目录） | 人工撰写 |
-| 2026-07-30 | ui-game-machine-mockup.html | ui/ | 机台视觉稿（迁移自根目录） | 人工撰写 |
+| 2026-07-30 | ui-ux-pinball-park.html | ui/ | UI-UX 设计规范（历史参考，迁移自根目录） | 人工撰写 |
+| 2026-07-30 | ui-game-machine-mockup.html | ui/ | 机台视觉稿（历史参考，迁移自根目录） | 人工撰写 |
 | 2026-07-30 | operations-pinball-park.html | ops/ | 上线与运营方案（迁移自根目录） | 人工撰写 |
 | 2026-07-30 | test-acceptance-pinball-park.html | qa/ | 测试验收标准（迁移自根目录） | 人工撰写 |
 | 2026-07-30 | review-pinball-park-2026-07-29.html | reviews/ | 阶段评审报告（迁移自根目录） | 人工撰写 |
 | 2026-07-30 | review-doc-audit-2026-07-30.html | reviews/ | 文档审查与重组报告（新建+迁移） | AI 审查 |
 | 2026-07-30 | RULES.md | — | 文档分类管理规则（本文） | AI 审查 |
+| 2026-08-03 | game-interface.html | ui/ | 游戏界面权威文档（界面重构后唯一实现规范） | AI 实施 |

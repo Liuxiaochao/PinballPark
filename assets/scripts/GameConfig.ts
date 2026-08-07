@@ -13,22 +13,29 @@ export const GameConfig = {
   // 弹珠（bead）经济
   bead: {
     dailyFree: 88, // 每日免费领取
-    videoReward: 6, // 每次看视频领珠
+    videoReward: 88, // 每次看视频领珠
     maxVideoRedeemPerDay: 6, // 看视频领珠 ≤6 次/日
     maxVideoTotalPerDay: 20, // 所有看视频（含 ×2 / 领珠）≤20 次/日
   },
 
   // 投注
   bet: {
-    beadsPerRound: 1, // 每局消耗 1 颗弹珠
+    beadsPerRound: 5, // 点“开始”自动投入 5 颗
+    minBet: 5,
+    maxBet: 99, // 有效投入上限
+    addStep: 1, // 加珠每次 +1
   },
 
   // 倍率分布（投注后抽随机倍率用），权重近似 F-001 / F-002
   multiplierLevels: [2, 4, 6, 8, 16, 32],
   multiplierWeights: [50, 25, 12, 8, 4, 1],
 
-  // 发卡阈值：落点倍率 ≥ 该值则掉 1 张积分卡
-  cardDropMultiplierThreshold: 4,
+  // 发卡：R≥40 才发卡，最多 5 张
+  card: {
+    threshold: 40,
+    maxPerRound: 5,
+    pointsPerCard: 10,
+  },
 
   // 机台（扁平物理坐标，单位 px）
   machine: {
@@ -36,19 +43,18 @@ export const GameConfig = {
     height: 980,
     wallThickness: 20,
     pegRows: 7,
-    pegCols: 9, // 列距必须 > 弹珠直径（32px），否则弹珠无法穿过钉阵
+    pegCols: 9, // 钉阵列/行距(≈50~55px) 必须 > 弹珠直径 + 余量：相邻钉净间隙 = 钉距 − 2×钉半径，弹珠要穿过须 直径 < 净间隙，否则被两钉楔死卡住
     pegRadius: 7,
-    ballRadius: 16,
+    ballRadius: 13, // 弹珠半径（直径 26px，明显小于钉阵净间隙 ≈43px，顺畅穿过不卡；弯管通道 52px 余量也更足）
     gravity: -980,
     tiltDeg: 60, // 机台后仰角：沿面板方向的重力 = gravity * sin(tiltDeg)
-    chargeTime: 1.4, // 蓄力满所需秒数
-    launchSpeedMin: 1250, // 蓄力 0% 时的发射速度（需足够越过通道内墙）
-    launchSpeedMax: 1450, // 蓄力 100% 时的发射速度
+    chargeTime: 1.2, // 蓄力满所需秒数
+    launchSpeedMin: 750, // 蓄力 0% 时的发射速度（很弱，蓄力不足会出不了弯管）
+    launchSpeedMax: 1550, // 蓄力 100% 时的发射速度（明显快于下限，蓄力多少决定能否出管）
     launchSpeedX: 5, // 发射时随机横向抖动（小）
     linearDamping: 0.015,
     restitution: 0.4, // 碰撞回弹
-    laneWidth: 62, // 发射通道宽
-    laneTopRatio: 0.8, // 通道内墙顶高度（占机台高比例；弹珠在顶部被圆头导向左方进场）
+    laneWidth: 62, // 发射通道宽（保留参数，弯管几何在 PinballGame.buildBoard 内计算）
     plungerPull: 46, // 蓄力时发射杆/弹珠后拉距离
   },
 

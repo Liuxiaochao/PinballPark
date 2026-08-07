@@ -72,9 +72,9 @@
 <h1>弹珠乐园 · 测试与验收文档</h1>
 <div class="meta">
   版本 <b>v1.0</b> · 日期 2026-07-29 · 状态：初稿（设计期文档，待研发评审）<br>
-  上游：《PRD v1.0》《玩法数值设计 v1.2》《技术架构 v1.0》《服务端 API v1.0》《UI-UX v1.0》《功能框架大纲 v0.1》<br>
+  上游：《PRD v1.0》《玩法数值设计 v1.2》《技术架构 v1.0》《服务端 API v1.0》《游戏界面文档 v1.0》《功能框架大纲 v0.1》<br>
   本文目标：将 PRD §11 的 9 条验收标准展开为<b>可执行</b>的测试 spec（功能 / 数值 / 性能 / 安全 / 渲染 / 合规 / 验收），并定义发布门禁。<br>
-  <b>范围说明：</b>Exchange 兑换模块（商城履约 / 订单状态机）的详细测试用例留待该模块实现时补全（与 API/UI-UX 一致，属后续版本）。
+  <b>范围说明：</b>Exchange 兑换模块（商城履约 / 订单状态机）的详细测试用例留待该模块实现时补全（与 API/游戏界面文档一致，属后续版本）。
 </div>
 
 <h2 class="sec"><span class="num">1</span>测试策略与分层</h2>
@@ -158,23 +158,23 @@
 <div class="card bad">价值安全红线：任何「弹珠 / 积分卡 / 广告发奖」的权威值<b>必须</b>来自服务端。客户端仅负责演出与上报，不得参与判定。SEC-03/04/06 为高危用例，门禁一票否决。</div>
 
 <h2 class="sec"><span class="num">6</span>客户端 / 引擎渲染专项</h2>
-<p>注：当前仅为设计示意稿（<code>../ui/ui-game-machine-mockup.html</code> 等 HTML）已冻结为方向 spec；本节省略「示意稿像素级」验收，聚焦<b>真实 Cocos 实现</b>须满足的几何与一致性硬指标。</p>
+<p>注：旧 UI 示意稿（<code>../ui/ui-game-machine-mockup.html</code>、<code>../ui/ui-ux-pinball-park.html</code>）已降级为历史视觉参考，不再冻结为方向 spec；当前界面实现规范见 <code>../ui/game-interface.html</code>。本节省略「示意稿像素级」验收，聚焦<b>真实 Cocos 实现</b>须满足的几何与一致性硬指标。</p>
 <table>
   <tr><th>用例</th><th>项</th><th>预期（真实界面）</th></tr>
-  <tr><td>UI-01</td><td>透视倾斜</td><td>机台后仰 30°（<code>perspective + rotateX(30°)</code>），板面有纵深；球沿后仰面板下落观感正确</td></tr>
-  <tr><td>UI-02</td><td>弹射轨道</td><td>右侧发射道：球自底部弹起 → 沿道升至顶端 → 转入钉板顶部 → 穿钉下落；与亮灯出口/出珠盒子不交叠</td></tr>
-  <tr><td>UI-03</td><td>倍率表</td><td>板内紧凑单行条，6 档 <code>×2 ×4 ×6 ×8 ×16 ×32</code>，宽度对齐钉板（左 24/右 70），红色 LED；当前局高亮</td></tr>
+  <tr><td>UI-01</td><td>透视倾斜</td><td>透视参数可配置；当前基线按 <code>../ui/game-interface.html</code>：60° 只作用于钉板、发射通道、倍率显示，其余界面元素保持屏幕正向</td></tr>
+  <tr><td>UI-02</td><td>弹射轨道</td><td>发射道：球自底部弹起 → 沿道升至顶端 → 转入钉板顶部 → 穿钉下落；与亮灯出口/出珠盒子不交叠</td></tr>
+  <tr><td>UI-03</td><td>倍率表</td><td>板内紧凑单行条，6 档 <code>×2 ×4 ×6 ×8 ×16 ×32</code>，宽度对齐钉板，红色 LED；当前局高亮</td></tr>
   <tr><td>UI-04</td><td>出珠盒子计数</td><td>盒子计数与权威 <code>rewardBeans</code> 一致；溢出珠物理掉落但计数不丢（与 PERF-03 共验）</td></tr>
   <tr><td>UI-05</td><td>红色 LED 跑马灯</td><td>招牌 / 数字框（余额·奖励珠·倍率·出珠计数）/ 侧灯柱为暗底红字红环跑马灯，非彩色霓虹</td></tr>
-  <tr><td>UI-06</td><td>控制区</td><td>加注 / 拉杆发射位于机柜下方控制条，不遮挡游戏画面功能区</td></tr>
-  <tr><td>UI-07</td><td>HUD 不随板旋转</td><td>余额 / 奖励珠 / 倍率 / 按钮等屏幕正向图层不随板面倾斜变形，文字可读</td></tr>
-  <tr><td>UI-08</td><td>多端一致</td><td>小游戏 / App / H5 三端布局与倍率表 / 跑马灯风格一致；低配降级（钉数 30/45/60）不破版</td></tr>
+  <tr><td>UI-06</td><td>控制区</td><td>加珠 / 拉杆发射位于机柜下方控制条，不遮挡游戏画面功能区</td></tr>
+  <tr><td>UI-07</td><td>HUD 不随板旋转</td><td>余额 / 奖励珠 / 按钮等屏幕正向图层不随板面倾斜变形；倍率显示随倾斜组，不要求屏幕正向</td></tr>
+  <tr><td>UI-08</td><td>多端一致</td><td>小游戏 / App / H5 三端布局与倍率表 / 跑马灯风格一致；低配降级不破版（具体参数按当前实现文档与性能验证）</td></tr>
 </table>
 
 <h2 class="sec"><span class="num">7</span>合规与内容安全</h2>
 <table>
   <tr><th>用例</th><th>项</th><th>预期</th><th>级别</th></tr>
-  <tr><td>CMP-01</td><td>概率公示常驻</td><td>大厅金刚区 + 设置页可一键查看 6 档倍率、各自出现概率（权重）、<b>综合返奖率 RTP（0.90）</b>与<b>各档命中概率</b>（取自数值 §1.2）；不可移除或深藏</td><td><span class="tag p0">P0</span></td></tr>
+  <tr><td>CMP-01</td><td>概率公示常驻</td><td>左抽屉 + 设置页可一键查看 6 档倍率、各自出现概率（权重）、<b>综合返奖率 RTP（0.90）</b>与<b>各档命中概率</b>（取自数值 §1.2）；不可移除或深藏</td><td><span class="tag p0">P0</span></td></tr>
   <tr><td>CMP-02</td><td>未成年提示</td><td>启动 / 设置页存在未成年防沉迷提示与时段限制入口</td><td><span class="tag p0">P0</span></td></tr>
   <tr><td>CMP-03</td><td>广告频控提示</td><td>领珠每日 6 次、翻倍触发有频控与剩余次数提示；不诱导过度观看</td><td><span class="tag p1">P1</span></td></tr>
   <tr><td>CMP-04</td><td>隐私与权限</td><td>仅申请必要权限；隐私政策链接可达；deviceSecret 不落不安全存储</td><td><span class="tag p2">P2</span></td></tr>
@@ -231,11 +231,11 @@
   <tr><td>RTP 0.90，新手保护前 5 局 1.5 递减</td><td>§3 NUM-01/05/06</td><td>✅ 一致</td></tr>
   <tr><td>N=1980(现 3168) 不出全刚体 / ≥30fps</td><td>§4 PERF-01/02, §6 UI-04</td><td>✅ 一致</td></tr>
   <tr><td>签名 HMAC-SHA256 ±5min / game_lock TTL 30min</td><td>§5 SEC-01/02, §2 FUN-09</td><td>✅ 一致</td></tr>
-  <tr><td>红色 LED 跑马灯 / 透视倾斜 / 倍率表对齐钉板</td><td>§6 UI-01/03/05（真实实现指标）</td><td>✅ 一致（spec 冻结）</td></tr>
+  <tr><td>红色 LED 跑马灯 / 透视倾斜 / 倍率表对齐钉板</td><td>§6 UI-01/03/05（真实实现指标）</td><td>✅ 一致（按 game-interface.html）</td></tr>
   <tr><td>Exchange 兑换模块留后续版本</td><td>§0 / §9 #6 / §11</td><td>⏳ 待补</td></tr>
 </table>
 
-<footer>弹珠乐园 · 测试与验收文档 v1.0 · 2026-07-29 · 与 PRD v1.0 / 数值 v1.2 / 架构 v1.0 / API v1.0 / UI-UX v1.0 一致 · Exchange 用例待补</footer>
+<footer>弹珠乐园 · 测试与验收文档 v1.0 · 2026-07-29 · 与 PRD v1.0 / 数值 v1.2 / 架构 v1.0 / API v1.0 / 游戏界面文档 v1.0 一致 · Exchange 用例待补</footer>
 </div>
 </body>
 </html>

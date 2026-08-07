@@ -1,4 +1,4 @@
-# 弹珠乐园 · 文档索引（2026-07-30 修订版）
+# 弹珠乐园 · 文档索引（2026-08-03 修订版）
 
 > 下一可用功能编号：**F-006**（新建功能卡取此号并顺延更新本行）
 >
@@ -13,7 +13,7 @@ docs/
 ├── design/                    # 游戏设计
 ├── numeric/                   # 数值与经济（含 sim/ 仿真引擎）
 ├── tech/                      # 技术架构 & API
-├── ui/                        # UI/UX 设计 & 机台视觉稿
+├── ui/                        # 界面实现规范 & 历史视觉稿
 ├── ops/                       # 运营方案
 ├── qa/                        # 测试验收标准
 ├── reviews/                   # 评审与审计报告
@@ -35,8 +35,9 @@ docs/
 | [architecture-pinball-park.html](tech/architecture-pinball-park.html) | 源头规范 | active | 技术架构：前后端分层与模块划分 | 2026-07-29 |
 | [api-pinball-park.html](tech/api-pinball-park.html) | 源头规范 | active | 服务端 API 契约（含 adFreq 频控） | 2026-07-29 |
 | **[ui/](ui/)** | | | | |
-| [ui-ux-pinball-park.html](ui/ui-ux-pinball-park.html) | 源头规范 | active | UI-UX 设计规范 | 2026-07-29 |
-| [ui-game-machine-mockup.html](ui/ui-game-machine-mockup.html) | 源头规范 | active | 机台视觉稿（可交互 mockup） | 2026-07-29 |
+| [game-interface.html](ui/game-interface.html) | 源头规范 | active | 游戏界面权威文档：状态机/分区/交互/动效/问题排查 | 2026-08-03 |
+| [ui-ux-pinball-park.html](ui/ui-ux-pinball-park.html) | 视觉参考 | historical | 旧 UI-UX 视觉风格参考，界面权威见 game-interface.html | 2026-08-03 |
+| [ui-game-machine-mockup.html](ui/ui-game-machine-mockup.html) | 视觉参考 | historical | 旧机台视觉稿，历史参考，不再作为当前界面权威 | 2026-08-03 |
 | **[ops/](ops/)** | | | | |
 | [operations-pinball-park.html](ops/operations-pinball-park.html) | 源头规范 | active | 上线与运营方案 | 2026-07-29 |
 | **[qa/](qa/)** | | | | |
@@ -83,3 +84,4 @@ docs/
 
 - 2026-07-30 | 审查后修订 | 拆分"已就绪/待补齐"，新增美术/音效/社交/运营/兑奖，标记已知经济问题 | INDEX.md
 - 2026-07-30 | 文档结构化 | 所有文档按功能分类归入子目录，新增目录结构一览，更新所有路径 | INDEX.md, RULES.md, AGENTS.md
+- 2026-08-03 | 界面重构 | 新增 game-interface.html 权威文档，旧 UI 文档降级为历史视觉参考 | INDEX.md, RULES.md, AGENTS.md
