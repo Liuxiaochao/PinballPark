@@ -40,6 +40,8 @@ export class PinballGame extends Component {
   private boardParent!: Node;
   private hudParent!: Node;
   private board!: Node;
+  private bounceArea!: Node;
+  private launchArea!: Node;
   private ball: Node | null = null;
   private ballVisual: Node | null = null; // 弹珠视觉节点（UI_3D 透视相机渲染）
   private ballPips: Graphics | null = null; // 表面 pip 层（每帧按滚动角重画，公转 = 滚动）
@@ -92,7 +94,6 @@ export class PinballGame extends Component {
     this.boardParent = boardParent;
     this.hudParent = hudParent;
     this.buildBoard();
-    this.buildExits();
     this.buildHud();
     this.enterIdle();
   }
@@ -151,51 +152,169 @@ export class PinballGame extends Component {
     }
     this.board.addChild(arch);
 
-    const title = makeLabel(this.board, '弹珠乐园', 30, new Color(255, 210, 60));
-    title.node.setPosition(0, halfH - 66, 1);
-    title.node.layer = GAME_LAYER;
+    // 两个功能组：弹跳区 / 发射区（内容由 buildBounceArea / buildLaunchArea 填充）
+    this.bounceArea = new Node('bounceArea');
+    this.bounceArea.layer = GAME_LAYER;
+    this.board.addChild(this.bounceArea);
+    this.launchArea = new Node('launchArea');
+    this.launchArea.layer = GAME_LAYER;
+    this.board.addChild(this.launchArea);
+
+    // 两区视觉分隔线（x=228，即发射通道内壁）
+    const sep = new Node('areaDivider');
+    sep.layer = GAME_LAYER;
+    this.board.addChild(sep);
+    const sg = sep.addComponent(Graphics);
+    sg.lineWidth = 2;
+    sg.strokeColor = new Color(125, 145, 195, 90);
+    sg.moveTo(228, -halfH);
+    sg.lineTo(228, halfH - 60);
+    sg.stroke();
 
     this.addBox(this.board, 0, halfH - 60 + wall / 2, W + wall * 2, wall, boardColor);
     this.addBox(this.board, -halfW - wall / 2, 0, wall, H, boardColor);
     this.addBox(this.board, halfW + wall / 2, 0, wall, H, boardColor);
     this.addBox(this.board, 0, -halfH - wall / 2 + 2, W + wall * 2, wall, boardColor);
 
-    // 发射通道：贴边 L 形弯管（圆角版）—— 竖直段贴机器最右侧上行，在右上角沿四分之一圆弧左转，
-    // 再贴机器顶水平飞出。关键：内侧直角改为半径 innerR 的圆弧（内外壁都是同心圆弧），
-    // 弹珠沿外侧弧面被顺导左转，不再卡在直角、也不再落回通道。
-    const tubeW = 52;                      // 通道净宽
-    const wallT = 12;                      // 管壁物理厚度
-    const botY = -halfH - wall;            // 管底（机器底）
-    const topY = halfH - 60;               // 机器内顶（顶墙内沿 y=430）
-    const rightEdge = halfW;               // 机器内右沿 x=280
-    const vOuterX = rightEdge;             // 外壁贴机器右墙
-    const vInnerX = rightEdge - tubeW;     // 竖直段内壁 x（分隔钉阵）
-    const laneCX = (vOuterX + vInnerX) / 2;
-    const hTopY = topY;                    // 顶壁贴机器顶墙
-    const hBotY = topY - tubeW;            // 水平段底壁 y（分隔钉阵/出口）
-    const laneTopCY = (hTopY + hBotY) / 2;
-    const exitX = 150;                     // 水平段左端开口（弹珠水平飞出）
+    // 发射通道几何与发射逻辑所需字段在 buildLaunchArea 内计算（单一来源），此处仅按顺序构建两个功能组
+    this.buildLaunchArea();
+    this.buildBounceArea();
+    this.setLayerRec(this.board, GAME_LAYER);
+  }
 
-    // 弯角：把内侧直角改成四分之一圆弧。圆心 C 取在 (vInnerX - innerR, hBotY - innerR)，
-    // 这样圆弧两端正好接上竖直段（左壁 x=vInnerX）与水平段（底壁 y=hBotY），通道宽始终 = tubeW。
-    const innerR = 22;                     // 内侧圆弧半径（圆角大小）
-    const Rc = tubeW / 2 + innerR;         // 通道中心线圆弧半径
-    const outerR = Rc + tubeW / 2;         // 外侧圆弧半径
-    const Cx = vInnerX - innerR;           // 弯角圆心 x
-    const Cy = hBotY - innerR;             // 弯角圆心 y
-    const bendStartY = Cy;                 // 竖直段与圆弧分界（圆弧 θ=0 处 y）
-    const bendEndX = Cx;                   // 水平段与圆弧分界（圆弧 θ=90° 处 x）
-    this.laneCX = laneCX;
-    this.launchY = -halfH + 110;
-    this.bendY = bendStartY;               // 弹珠越过圆弧起点即视为已出管，弱发射落回才退回
-    const wallColor = boardColor;
+  // 弹跳区：钉板 + 倍率 LED + 出口格 + 出口弹片。所有内容右边界 < 发射通道内壁 228，不越界到发射区。
+  private buildBounceArea() {
+    const m = GameConfig.machine;
+    const W = m.width;
+    const halfW = W / 2;
+    const halfH = m.height / 2;
+
+    // 倍率 LED（本局倍数）：居中弹跳区，宽 480 → 右沿 ≈214 < 228，不落入发射通道
+    const paytable = makePanel(this.bounceArea, 480, 52, new Color(12, 10, 12), 10);
+    paytable.setPosition(-26, -halfH + 110, 2);
+    this.multLed = makeLabel(paytable, '×--', 30, new Color(255, 90, 60));
+    this.multLed.node.setPosition(0, 0, 1);
+    this.multLed.node.layer = GAME_LAYER;
+
+    // 钉板
+    const pegColor = new Color(196, 206, 235);
+    const tubeW = 52;
+    const fieldL = -halfW + 46;
+    const fieldR = this.laneCX - tubeW / 2 - 20;
+    const fieldB = -halfH + m.height * 0.42;
+    const fieldT = halfH - 270;
+    const colStep = (fieldR - fieldL) / (m.pegCols - 1);
+    const rowStep = (fieldT - fieldB) / (m.pegRows - 1);
+    for (let r = 0; r < m.pegRows; r++) {
+      const y = fieldB + r * rowStep;
+      const offset = (r % 2) * (colStep / 2);
+      for (let c = 0; c < m.pegCols; c++) {
+        const x = fieldL + c * colStep + offset;
+        if (x > fieldR) continue;
+        this.addCircle(this.bounceArea, x, y, m.pegRadius, pegColor);
+      }
+    }
+
+    // 出口格 + 出口弹片：只铺弹跳区宽度（左 -274 → 右 228），不进入发射通道
+    const n = GameConfig.exitValues.length;
+    const leftX = -halfW + 6;   // -274
+    const rightX = 228;          // 发射通道内壁
+    const binW = (rightX - leftX) / n;
+    this.binW = binW;
+    for (let i = 0; i < n; i++) {
+      const cx = leftX + binW * (i + 0.5);
+      const bottom = this.addBox(this.bounceArea, cx, -halfH + 12, binW - 5, 24, new Color(54, 60, 96));
+      this.setLayerRec(bottom, GAME_LAYER);
+      const g = bottom.getComponent(Graphics)!;
+      g.clear();
+      g.fillColor = new Color(54, 60, 96);
+      g.roundRect(-(binW - 5) / 2, -12, binW - 5, 24, 8);
+      g.fill();
+      g.lineWidth = 1;
+      g.strokeColor = new Color(180, 195, 235, 90);
+      g.roundRect(-(binW - 5) / 2, -12, binW - 5, 24, 8);
+      g.stroke();
+      this.binGraphics.push(bottom);
+
+      if (i > 0) {
+        const divider = this.addBox(this.bounceArea, -halfW + 6 + binW * i, -halfH + 48, 5, 68, new Color(34, 39, 70));
+        this.setLayerRec(divider, GAME_LAYER);
+      }
+
+      // 出口弹片（触发结算用传感器）：挂在每个出口开口处，球压过即触发结算并给出结果
+      const paddle = new Node('paddle');
+      paddle.setPosition(cx, -halfH + 70, 1);
+      const pg = paddle.addComponent(Graphics);
+      pg.fillColor = new Color(60, 120, 180);
+      pg.roundRect(-(binW - 12) / 2, -3, binW - 12, 6, 3);
+      pg.fill();
+      pg.fillColor = new Color(180, 230, 255);
+      pg.circle(0, 0, 3);
+      pg.fill();
+      pg.fillColor = new Color(120, 180, 230);
+      pg.circle(-(binW - 12) / 2 + 4, 0, 2);
+      pg.fill();
+      pg.circle((binW - 12) / 2 - 4, 0, 2);
+      pg.fill();
+      const pcol = paddle.addComponent(BoxCollider2D);
+      pcol.sensor = true;
+      pcol.size = new Size(binW - 12, 8);
+      pcol.apply();
+      const ptag = paddle.addComponent(ExitTag);
+      ptag.index = i;
+      ptag.multiplier = GameConfig.exitValues[i];
+      paddle.layer = GAME_LAYER;
+      this.setLayerRec(paddle, GAME_LAYER);
+      this.bounceArea.addChild(paddle);
+      this.paddleNodes.push(paddle);
+
+      const val = GameConfig.exitValues[i];
+      const lab = makeLabel(
+        bottom,
+        val > 0 ? `${val}` : '沉',
+        16,
+        val > 0 ? new Color(215, 222, 248) : new Color(190, 120, 120)
+      );
+      lab.node.setPosition(0, 30, 1);
+      lab.node.layer = GAME_LAYER;
+    }
+  }
+
+  // 发射区：发射通道（贴边 L 形弯管）+ 管壁碰撞体 + 发射杆。全部位于 x ∈ [228, 280]。
+  private buildLaunchArea() {
+    const m = GameConfig.machine;
+    const W = m.width;
+    const halfW = W / 2;
+    const halfH = m.height / 2;
+    const wall = m.wallThickness;
+    const wallColor = new Color(46, 52, 86);
+
+    const tubeW = 52;
+    const wallT = 12;
+    const botY = -halfH - wall;
+    const topY = halfH - 60;
+    const rightEdge = halfW;
+    const vOuterX = rightEdge;
+    const vInnerX = rightEdge - tubeW;
+    const laneCX = (vOuterX + vInnerX) / 2;
+    const hTopY = topY;
+    const hBotY = topY - tubeW;
+    const laneTopCY = (hTopY + hBotY) / 2;
+    const exitX = 150;
+    const innerR = 22;
+    const Rc = tubeW / 2 + innerR;
+    const outerR = Rc + tubeW / 2;
+    const Cx = vInnerX - innerR;
+    const Cy = hBotY - innerR;
+    const bendStartY = Cy;
+    const bendEndX = Cx;
     const tubeBody = new Color(19, 23, 44);
     const tubeHi = new Color(32, 38, 70);
 
     // --- 弯管描边（管身：竖直 → 四分之一圆弧 → 水平 中心线） ---
     const tube = new Node('launchTube');
     tube.layer = GAME_LAYER;
-    this.board.addChild(tube);
+    this.launchArea.addChild(tube);
     const tg = tube.addComponent(Graphics);
     const arcSeg = 16;
     const cl: Vec2[] = [new Vec2(laneCX, botY), new Vec2(laneCX, bendStartY)];
@@ -242,28 +361,12 @@ export class PinballGame extends Component {
     tg.stroke();
 
     // --- 弯管物理墙体（圆角 L 形：竖直内外壁 + 圆弧内外壁 + 水平顶底壁；通道净宽始终 = tubeW） ---
-    // 竖直段外壁（贴机器右墙：内沿=机器右沿 280），从管底到圆弧起点
-    this.addBox(this.board, vOuterX + wallT / 2, (botY + bendStartY) / 2, wallT, bendStartY - botY, wallColor);
-    // 竖直段内壁（分隔钉阵：外沿=通道左沿 228），到圆弧起点止
-    this.addBox(this.board, vInnerX - wallT / 2, (botY + bendStartY) / 2, wallT, bendStartY - botY, wallColor);
-    // 水平段顶壁（贴机器顶墙：内沿=机器顶沿 430），从开口到圆弧终点
-    this.addBox(this.board, (exitX + bendEndX) / 2, hTopY + wallT / 2, bendEndX - exitX, wallT, wallColor);
-    // 水平段底壁（分隔钉阵与出口：外沿=通道下沿 378），到圆弧终点止
-    this.addBox(this.board, (exitX + bendEndX) / 2, hBotY - wallT / 2, bendEndX - exitX, wallT, wallColor);
-    // 圆弧内外壁：用一串重叠的圆形碰撞体铺成（圆对圆永远光滑，没有分段盒的棱角/衔接凸起）。
-    // 关键：圆心落在「直墙内面所在半径 ± wallT/2」，使圆弧与竖直/水平直墙在衔接处内面坐标完全一致
-    // —— 外壁 x=280、内壁 x=228、顶壁 y=430、底壁 y=378 全部对齐，无凸起、无缺口。
-    // 弹珠沿外侧圆弧被顺导左转，平滑出管。
-    this.addArcWall(Cx, Cy, innerR - wallT / 2, 0, Math.PI / 2, wallT, wallColor);
-    this.addArcWall(Cx, Cy, outerR + wallT / 2, 0, Math.PI / 2, wallT, wallColor);
-
-    // 出管所需最低蓄力（物理反解：竖直段需爬升到圆弧起点）
-    const g = -m.gravity;
-    const vyNeed = Math.sqrt(2 * g * (this.bendY - this.launchY));
-    this.minExitPower = Math.max(
-      0,
-      Math.min(1, ((vyNeed - m.launchSpeedMin) / (m.launchSpeedMax - m.launchSpeedMin)) * 1.05)
-    );
+    this.addBox(this.launchArea, vOuterX + wallT / 2, (botY + bendStartY) / 2, wallT, bendStartY - botY, wallColor);
+    this.addBox(this.launchArea, vInnerX - wallT / 2, (botY + bendStartY) / 2, wallT, bendStartY - botY, wallColor);
+    this.addBox(this.launchArea, (exitX + bendEndX) / 2, hTopY + wallT / 2, bendEndX - exitX, wallT, wallColor);
+    this.addBox(this.launchArea, (exitX + bendEndX) / 2, hBotY - wallT / 2, bendEndX - exitX, wallT, wallColor);
+    this.addArcWall(this.launchArea, Cx, Cy, innerR - wallT / 2, 0, Math.PI / 2, wallT, wallColor);
+    this.addArcWall(this.launchArea, Cx, Cy, outerR + wallT / 2, 0, Math.PI / 2, wallT, wallColor);
 
     // 发射杆（蓄力时后拉）
     const plunger = new Node('plunger');
@@ -276,109 +379,20 @@ export class PinballGame extends Component {
     pg.roundRect(-(tubeW - 16) / 2, 8, tubeW - 16, 18, 6);
     pg.fill();
     plunger.setPosition(laneCX, -halfH + 78, 0);
-    this.board.addChild(plunger);
+    this.launchArea.addChild(plunger);
     this.plunger = plunger;
     this.plungerBaseY = -halfH + 78;
 
-    // 钉阵
-    const pegColor = new Color(196, 206, 235);
-    const fieldL = -halfW + 46;
-    const fieldR = laneCX - tubeW / 2 - 20;
-    const fieldB = -halfH + m.height * 0.42;
-    const fieldT = halfH - 270;
-    const colStep = (fieldR - fieldL) / (m.pegCols - 1);
-    const rowStep = (fieldT - fieldB) / (m.pegRows - 1);
-    for (let r = 0; r < m.pegRows; r++) {
-      const y = fieldB + r * rowStep;
-      const offset = (r % 2) * (colStep / 2);
-      for (let c = 0; c < m.pegCols; c++) {
-        const x = fieldL + c * colStep + offset;
-        if (x > fieldR) continue;
-        this.addCircle(this.board, x, y, m.pegRadius, pegColor);
-      }
-    }
-
-    // 倍率显示（随倾斜组）
-    const paytable = makePanel(this.board, W - 100, 52, new Color(12, 10, 12), 10);
-    paytable.setPosition(0, -halfH + 110, 2);
-    this.multLed = makeLabel(paytable, '×--', 30, new Color(255, 90, 60));
-    this.multLed.node.setPosition(0, 0, 1);
-    this.multLed.node.layer = GAME_LAYER;
-
-    this.setLayerRec(this.board, GAME_LAYER);
-  }
-
-  // 亮灯出口与出珠盒：作为机台的一部分随机台一起渲染，确保与落球点始终对齐，
-  // 且不再被底部控制台（UI_2D）覆盖
-  private buildExits() {
-    const m = GameConfig.machine;
-    const W = m.width;
-    const H = m.height;
-    const halfW = W / 2;
-    const halfH = H / 2;
-    const n = GameConfig.exitValues.length;
-    const binW = (W - 12) / n;
-    this.binW = binW;
-    const root = new Node('exitsRoot');
-    root.layer = GAME_LAYER;
-    this.board.addChild(root);
-    for (let i = 0; i < n; i++) {
-      const cx = -halfW + 6 + binW * (i + 0.5);
-      const bottom = this.addBox(root, cx, -halfH + 12, binW - 5, 24, new Color(54, 60, 96));
-      this.setLayerRec(bottom, GAME_LAYER);
-      const g = bottom.getComponent(Graphics)!;
-      g.clear();
-      g.fillColor = new Color(54, 60, 96);
-      g.roundRect(-(binW - 5) / 2, -12, binW - 5, 24, 8);
-      g.fill();
-      g.lineWidth = 1;
-      g.strokeColor = new Color(180, 195, 235, 90);
-      g.roundRect(-(binW - 5) / 2, -12, binW - 5, 24, 8);
-      g.stroke();
-      this.binGraphics.push(bottom);
-
-      if (i > 0) {
-        const divider = this.addBox(root, -halfW + 6 + binW * i, -halfH + 48, 5, 68, new Color(34, 39, 70));
-        this.setLayerRec(divider, GAME_LAYER);
-      }
-
-      // 出口弹片（触发结算用传感器）：挂在每个出口开口处，球压过即触发结算并给出结果
-      const paddle = new Node('paddle');
-      paddle.setPosition(cx, -halfH + 70, 1);
-      const pg = paddle.addComponent(Graphics);
-      pg.fillColor = new Color(60, 120, 180);
-      pg.roundRect(-(binW - 12) / 2, -3, binW - 12, 6, 3);
-      pg.fill();
-      pg.fillColor = new Color(180, 230, 255);
-      pg.circle(0, 0, 3);
-      pg.fill();
-      pg.fillColor = new Color(120, 180, 230);
-      pg.circle(-(binW - 12) / 2 + 4, 0, 2);
-      pg.fill();
-      pg.circle((binW - 12) / 2 - 4, 0, 2);
-      pg.fill();
-      const pcol = paddle.addComponent(BoxCollider2D);
-      pcol.sensor = true;
-      pcol.size = new Size(binW - 12, 8);
-      pcol.apply();
-      const ptag = paddle.addComponent(ExitTag);
-      ptag.index = i;
-      ptag.multiplier = GameConfig.exitValues[i];
-      paddle.layer = GAME_LAYER;
-      this.setLayerRec(paddle, GAME_LAYER);
-      root.addChild(paddle);
-      this.paddleNodes.push(paddle);
-
-      const val = GameConfig.exitValues[i];
-      const lab = makeLabel(
-        bottom,
-        val > 0 ? `${val}` : '沉',
-        16,
-        val > 0 ? new Color(215, 222, 248) : new Color(190, 120, 120)
-      );
-      lab.node.setPosition(0, 30, 1);
-      lab.node.layer = GAME_LAYER;
-    }
+    // 发射逻辑所需几何（与 buildBounceArea 共用 this.laneCX；minExitPower 由物理反解）
+    this.laneCX = laneCX;
+    this.launchY = -halfH + 110;
+    this.bendY = bendStartY;
+    const g = -m.gravity;
+    const vyNeed = Math.sqrt(2 * g * (this.bendY - this.launchY));
+    this.minExitPower = Math.max(
+      0,
+      Math.min(1, ((vyNeed - m.launchSpeedMin) / (m.launchSpeedMax - m.launchSpeedMin)) * 1.05)
+    );
   }
 
   // ---------- HUD / 机台外壳 ----------
@@ -485,7 +499,7 @@ export class PinballGame extends Component {
   // 沿圆弧铺设一串重叠的静态圆形碰撞体，构成光滑的弯管圆弧墙体（圆对圆永远光滑，无分段盒棱角）。
   // radius 是「圆心所在半径」：调用方已按 直墙内面所在半径 ± thickness/2 传入，保证圆弧与直墙在衔接处对齐。
   // 仅建物理碰撞体、不画图形，避免视觉噪点（管身由上方 Graphics 描边统一渲染）。
-  private addArcWall(cx: number, cy: number, radius: number, a0: number, a1: number, thickness: number, _color: Color) {
+  private addArcWall(parent: Node, cx: number, cy: number, radius: number, a0: number, a1: number, thickness: number, _color: Color) {
     const rc = thickness / 2;
     const arcLen = Math.abs(a1 - a0) * radius;
     const count = Math.max(2, Math.ceil(arcLen / (rc * 1.3)) + 1); // 间距 < 直径，保证圆与圆重叠无缺口
@@ -498,7 +512,7 @@ export class PinballGame extends Component {
       const col = n.addComponent(CircleCollider2D);
       col.radius = rc;
       col.apply();
-      this.board.addChild(n);
+      parent.addChild(n);
       n.layer = GAME_LAYER;
     }
   }
@@ -834,9 +848,10 @@ export class PinballGame extends Component {
     const m = GameConfig.machine;
     const halfW = m.width / 2;
     const n = GameConfig.exitValues.length;
-    const binW = (m.width - 12) / n;
-    const x = this.ball.position.x; // 机台本地坐标，与 buildExits 中出口格坐标同源
-    let idx = Math.round((x + halfW - 6) / binW - 0.5);
+    const leftX = -halfW + 6;     // -274（与 buildBounceArea 同源）
+    const binW = (228 - leftX) / n;
+    const x = this.ball.position.x; // 机台本地坐标，与 buildBounceArea 中出口格坐标同源
+    let idx = Math.round((x - leftX) / binW - 0.5);
     idx = Math.max(0, Math.min(n - 1, idx));
     this.resolveExit(idx, GameConfig.exitValues[idx]);
   }
