@@ -163,3 +163,4 @@
 - 2026-07-30 | 文档审查 | AGENTS/INDEX 重写为游戏开发导向，新增待补领域/项目真实状态/经济问题记录 | AGENTS.md, docs/INDEX.md, docs/features/_TEMPLATE.md, .codebuddy/rules/project.md, docs/review-doc-audit-*.html
 - 2026-07-30 | 逻辑审查 | 修复 7 处逻辑漏洞/3 处表达问题：SKILL 使用说明/自发调整闭环合并/日志模板/路径遗漏 | AGENTS.md, docs/RULES.md, .codebuddy/skills/*/SKILL.md, docs/features/_TEMPLATE.md, docs/INDEX.md
 - 2026-08-07 | 出口弹片触发结算 | 每个落球出口开口处新增弹簧弹片（传感器 BoxCollider2D + 视觉），球压过即按该弹片所在出口倍率结算并播放下压反馈；实体出口格不再挂 ExitTag（仅作底），结算主触发改为弹片；保留"按实际落点静止"兜底以防未压到弹片；前版"首次擦碰即结算"误判（导致沉没格不生效）由弹片专属出口判定根治 | assets/scripts/PinballGame.ts, assets/scripts/BallController.ts, AGENTS.md
+- 2026-08-08 | 钉板布局烘焙 | 将 peg-layout-demo 导出的 77 钉布局（10 红顶行 + 67 钢钉，含侧墙斜钉）原样烘焙进 `GameConfig.pegLayout`（保留原 JSON 解析，避免手抄出错）；`buildBounceArea` 由规则网格改为按坐标放置每颗钉；新增 `hexToColor` 按 color 字段上色（红 #ff4d4d / 钢 #9fb0d8）| assets/scripts/GameConfig.ts, assets/scripts/PinballGame.ts, AGENTS.md

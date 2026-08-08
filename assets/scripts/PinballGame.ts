@@ -18,7 +18,7 @@ import {
   Layers,
   tween,
 } from 'cc';
-import { GameConfig, GAME_LAYER, weightedPick } from './GameConfig';
+import { GameConfig, GAME_LAYER, weightedPick, pegLayout } from './GameConfig';
 import { MockBackend } from './MockBackend';
 import { makePanel, makeButton, makeLabel, toast, Palette } from './UI';
 import { ExitTag } from './ExitTag';
@@ -196,23 +196,11 @@ export class PinballGame extends Component {
     this.multLed.node.setPosition(0, 0, 1);
     this.multLed.node.layer = GAME_LAYER;
 
-    // 钉板
+    // 钉板（由 peg-layout-demo 导出、烘焙进 GameConfig.pegLayout：世界坐标 y-up / origin=center / x∈[-274,228]）
     const pegColor = new Color(196, 206, 235);
-    const tubeW = 52;
-    const fieldL = -halfW + 46;
-    const fieldR = this.laneCX - tubeW / 2 - 20;
-    const fieldB = -halfH + m.height * 0.42;
-    const fieldT = halfH - 270;
-    const colStep = (fieldR - fieldL) / (m.pegCols - 1);
-    const rowStep = (fieldT - fieldB) / (m.pegRows - 1);
-    for (let r = 0; r < m.pegRows; r++) {
-      const y = fieldB + r * rowStep;
-      const offset = (r % 2) * (colStep / 2);
-      for (let c = 0; c < m.pegCols; c++) {
-        const x = fieldL + c * colStep + offset;
-        if (x > fieldR) continue;
-        this.addCircle(this.bounceArea, x, y, m.pegRadius, pegColor);
-      }
+    for (const p of pegLayout) {
+      const col = p.color ? this.hexToColor(p.color) : pegColor;
+      this.addCircle(this.bounceArea, p.x, p.y, p.r, col);
     }
 
     // 出口格 + 出口弹片：只铺弹跳区宽度（左 -274 → 右 228），不进入发射通道
@@ -476,6 +464,15 @@ export class PinballGame extends Component {
     parent.addChild(n);
     n.layer = GAME_LAYER;
     return n;
+  }
+
+  // 把 '#rrggbb' 解析为 cc.Color
+  private hexToColor(hex: string): Color {
+    const h = hex.replace('#', '');
+    const r = parseInt(h.substring(0, 2), 16);
+    const g = parseInt(h.substring(2, 4), 16);
+    const b = parseInt(h.substring(4, 6), 16);
+    return new Color(r, g, b);
   }
 
   private addCircle(parent: Node, x: number, y: number, r: number, color: Color): Node {
